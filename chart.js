@@ -1,0 +1,389 @@
+/* jshint esnext: true */
+"use strict";
+
+// Note Types
+
+const TAP_NOTE = Symbol.for('TAP_NOTE');
+const MINE_NOTE = Symbol.for('MINE_NOTE');
+const LIFT_NOTE = Symbol.for('LIFT_NOTE');
+const FAKE_NOTE = Symbol.for('FAKE_NOTE');
+
+const ROLL_NOTE = Symbol.for('ROLL_NOTE');
+const HOLD_NOTE = Symbol.for('HOLD_NOTE');
+
+
+// Directions
+
+const LEFT = Symbol.for('LEFT');
+const RIGHT = Symbol.for('RIGHT');
+const UP = Symbol.for('UP');
+const DOWN = Symbol.for('DOWN');
+
+// Virtual Base Note Class
+class Note {
+
+  static noteHit(note, timing) {
+    // TODO: Create the event
+    console.log('Note hit', note, timing);
+  }
+
+  static noteMiss(note) {
+    // TODO: Create the event
+  }
+
+  static CreateNote(type, division, direction, duration=0) {
+
+    let note;
+
+    if (typeof(Note.theme) === 'undefined') {
+      console.log('You need to specify the theme for the Note factory');
+      return;
+    }
+
+    // Create the right type of Note
+    if ([TAP_NOTE, MINE_NOTE, LIFT_NOTE, FAKE_NOTE].includes(type)) {
+      let graphicComponent = theme.createSimpleNoteGC();
+      note = new SimpleNote(type, division, direction, graphicComponent);
+    }
+
+    if ([ROLL_NOTE, HOLD_NOTE].includes(type)) {
+      let graphicComponent = theme.createLongNoteGC();
+      note = new LongNote(type, division, direction, graphicComponent, duration);
+    }
+
+
+
+    return note;
+
+  }
+
+  constructor(type, division, direction, graphicComponent) {
+
+    this.type = type;
+    this.division = division;
+    this.direction = direction;
+    this.graphicComponent = graphicComponent;
+
+    // other side of the relation
+    this.graphicComponent.note = this;
+
+    this.state = null;
+  }
+
+  setState(state) {
+    this.state = state;
+    this.state.enter();
+  }
+
+  tap(delay) {
+    const state = this.state.tap(delay);
+    if (state !== null) {
+      this.setState(state);
+    }
+  }
+
+  lift(delay) {
+    const state = this.state.lift(delay);
+    if (state !== null) {
+      this.setState(state);
+    }
+  }
+
+  // Note out of view
+  out() {
+    const state = this.state.out();
+    if (state !== null) {
+      this.setState(state);
+    }
+  }
+
+  // Note passed the action window
+  missed() {
+    const state = this.state.missed();
+    if (state !== null) {
+      this.setState(state);
+    }
+  }
+
+  get sprite() {
+    return this.graphicComponent.sprite;
+  }
+
+
+}
+
+// Observer Pattern for the Note hit event
+Note.subject = new Subject();
+
+
+//-------------------------------------------------------------------
+
+
+// Note that have no duration (tap, lift...)
+class SimpleNote extends Note {
+  constructor(type, division, direction, graphicComponent) {
+    super(type, division, direction, graphicComponent);
+    this.setState(new SimpleNoteFreshState(this));
+  }
+}
+
+// Interface for the Note States
+// TODO: Logging?
+class SimpleNoteState {
+  enter() {}
+  tap(delay) {return null;}
+  lift(delay) {return null;}
+  out() {return null;}
+
+  constructor(note) {
+    this.note = note;
+  }
+}
+
+
+class SimpleNoteFreshState extends SimpleNoteState {
+
+  enter() {
+    this.note.graphicComponent.create();
+  }
+
+  tap(delay) {
+    if (this.note.type === TAP_NOTE || this.note.type == MINE_NOTE) {
+
+      //TODO: Compute the timing
+      const timing = null;
+      return new SimpleNoteHitState(this.note, timing);
+
+    } 
+    return null;
+  }
+
+  lift(delay) {
+    if (this.note.type === LIFT_NOTE) {
+
+      //TODO: Compute the timing
+      const timing = null;
+      return new SimpleNoteHitState(this.note, timing);
+
+    } 
+    return null;
+  }
+
+  out(note) {
+    return new SimpleNoteMissState();
+  }
+}
+
+class SimpleNoteHitState extends SimpleNoteState {
+
+  enter() {
+    Note.noteHit(this.note, this.timing);
+    //TODO: Hide or not the Note based on the timing
+    this.note.graphicComponent.hit(this.timing);
+  }
+
+  constructor(note, hitTiming) {
+    super(note);
+    this.timing = hitTiming;
+  }
+}
+
+class SimpleNoteMissState extends SimpleNoteState {
+
+  enter() {
+    Note.noteMiss(this.note);
+    this.note.graphicComponent.miss();
+  }
+}
+
+
+// Simple Note Graphics handling
+class SimpleNoteGraphicComponent {
+
+  constructor(theme) {
+    this.theme = theme;
+    this.sprite = null;
+  }
+
+  create() {}
+  remove() {}
+
+  // TODO: Replace with pure graphic function
+  miss() {}
+  hit(timing) {}
+
+}
+
+//-------------------------------------------------------------------
+
+// Note that have a duration (hold, roll)
+class LongNote extends Note {
+
+  constructor(type, division, direction, graphicComponent, duration) {
+    super(type, division, direction, graphicComponent);
+    this.setState(new LongNoteFreshState(this));
+    this.duration = duration;
+  }
+
+  lift(delay) {
+    const state = this.state.lift(this);
+    if (state !== null) {
+      this.setState(state);
+    }
+  }
+
+  expire(id) {
+    const state = this.state.expires(this, id);
+    if (state !== null) {
+      this.setState(state);
+    }
+  }
+}
+
+class LongNoteState extends SimpleNoteState {
+  lift() {return null;}
+  expire(id) {return null;}
+}
+
+class LongNoteFreshState extends LongNoteState {
+
+  enter() {
+    this.note.graphicComponent.create();
+  }
+
+  out() {
+    return new LongNoteDeactivatedState();
+  }
+
+  tap(delay) {
+
+    //TODO: Get timing
+    const timing = null;
+    return new LongNoteActivatedState(this.note, timing);
+  }
+}
+
+class LongNoteActivatedState extends LongNoteState {
+
+  enter() {
+    //TODO: Not sure if feedback
+    
+    if (this.timing !== null) {
+      Note.noteHit(this.note, this.timing);
+    }
+    //TODO: Timer for expire command at the end of hold
+  }
+
+  constructor(note, timing) {
+    super(note);
+    this.timing = timing;
+  }
+
+  tap(delay) {
+    if (this.note.type === ROLL_NOTE) {
+      //TODO: What is the effect??
+    }
+    return null;
+  }
+
+  lift() {
+    if (this.note.type === HOLD_NOTE) {
+      // TODO: Set timer to send expire command
+      const tid = null;
+      return new LongNoteReleasedState(this.note, tid);
+    }
+
+    return null;
+  }
+
+  out() {
+    return new LongNoteFinishedState(this.note);
+  }
+
+  expire(tid) {
+    //TODO: Check if tid is expiration and finish note
+    return null;
+  }
+
+}
+
+class LongNoteReleasedState extends LongNoteState {
+
+  constructor(note, tid) {
+    super(note);
+    // Expiration timer ID
+    this.tid = tid;
+  }
+
+  expire(tid) {
+    if (tid === this.tid) {
+      return new LongNoteDeactivatedState(this.note, false);
+
+    }
+
+    //TODO: handle when this is hold finish timer
+
+    return null;
+  }
+
+  tap(delay) {
+    return new LongNoteActivatedState(this.note, null);
+  }
+
+}
+
+class LongNoteDeactivatedState extends LongNoteState {
+  enter() {
+    //TODO: Deactivated sprite
+    if (this.missed) {
+      Note.noteMiss(this.note);
+    }
+  }
+
+  constructor(note, missed) {
+    super(note);
+    this.misssed = missed;
+  }
+}
+
+class LongNoteFinishedState extends LongNoteState {
+
+  enter() {
+    if (this.note.type === HOLD_NOTE) {
+      // TODO: Timing TM_OK 
+      Note.noteHit(this.note);
+    }
+
+    // TODO: Graphic feedback??
+  }
+}
+
+
+class LongNoteGraphicComponent {
+
+  constructor(theme) {
+    this.theme = theme;
+  }
+
+  create() {}
+  remove() {}
+  deactivate() {}
+
+  activate() {}
+  finish() {}
+
+}
+
+
+//-------------------------------------------------------------------
+
+
+//class Step {
+
+  //static stepHit(step, timing) {
+  //}
+
+/*}*/
+
+// Observer Pattern for the Step hit event
+//Step.subject = new Subject();
