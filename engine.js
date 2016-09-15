@@ -8,12 +8,16 @@ class Engine {
     // Field related info
     this.fieldWidth = 400;
     this.fieldHeight = 600;
-    this.fieldView = 4;
+    this.fieldView = 6;
 
     // Song related info
     this.chart = null;
     this.background = null;
     this.audio = null;
+
+    // Window of existing notes
+    this.firstNoteIndex = 0;
+    this.lastNoteIndex = -1;
 
     // TODO: Link to player, score, input
   }
@@ -48,9 +52,10 @@ class Engine {
     let scale = 0;
 
     for (let step of this.chart.steps) {
+
       for (let direction in step.arrows) {
         let arrow = step.arrows[direction];
-        let note = Note.CreateNote(arrow.type, step.division, direction, arrow.duration);
+        let note = Note.CreateNote(arrow.type, step.division, direction, step.beat, arrow.duration);
 
 
         if (scale === 0) {
@@ -64,7 +69,6 @@ class Engine {
         this.stream.addChild(note.sprite);
         this.notes.push(note);
       }
-
     }
 
     this.field.addChild(this.stream);
@@ -78,7 +82,38 @@ class Engine {
   update() {
     let time = this.songPlayer.getTime();
     let [beat, index] = this.song.getBeat(time);
+
+    this.updateWindow(beat);
+
     this.field.children[1].y = -1 * beat * this.multiplier;
+
+  }
+
+  updateWindow(beat) {
+
+    let x = this.firstNoteIndex;
+    let note = this.notes[x];
+
+    while (note.beat < beat + 2 * this.fieldView){
+
+      // The note enter the existence window
+      if (x > this.lastNoteIndex) {
+        note.inside(this.stream);
+        this.lastNoteIndex++;
+      }
+
+      // The note leaves the existence window
+      if (note.beat < beat - this.fieldView) {
+        note.out();
+        this.firstNoteIndex = this.firstNoteIndex < this.notes.length ? this.firstNoteIndex++ : this.firstNoteIndex;
+      }
+
+      if (++x >= this.notes.length) {
+        break;
+      }
+      note = this.notes[x];
+    }
+
   }
 
 }

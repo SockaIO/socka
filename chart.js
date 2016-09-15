@@ -31,7 +31,7 @@ class Note {
     // TODO: Create the event
   }
 
-  static CreateNote(type, division, direction, duration=0) {
+  static CreateNote(type, division, direction, beat, duration=0) {
 
     let note;
 
@@ -43,12 +43,12 @@ class Note {
     // Create the right type of Note
     if ([TAP_NOTE, MINE_NOTE, LIFT_NOTE, FAKE_NOTE].includes(type)) {
       let graphicComponent = theme.createSimpleNoteGC();
-      note = new SimpleNote(type, division, direction, graphicComponent);
+      note = new SimpleNote(type, division, direction, beat,  graphicComponent);
     }
 
     if ([ROLL_NOTE, HOLD_NOTE].includes(type)) {
       let graphicComponent = theme.createLongNoteGC();
-      note = new LongNote(type, division, direction, graphicComponent, duration);
+      note = new LongNote(type, division, direction, beat, graphicComponent, duration);
     }
 
 
@@ -57,12 +57,13 @@ class Note {
 
   }
 
-  constructor(type, division, direction, graphicComponent) {
+  constructor(type, division, direction, beat, graphicComponent) {
 
     this.type = type;
     this.division = division;
     this.direction = direction;
     this.graphicComponent = graphicComponent;
+    this.beat = beat;
 
     // other side of the relation
     this.graphicComponent.note = this;
@@ -89,7 +90,7 @@ class Note {
     }
   }
 
-  // Note out of view
+  // Note out of existence wiexistence window
   out() {
     const state = this.state.out();
     if (state !== null) {
@@ -100,6 +101,14 @@ class Note {
   // Note passed the action window
   missed() {
     const state = this.state.missed();
+    if (state !== null) {
+      this.setState(state);
+    }
+  }
+
+  // Note in existence window
+  inside(stream) {
+    const state = this.state.inside(stream);
     if (state !== null) {
       this.setState(state);
     }
@@ -121,8 +130,8 @@ Note.subject = new Subject();
 
 // Note that have no duration (tap, lift...)
 class SimpleNote extends Note {
-  constructor(type, division, direction, graphicComponent) {
-    super(type, division, direction, graphicComponent);
+  constructor(type, division, direction, beat, graphicComponent) {
+    super(type, division, direction, beat, graphicComponent);
     this.setState(new SimpleNoteFreshState(this));
   }
 }
@@ -133,7 +142,18 @@ class SimpleNoteState {
   enter() {}
   tap(delay) {return null;}
   lift(delay) {return null;}
-  out() {return null;}
+
+  out() {
+    // Anti Optimization
+    //this.note.graphicComponent.remove();
+    return null;
+  }
+
+  inside(container) {
+    // Anti Optimization
+    //container.addChild(this.note.sprite);
+    return null;
+  }
 
   constructor(note) {
     this.note = note;
@@ -170,16 +190,21 @@ class SimpleNoteFreshState extends SimpleNoteState {
   }
 
   out(note) {
-    return new SimpleNoteMissState();
+    return new SimpleNoteMissState(this.note);
   }
 }
 
 class SimpleNoteHitState extends SimpleNoteState {
 
   enter() {
+
+    let score
+
+    // Get the score
     Note.noteHit(this.note, this.timing);
-    //TODO: Hide or not the Note based on the timing
-    this.note.graphicComponent.hit(this.timing);
+
+    //TODO: Hide or not the Note based on the score
+    this.note.graphicComponent.hit(score);
   }
 
   constructor(note, hitTiming) {
@@ -219,8 +244,8 @@ class SimpleNoteGraphicComponent {
 // Note that have a duration (hold, roll)
 class LongNote extends Note {
 
-  constructor(type, division, direction, graphicComponent, duration) {
-    super(type, division, direction, graphicComponent);
+  constructor(type, division, direction, beat, graphicComponent, duration) {
+    super(type, division, direction, beat, graphicComponent);
     this.setState(new LongNoteFreshState(this));
     this.duration = duration;
   }
