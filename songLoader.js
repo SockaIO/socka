@@ -544,6 +544,9 @@ function getChart(data) {
   let steps = [];
 
 
+  // Add to parse correctly the last measure
+  data += ',';
+
   for (let c of data) {
     if (c === ' ' || c ==='\r') {
       continue;
@@ -583,7 +586,6 @@ function getChart(data) {
     let division = 0;
 
     for (let s of m) {
-
 
       // TODO Support more tracks
       if (s !== '0000') {
