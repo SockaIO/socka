@@ -16,8 +16,8 @@ class Engine {
     this.audio = null;
 
     // Window of existing notes
-    this.firstNoteIndex = 0;
-    this.lastNoteIndex = -1;
+    this.firstStepIndex = 0;
+    this.lastStepIndex = -1;
 
     // TODO: Link to player, score, input
   }
@@ -45,7 +45,7 @@ class Engine {
   // Craete the Note stream
   createStream() {
 
-    this.notes = [];
+    this.steps = [];
     this.stream = new PIXI.Container();
 
     let offset = this.fieldWidth / 5;
@@ -53,10 +53,11 @@ class Engine {
 
     for (let step of this.chart.steps) {
 
+      let noteStep = new NoteStep(step.beat, step.time);
+
       for (let direction in step.arrows) {
         let arrow = step.arrows[direction];
-        let note = Note.CreateNote(arrow.type, step.division, direction, step.beat, arrow.duration);
-
+        let note = Note.CreateNote(arrow.type, step.division, direction, noteStep, arrow.duration);
 
         if (scale === 0) {
           scale = offset / note.sprite.width;
@@ -67,8 +68,10 @@ class Engine {
         note.sprite.x = (parseInt(direction, 10) + 1) * offset;
         note.sprite.y = step.beat * this.multiplier;
         this.stream.addChild(note.sprite);
-        this.notes.push(note);
+        noteStep.notes.push(note);
       }
+
+      this.steps.push(noteStep);
     }
 
     this.field.addChild(this.stream);
@@ -91,27 +94,27 @@ class Engine {
 
   updateWindow(beat) {
 
-    let x = this.firstNoteIndex;
-    let note = this.notes[x];
+    let x = this.firstStepIndex;
+    let step = this.steps[x];
 
-    while (note.beat < beat + 2 * this.fieldView){
+    while (step.beat < beat + 2 * this.fieldView){
 
-      // The note enter the existence window
-      if (x > this.lastNoteIndex) {
-        note.inside(this.stream);
-        this.lastNoteIndex++;
+      // The step enter the existence window
+      if (x > this.lastStepIndex) {
+        step.applyToNotes('inside',this.stream);
+        this.lastStepIndex++;
       }
 
-      // The note leaves the existence window
-      if (note.beat < beat - this.fieldView) {
-        note.out();
-        this.firstNoteIndex = this.firstNoteIndex < this.notes.length ? this.firstNoteIndex++ : this.firstNoteIndex;
+      // The step leaves the existence window
+      if (step.beat < beat - this.fieldView) {
+        step.applyToNotes('out');
+        this.firstStepIndex = this.firstStepIndex < this.steps.length ? this.firstStepIndex++ : this.firstStepIndex;
       }
 
-      if (++x >= this.notes.length) {
+      if (++x >= this.steps.length) {
         break;
       }
-      note = this.notes[x];
+      step = this.steps[x];
     }
 
   }

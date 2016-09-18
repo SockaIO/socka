@@ -31,7 +31,7 @@ class Note {
     // TODO: Create the event
   }
 
-  static CreateNote(type, division, direction, beat, duration=0) {
+  static CreateNote(type, division, direction, step, duration=0) {
 
     let note;
 
@@ -43,27 +43,25 @@ class Note {
     // Create the right type of Note
     if ([TAP_NOTE, MINE_NOTE, LIFT_NOTE, FAKE_NOTE].includes(type)) {
       let graphicComponent = theme.createSimpleNoteGC();
-      note = new SimpleNote(type, division, direction, beat,  graphicComponent);
+      note = new SimpleNote(type, division, direction, graphicComponent, step);
     }
 
     if ([ROLL_NOTE, HOLD_NOTE].includes(type)) {
       let graphicComponent = theme.createLongNoteGC();
-      note = new LongNote(type, division, direction, beat, graphicComponent, duration);
+      note = new LongNote(type, division, direction, graphicComponent, step, duration);
     }
-
-
 
     return note;
 
   }
 
-  constructor(type, division, direction, beat, graphicComponent) {
+  constructor(type, division, direction, graphicComponent, step) {
 
     this.type = type;
     this.division = division;
     this.direction = direction;
     this.graphicComponent = graphicComponent;
-    this.beat = beat;
+    this.step = step;
 
     // other side of the relation
     this.graphicComponent.note = this;
@@ -130,8 +128,8 @@ Note.subject = new Subject();
 
 // Note that have no duration (tap, lift...)
 class SimpleNote extends Note {
-  constructor(type, division, direction, beat, graphicComponent) {
-    super(type, division, direction, beat, graphicComponent);
+  constructor(type, division, direction, graphicComponent, step) {
+    super(type, division, direction, graphicComponent, step);
     this.setState(new SimpleNoteFreshState(this));
   }
 }
@@ -244,8 +242,8 @@ class SimpleNoteGraphicComponent {
 // Note that have a duration (hold, roll)
 class LongNote extends Note {
 
-  constructor(type, division, direction, beat, graphicComponent, duration) {
-    super(type, division, direction, beat, graphicComponent);
+  constructor(type, division, direction, graphicComponent, step, duration) {
+    super(type, division, direction, graphicComponent, step);
     this.setState(new LongNoteFreshState(this));
     this.duration = duration;
   }
@@ -403,12 +401,25 @@ class LongNoteGraphicComponent {
 //-------------------------------------------------------------------
 
 
-//class Step {
+class NoteStep {
 
-  //static stepHit(step, timing) {
-  //}
+  constructor(beat, time) {
+    this.notes = [];
+    this.beat = beat;
+    this.time = time;
+  }
 
-/*}*/
+  static stepHit(step, timing) {
+  }
+
+  // TODO: Replace by something more aptomized?
+  applyToNotes(methodName, ...args) {
+    for (let n of this.notes) {
+      n[methodName](...args);
+    }
+  }
+
+}
 
 // Observer Pattern for the Step hit event
-//Step.subject = new Subject();
+NoteStep.subject = new Subject();
