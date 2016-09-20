@@ -27,25 +27,29 @@ function init() {
     .then(() => {
     Note.theme = theme;
 
-    engine = new Engine();
-    engine.loadSong(song, 3);
 
-    let field = engine.createField();
-    field.x = 50;
+    engine = new Engine(400, 600, 6);
+    engine.loadSong(song, 2);
+
+    let field = engine.sprite;
+    field.x = 100;
     field.y = 50;
 
     stage.addChild(field);
-
-    let gc = new ReceptorDefaultGraphicComponent(theme);
-    gc.create(400);
-    field.addChild(gc.sprite);
-
-    engine.createStream();
 
     songPlayer = new SongPlayer();
     songPlayer.load(song).then(() => songPlayer.play());
 
     engine.setSongPlayer(songPlayer);
+
+    let judge = new Judge();
+    engine.setMissTiming(judge.getMissTiming());
+
+    let controller = new KeyboardController;
+    controller.setup();
+    controller.setSongPlayer(engine.songPlayer);
+
+    engine.controller = controller;
 
     gameLoop();
     

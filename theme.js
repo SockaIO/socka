@@ -21,6 +21,7 @@ class DefaultTheme {
       arrows: 'theme/arrows.png',
       mines: 'theme/mines.png',
       receptor: 'theme/receptor.png',
+      receptorFlash: 'theme/receptor_flash.png',
       holdCap: 'theme/holdCap.png',
       holdBody: 'theme/holdBody.png',
       rollCap: 'theme/rollCap.png',
@@ -107,6 +108,10 @@ class DefaultTheme {
     return new DetectorDefaultGraphicComponent(this);
   }
 
+  createEngineGC(...args) {
+    return new EngineDefaultGraphicComponent(this, ...args);
+  }
+
 }
 
 DefaultTheme.angleMap = [1, 0, 2, 3].map((x) => 2 * x * Math.PI / 4);
@@ -152,32 +157,61 @@ class ReceptorDefaultGraphicComponent extends ReceptorGraphicComponent {
 
   constructor(theme) {
     super(theme);
+    this.flashDuration = 0.2;
   }
 
   create(width) {
 
     let c = new PIXI.Container();
-    let notes = [];
+    this.notes = [];
 
     let offset = width / 5;
     let texture = this.theme.getTexture('receptor');
+    let textureFlash = this.theme.getTexture('receptorFlash');
     let scale = offset / texture.frame.width;
 
+    this.flashMinScale = scale * 0.7;
+    this.flashMaxScale = scale * 1.5;
+
     for (let x=0; x < 4; x++) {
+
+      let noteC = new PIXI.Container();
       let note = new PIXI.Sprite(texture);
-      note.anchor.x = 0.5;
-      note.anchor.y = 0.5;
-      note.rotation = DefaultTheme.angleMap[x];
-      note.scale.x = scale;
-      note.scale.y = scale; 
 
-      note.x = (x + 1) * offset;
+      let flash = new PIXI.Sprite(textureFlash);
+      flash.alpha = 0;
 
-      c.addChild(note);
-      notes.push(note);
+
+      noteC.addChild(flash);
+      noteC.addChild(note);
+
+      for (let n of noteC.children) {
+        n.anchor.x = 0.5;
+        n.anchor.y = 0.5;
+        n.rotation = DefaultTheme.angleMap[x];
+        n.scale.x = scale;
+        n.scale.y = scale;
+      }
+
+      noteC.x = (x + 1) * offset;
+      c.addChild(noteC);
+      this.notes.push(noteC);
     }
 
     this.sprite = c;
+  }
+
+  flash(direction) {
+
+    let arrow = this.notes[direction];
+    let flash = arrow.children[0];
+
+    flash.scale = {x: this.flashMinScale, y: this.flashMinScale};
+    flash.alpha = 1;
+
+    TweenLite.to(flash.scale, this.flashDuration, {x: this.flashMaxScale, y: this.flashMaxScale});
+    TweenLite.to(flash, this.flashDuration, {alpha: 0});
+
   }
 
 
@@ -235,8 +269,7 @@ class LongNoteDefaultGraphicComponent extends LongNoteGraphicComponent {
 
     [bodyTexture, capTexture] = this.getTextures();
 
-    // TODO: Reintroduce Tiling when the sprites are lazy loaded
-    //let body = new PIXI.extras.TilingSprite(bodyTexture, 128, 64);
+    // Tiling sprites are just too fucking slow to create
     let body = new PIXI.Sprite(bodyTexture);
     let cap = new PIXI.Sprite(capTexture);
 
@@ -282,4 +315,67 @@ class LongNoteDefaultGraphicComponent extends LongNoteGraphicComponent {
   }
 
 }
+
+class EngineDefaultGraphicComponent {
+
+  constructor(theme, width, height, fieldView) {
+
+    // Field related info
+    this.fieldWidth = width;
+    this.fieldHeight = height;
+    this.fieldView = fieldView;
+
+    this.theme = theme;
+
+    this.createField();
+    this.createReceptor();
+  }
+
+  createField() {
+
+    // Create the container
+    this.field = new PIXI.Container();
+    this.field.width = this.fieldWidth;
+    this.field.height = this.fieldHeight;
+
+    this.multiplier = this.fieldHeight / this.fieldView;
+  }
+
+  // Craete the Note stream
+  createStream(steps) {
+
+    this.stream = new PIXI.Container();
+
+    let offset = this.fieldWidth / 5;
+    let scale = 0;
+
+    for (let step of steps) {
+      for (let note of step.notes) {
+
+        if (scale === 0) {
+          scale = offset / note.sprite.width;
+        }
+
+        note.graphicComponent.resize(scale, this.multiplier);
+        note.sprite.x = (parseInt(note.direction, 10) + 1) * offset;
+        note.sprite.y = step.beat * this.multiplier;
+
+        this.stream.addChild(note.sprite);
+      }
+    }
+
+    this.field.addChild(this.stream);
+  }
+
+  createReceptor() {
+    this.receptor = new ReceptorDefaultGraphicComponent(this.theme);
+    this.receptor.create(this.fieldWidth);
+    this.field.addChild(this.receptor.sprite);
+  }
+
+  update(beat) {
+    this.field.children[1].y = -1 * beat * this.multiplier;
+  }
+}
+
 

@@ -3,21 +3,25 @@
 
 class Engine {
 
-  constructor() {
-
-    // Field related info
-    this.fieldWidth = 400;
-    this.fieldHeight = 600;
-    this.fieldView = 6;
+  constructor(width, height, fieldView) {
 
     // Song related info
     this.chart = null;
-    this.background = null;
-    this.audio = null;
 
     // Window of existing notes
+    this.fieldView = fieldView;
     this.firstStepIndex = 0;
     this.lastStepIndex = -1;
+    this.actionStep = null;
+
+    // Missed steps
+    this.missedStepIndex = 0;
+
+    // Timing
+    this.missTiming = 0.250;
+
+    // Graphic Component
+    this.graphicComponent = theme.createEngineGC(width, height, fieldView);
 
     // TODO: Link to player, score, input
   }
@@ -27,77 +31,76 @@ class Engine {
     
     this.chart = song.charts[chartIndex];
     this.song = song;
-  }
-
-
-  createField() {
-
-    // Create the container
-    this.field = new PIXI.Container();
-    this.field.width = this.fieldWidth;
-    this.field.height = this.fieldHeight;
-
-    this.multiplier = this.fieldHeight / this.fieldView;
-
-    return this.field;
-  }
-
-  // Craete the Note stream
-  createStream() {
 
     this.steps = [];
-    this.stream = new PIXI.Container();
-
-    let offset = this.fieldWidth / 5;
-    let scale = 0;
 
     for (let step of this.chart.steps) {
 
       let noteStep = new NoteStep(step.beat, step.time);
 
-      for (let direction in step.arrows) {
+      for (let directionS in step.arrows) {
+        let direction = parseInt(directionS, 10);
         let arrow = step.arrows[direction];
         let note = Note.CreateNote(arrow.type, step.division, direction, noteStep, arrow.duration);
 
-        if (scale === 0) {
-          scale = offset / note.sprite.width;
-        }
-
-        note.graphicComponent.resize(scale, this.multiplier);
-
-        note.sprite.x = (parseInt(direction, 10) + 1) * offset;
-        note.sprite.y = step.beat * this.multiplier;
-        this.stream.addChild(note.sprite);
         noteStep.notes.push(note);
       }
-
       this.steps.push(noteStep);
     }
 
-    this.field.addChild(this.stream);
+    this.graphicComponent.createStream(this.steps);
+  }
 
+  setMissTiming(timing) {
+    this.missTiming = timing;
   }
 
   setSongPlayer(sp) {
     this.songPlayer = sp;
   }
 
+  get sprite() {
+    return this.graphicComponent.field;
+  }
+
   update() {
+
+    // Get the time information
     let time = this.songPlayer.getTime();
     let [beat, index] = this.song.getBeat(time);
 
+    // Update the note stream
     this.updateWindow(beat);
+    this.graphicComponent.update(beat);
 
-    this.field.children[1].y = -1 * beat * this.multiplier;
+    // update the missed notes
+    this.updateMissed(time);
 
+    // Handle the inputs
+    let cmds = this.controller.handleInput();
+    for (let cmd of cmds) {
+      cmd.execute(this);
+    }
   }
 
   updateWindow(beat) {
 
+    if (this.firstStepIndex >= this.steps.length) {
+      return;
+    }
+
     let x = this.firstStepIndex;
     let step = this.steps[x];
+    let distance = this.actionStep !== null ? Math.abs(this.actionStep.beat - beat) : 999999;
 
     while (step.beat < beat + 2 * this.fieldView){
+
+      // Step on which the cmd are performed is the closest from current beat
+      // TODO: Can be optimized I think
+      if (this.actionStep === null || distance > Math.abs(step.beat - beat)) {
+        this.actionStep = step;
+        distance = Math.abs(step.beat - beat);
+      }
 
       // The step enter the existence window
       if (x > this.lastStepIndex) {
@@ -108,7 +111,7 @@ class Engine {
       // The step leaves the existence window
       if (step.beat < beat - this.fieldView) {
         step.applyToNotes('out');
-        this.firstStepIndex = this.firstStepIndex < this.steps.length ? this.firstStepIndex++ : this.firstStepIndex;
+        this.firstStepIndex++;
       }
 
       if (++x >= this.steps.length) {
@@ -119,16 +122,31 @@ class Engine {
 
   }
 
-}
+  updateMissed(time) {
 
-// note receptor
-class Receptor {
+    if (this.missedStepIndex >= this.steps.length) {
+      return;
+    }
 
-  constructor() {
+    let x = this.missedStepIndex;
+    let step = this.steps[x];
+
+    while (step.time + this.missTiming >= time) {
+
+      step.applyToNotes('miss');
+      this.missedStepIndex++;
+
+      if (++x >= this.steps.length) {
+        break;
+      }
+
+      step = this.steps[x];
+    }
   }
 
 }
 
+// The Receptor only function is the graphic component
 class ReceptorGraphicComponent {
 
   constructor(theme) {

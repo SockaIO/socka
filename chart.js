@@ -97,8 +97,8 @@ class Note {
   }
 
   // Note passed the action window
-  missed() {
-    const state = this.state.missed();
+  miss() {
+    const state = this.state.miss();
     if (state !== null) {
       this.setState(state);
     }
@@ -140,6 +140,7 @@ class SimpleNoteState {
   enter() {}
   tap(delay) {return null;}
   lift(delay) {return null;}
+  miss() {return null;}
 
   out() {
     // Anti Optimization
