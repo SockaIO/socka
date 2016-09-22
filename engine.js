@@ -36,7 +36,7 @@ class Engine {
 
     for (let step of this.chart.steps) {
 
-      let noteStep = new NoteStep(step.beat, step.time);
+      let noteStep = new NoteStep(step.beat, step.time, engine);
 
       for (let directionS in step.arrows) {
         let direction = parseInt(directionS, 10);
@@ -70,7 +70,7 @@ class Engine {
     let [beat, index] = this.song.getBeat(time);
 
     // Update the note stream
-    this.updateWindow(beat);
+    this.updateWindow(beat, time);
     this.graphicComponent.update(beat);
 
     // update the missed notes
@@ -83,7 +83,9 @@ class Engine {
     }
   }
 
-  updateWindow(beat) {
+  // TODO: Reduce to just find the actionStep?
+  // The inside and out are not used currently
+  updateWindow(beat, time) {
 
     if (this.firstStepIndex >= this.steps.length) {
       return;
@@ -91,15 +93,16 @@ class Engine {
 
     let x = this.firstStepIndex;
     let step = this.steps[x];
-    let distance = this.actionStep !== null ? Math.abs(this.actionStep.beat - beat) : 999999;
+    this.actionStep = null;
+    let distance = 9999;
 
     while (step.beat < beat + 2 * this.fieldView){
 
-      // Step on which the cmd are performed is the closest from current beat
-      // TODO: Can be optimized I think
-      if (this.actionStep === null || distance > Math.abs(step.beat - beat)) {
+      // Step on which the cmd are performed is the closest from current time if less than the miss timing
+      let delay = Math.abs(step.time - time);
+      if ((this.actionStep === null && delay < this.missTiming) || (delay < distance)) {
         this.actionStep = step;
-        distance = Math.abs(step.beat - beat);
+        distance = delay;
       }
 
       // The step enter the existence window
@@ -142,6 +145,29 @@ class Engine {
 
       step = this.steps[x];
     }
+  }
+
+  // Refactor function call instead of switch?
+  onNotify(ev) {
+
+    switch(ev.type) {
+      case EVENT_NOTE_HIT:
+        console.log("[Engine] A note is it hit", ev.note, ev.timing);
+
+        // TODO Trigger
+        // - Combo
+        // - Good, perfect
+        // - Receptor Glowing
+        break;
+      case EVENT_STEP_HIT:
+        console.log("[Engine] A step is it hit", ev.step, ev.timing);
+
+        // TODO Trigger
+        // - Score Update
+        // - Life Update (or in Note?)
+        break;
+    }
+
   }
 
 }

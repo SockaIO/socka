@@ -90,12 +90,8 @@ class DanceCommand {
       return;
     }
 
-    for (let note of step.notes) {
+    step.process(this);
 
-      if (note.direction === this.direction) {
-        console.log('match');
-      }
-    }
   }
 
 }

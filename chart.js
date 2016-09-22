@@ -19,12 +19,29 @@ const RIGHT = Symbol.for('RIGHT');
 const UP = Symbol.for('UP');
 const DOWN = Symbol.for('DOWN');
 
+// Events
+const EVENT_NOTE_HIT = Symbol.for('EVENT_NOTE_HIT');
+const EVENT_STEP_HIT = Symbol.for('EVENT_STEP_HIT');
+
 // Virtual Base Note Class
 class Note {
 
-  static noteHit(note, timing) {
-    // TODO: Create the event
-    console.log('Note hit', note, timing);
+  static NoteHit(note, timing) {
+
+    // TODO: Compute and return the score + put in event
+
+    let ev = {
+      note,
+      timing,
+      type: EVENT_NOTE_HIT,
+      score: 10
+    }
+
+    // Add the note step as an extra observer
+    // TODO: Maybe handle more gracefully
+    // The idea is to have the possibility to have global observers
+    // for such events
+    Note.subject.notify(ev, [note.step]);
   }
 
   static noteMiss(note) {
@@ -197,10 +214,10 @@ class SimpleNoteHitState extends SimpleNoteState {
 
   enter() {
 
-    let score
+    let score;
 
     // Get the score
-    Note.noteHit(this.note, this.timing);
+    Note.NoteHit(this.note, this.timing);
 
     //TODO: Hide or not the Note based on the score
     this.note.graphicComponent.hit(score);
@@ -249,13 +266,6 @@ class LongNote extends Note {
     this.duration = duration;
   }
 
-  lift(delay) {
-    const state = this.state.lift(this);
-    if (state !== null) {
-      this.setState(state);
-    }
-  }
-
   expire(id) {
     const state = this.state.expires(this, id);
     if (state !== null) {
@@ -265,7 +275,6 @@ class LongNote extends Note {
 }
 
 class LongNoteState extends SimpleNoteState {
-  lift() {return null;}
   expire(id) {return null;}
 }
 
@@ -293,7 +302,7 @@ class LongNoteActivatedState extends LongNoteState {
     //TODO: Not sure if feedback
     
     if (this.timing !== null) {
-      Note.noteHit(this.note, this.timing);
+      Note.NoteHit(this.note, this.timing);
     }
     //TODO: Timer for expire command at the end of hold
   }
@@ -375,7 +384,7 @@ class LongNoteFinishedState extends LongNoteState {
   enter() {
     if (this.note.type === HOLD_NOTE) {
       // TODO: Timing TM_OK 
-      Note.noteHit(this.note);
+      Note.NoteHit(this.note);
     }
 
     // TODO: Graphic feedback??
@@ -404,13 +413,43 @@ class LongNoteGraphicComponent {
 
 class NoteStep {
 
-  constructor(beat, time) {
+  constructor(beat, time, engine) {
     this.notes = [];
+    this.scores = [];
     this.beat = beat;
     this.time = time;
+    this.engine = engine;
   }
 
-  static stepHit(step, timing) {
+  static StepHit(step, timing) {
+
+    let ev = {
+      step,
+      timing,
+      type: EVENT_STEP_HIT
+    }
+
+    // Add the note Engine as an extra observer
+    // TODO: Maybe handle more gracefully
+    // The idea is to have the possibility to have observers for all events
+    // no matter the engine
+    NoteStep.subject.notify(ev, [step.engine]);
+  }
+
+  process(cmd) {
+    let delay = Math.abs(cmd.time - this.time);
+
+    let score = null;
+
+    for (let note of this.notes) {
+      if (note.direction === cmd.direction) {
+        if (cmd.action === TAP) {
+           note.tap(delay);
+        } else {
+           note.lift(delay);
+        }
+      }
+    }
   }
 
   // TODO: Replace by something more aptomized?
@@ -420,6 +459,32 @@ class NoteStep {
     }
   }
 
+  noteHit(score) {
+
+    // Add the score of the touched note to the list
+    this.scores.push(score);
+
+    // The Step is validated
+    if (this.scores.length === this.notes.length) {
+      NoteStep.StepHit(this, null);
+    }
+  }
+
+  onNotify(ev) {
+
+    switch(ev.type) {
+      case EVENT_NOTE_HIT:
+        console.log('[Step] A note is hit', ev.note, ev.timing);
+
+        // better notify the note before the step
+        this.engine.onNotify(ev);
+
+        this.noteHit(ev.score);
+
+        break;
+
+    }
+  }
 }
 
 // Observer Pattern for the Step hit event

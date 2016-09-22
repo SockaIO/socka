@@ -15,9 +15,9 @@ class Subject {
     this.observers.delete(observer);
   }
 
-  notify(note, ev) {
-    for (let o of this.observers) {
-      o.onNotify(note, ev);
+  notify(ev, extraObservers=[]) {
+    for (let o of Array.from(this.observers).concat(extraObservers)) {
+      o.onNotify(ev);
     }
   }
 
