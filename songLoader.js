@@ -37,8 +37,45 @@ class Song {
     this.timingPartition = [];
   }
 
+  static findSMFiles (url) {
+    return fetch(url, {credentials: 'same-origin'}).then((resp) => {
+      if (!resp.ok) {
+        throw resp;
+      }
+
+      url = resp.url;
+
+      return resp.text();
+    }).then((data) => {
+      let files = [];
+      let el = document.createElement('html');
+      el.innerHTML = data;
+
+      for (var a of el.getElementsByTagName('a')) {
+        let href = a.getAttribute('href');
+        if (!href.startsWith("http")) {
+          if (href.startsWith("/")) {
+            href = url.split("/").slice(0, 3).join("/");
+          } else {
+            href = url + href;
+          }
+        }
+        let ext = href.split(".").slice("-1")[0].toLowerCase();
+
+        if (ext === "sm") {
+          files.push(href);
+        } else if (ext.includes("/") && href.includes(url) && href.endsWith("/")) {
+          files.push(Song.findSMFiles(href));
+        }
+      }
+      return Promise.all(files).then((values) => {
+        return [].concat.apply([], values);
+      });
+    });
+  }
+
   static loadFromSMFile (url) {
-    return fetch(url).then((resp) => {
+    return fetch(url, {credentials: 'same-origin'}).then((resp) => {
 
       if (!resp.ok) {
         throw resp;
