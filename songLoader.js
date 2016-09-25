@@ -118,7 +118,7 @@ class Song {
       const song = new Song();
 
       // Resources related attributes
-      song.path = url.split('/').slice(0, -1).join('') + '/';
+      song.path = url.slice(0, url.lastIndexOf("/") + 1);
 
       song.banner = fieldMap.get('BANNER');
       song.background = fieldMap.get('BACKGROUND');
