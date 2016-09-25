@@ -37,40 +37,47 @@ class Song {
     this.timingPartition = [];
   }
 
-  static findSMFiles (url) {
-    return fetch(url, {credentials: 'same-origin'}).then((resp) => {
-      if (!resp.ok) {
-        throw resp;
+  static loadFromSMFolder (url) {
+    return Utils.findLinks(url).then((links) => {
+      let metadata = {};
+
+      let song;
+      for (let link of links) {
+        let fullname = decodeURIComponent(link.split("/").slice("-1")[0]);
+        let ext = fullname.split(".").slice("-1")[0].toLowerCase();
+        let filename = fullname.split(".")[0];
+
+        let isimage = ['png', 'jpeg', 'gif'].includes(ext);
+
+        if (ext == "sm") {
+          song = Song.loadFromSMFile(link);
+        }
+        else if (isimage && (filename.includes("banner") || filename.endsWith("bn"))) {
+          metadata.banner = fullname;
+        }
+        else if (isimage && (filename.includes("background") || filename.endsWith("bg"))) {
+          metadata.background = fullname;
+        }
+        else if (isimage && filename.includes("cdtitle")) {
+          metadata.cstitle = fullname;
+        }
       }
 
-      url = resp.url;
+      return Promise.all([song, metadata]);
 
-      return resp.text();
     }).then((data) => {
-      let files = [];
-      let el = document.createElement('html');
-      el.innerHTML = data;
+      let song = data[0];
+      let metadata = data[1];
 
-      for (var a of el.getElementsByTagName('a')) {
-        let href = a.getAttribute('href');
-        if (!href.startsWith("http")) {
-          if (href.startsWith("/")) {
-            href = url.split("/").slice(0, 3).join("/");
-          } else {
-            href = url + href;
-          }
-        }
-        let ext = href.split(".").slice("-1")[0].toLowerCase();
-
-        if (ext === "sm") {
-          files.push(href);
-        } else if (ext.includes("/") && href.includes(url) && href.endsWith("/")) {
-          files.push(Song.findSMFiles(href));
-        }
+      if (!song.banner) {
+        song.banner = metadata.banner;
       }
-      return Promise.all(files).then((values) => {
-        return [].concat.apply([], values);
-      });
+      if (!song.background) {
+        song.background = metadata.background;
+      }
+
+      return song;
+
     });
   }
 
