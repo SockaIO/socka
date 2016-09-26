@@ -175,7 +175,7 @@ class Song {
     let promises = [];
 
     // Get the Music
-    promises.push(fetch(this.path + this.music).then((resp) => {
+    promises.push(fetch(this.path + this.music, {credentials: 'same-origin'}).then((resp) => {
       if (!resp.ok) {
         throw resp;
       }
@@ -365,8 +365,7 @@ function createTimingPartition(song) {
   // Add the stop sections
 
   for (let stop of song.stops) {
-
-    while (sections[sectionIndex + 1].startBeat <= stop.beat) {
+    while (sections.length > sectionIndex + 1 && sections[sectionIndex + 1].startBeat <= stop.beat) {
       sectionIndex++;
     }
 
