@@ -3,6 +3,7 @@
 
 window.addEventListener('load', init, false);
 let theme;
+let judge;
 
 let stage = new PIXI.Container(),
     renderer = PIXI.autoDetectRenderer(800, 600,{backgroundColor : 0x1099bb});
@@ -27,9 +28,10 @@ function init() {
     .then(() => {
     Note.theme = theme;
 
+    judge = new Judge();
 
     engine = new Engine(400, 600, 6);
-    engine.loadSong(song, 2);
+    engine.loadSong(song, 2, judge);
 
     let field = engine.sprite;
     field.x = 100;
@@ -42,7 +44,6 @@ function init() {
 
     engine.setSongPlayer(songPlayer);
 
-    let judge = new Judge();
     engine.setMissTiming(judge.getMissTiming());
 
     let controller = new KeyboardController;

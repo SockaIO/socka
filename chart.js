@@ -26,15 +26,16 @@ const EVENT_STEP_HIT = Symbol.for('EVENT_STEP_HIT');
 // Virtual Base Note Class
 class Note {
 
-  static NoteHit(note, timing) {
+  static NoteHit(note, delay) {
 
     // TODO: Compute and return the score + put in event
+    let timing = judge.getTiming(delay);
 
     let ev = {
       note,
+      delay,
       timing,
       type: EVENT_NOTE_HIT,
-      score: 10
     }
 
     // Add the note step as an extra observer
@@ -42,6 +43,8 @@ class Note {
     // The idea is to have the possibility to have global observers
     // for such events
     Note.subject.notify(ev, [note.step]);
+
+    return timing;
   }
 
   static noteMiss(note) {
@@ -185,22 +188,14 @@ class SimpleNoteFreshState extends SimpleNoteState {
 
   tap(delay) {
     if (this.note.type === TAP_NOTE || this.note.type == MINE_NOTE) {
-
-      //TODO: Compute the timing
-      const timing = null;
-      return new SimpleNoteHitState(this.note, timing);
-
+      return new SimpleNoteHitState(this.note, delay);
     } 
     return null;
   }
 
   lift(delay) {
     if (this.note.type === LIFT_NOTE) {
-
-      //TODO: Compute the timing
-      const timing = null;
-      return new SimpleNoteHitState(this.note, timing);
-
+      return new SimpleNoteHitState(this.note, delay);
     } 
     return null;
   }
@@ -214,18 +209,18 @@ class SimpleNoteHitState extends SimpleNoteState {
 
   enter() {
 
-    let score;
+    let timing;
 
-    // Get the score
-    Note.NoteHit(this.note, this.timing);
+    // Get the timing
+    timing = Note.NoteHit(this.note, this.delay);
 
     //TODO: Hide or not the Note based on the score
-    this.note.graphicComponent.hit(score);
+    this.note.graphicComponent.hit(timing);
   }
 
-  constructor(note, hitTiming) {
+  constructor(note, delay) {
     super(note);
-    this.timing = hitTiming;
+    this.delay = delay;
   }
 }
 
@@ -251,7 +246,7 @@ class SimpleNoteGraphicComponent {
 
   // TODO: Replace with pure graphic function
   miss() {}
-  hit(timing) {}
+  hit(delay) {}
 
 }
 
@@ -289,10 +284,7 @@ class LongNoteFreshState extends LongNoteState {
   }
 
   tap(delay) {
-
-    //TODO: Get timing
-    const timing = null;
-    return new LongNoteActivatedState(this.note, timing);
+    return new LongNoteActivatedState(this.note, delay);
   }
 }
 
@@ -301,15 +293,15 @@ class LongNoteActivatedState extends LongNoteState {
   enter() {
     //TODO: Not sure if feedback
     
-    if (this.timing !== null) {
-      Note.NoteHit(this.note, this.timing);
+    if (this.delay !== null) {
+      Note.NoteHit(this.note, this.delay);
     }
     //TODO: Timer for expire command at the end of hold
   }
 
-  constructor(note, timing) {
+  constructor(note, delay) {
     super(note);
-    this.timing = timing;
+    this.delay = delay;
   }
 
   tap(delay) {
@@ -415,17 +407,22 @@ class NoteStep {
 
   constructor(beat, time, engine) {
     this.notes = [];
-    this.scores = [];
+    this.delays = [];
     this.beat = beat;
     this.time = time;
     this.engine = engine;
   }
 
-  static StepHit(step, timing) {
+  static StepHit(step, delay) {
+
+    let [timing, score] = judge.judge(step, delay);
+
+    console.log(delay, score, timing);
 
     let ev = {
       step,
       timing,
+      score,
       type: EVENT_STEP_HIT
     }
 
@@ -438,8 +435,6 @@ class NoteStep {
 
   process(cmd) {
     let delay = Math.abs(cmd.time - this.time);
-
-    let score = null;
 
     for (let note of this.notes) {
       if (note.direction === cmd.direction) {
@@ -459,14 +454,14 @@ class NoteStep {
     }
   }
 
-  noteHit(score) {
+  noteHit(delay) {
 
-    // Add the score of the touched note to the list
-    this.scores.push(score);
+    // Add the delay of the touched note to the list
+    this.delays.push(delay);
 
     // The Step is validated
-    if (this.scores.length === this.notes.length) {
-      NoteStep.StepHit(this, null);
+    if (this.delays.length === this.notes.length) {
+      NoteStep.StepHit(this, Math.max(...this.delays));
     }
   }
 
@@ -474,12 +469,12 @@ class NoteStep {
 
     switch(ev.type) {
       case EVENT_NOTE_HIT:
-        console.log('[Step] A note is hit', ev.note, ev.timing);
+        console.log('[Step] A note is hit', ev.delay);
 
         // better notify the note before the step
         this.engine.onNotify(ev);
 
-        this.noteHit(ev.score);
+        this.noteHit(ev.delay);
 
         break;
 

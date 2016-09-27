@@ -26,7 +26,7 @@ class Engine {
     // TODO: Link to player, score, input
   }
 
-  loadSong(song, chartIndex) {
+  loadSong(song, chartIndex, judge) {
     //TODO: Load resources
     
     this.chart = song.charts[chartIndex];
@@ -47,6 +47,9 @@ class Engine {
       }
       this.steps.push(noteStep);
     }
+
+    // Populate the step scores
+    judge.populateSteps(this.steps, this.chart);
 
     this.graphicComponent.createStream(this.steps);
   }
@@ -94,7 +97,7 @@ class Engine {
     let x = this.firstStepIndex;
     let step = this.steps[x];
     this.actionStep = null;
-    let distance = 9999;
+    let distance = -1;
 
     while (step.beat < beat + 2 * this.fieldView){
 
