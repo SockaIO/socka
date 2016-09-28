@@ -14,6 +14,11 @@ class Engine {
     this.lastStepIndex = -1;
     this.actionIndex = -1;
     this.actionNotes = new Map();
+    this.time = 0;
+    this.beat = 0;
+
+    // Scheduling
+    this.scheduledEvents = [];
 
     // Missed steps
     this.missedStepIndex = 0;
@@ -42,7 +47,12 @@ class Engine {
       for (let directionS in step.arrows) {
         let direction = parseInt(directionS, 10);
         let arrow = step.arrows[direction];
-        let note = Note.CreateNote(arrow.type, step.division, direction, noteStep, arrow.duration);
+
+        let schedule = (time, action, absolute, beat) => {
+          return this.schedule(time, action, absolute, beat);
+        }
+
+        let note = Note.CreateNote(arrow.type, step.division, direction, noteStep, schedule, arrow.duration);
 
         noteStep.notes.push(note);
       }
@@ -70,16 +80,21 @@ class Engine {
   update() {
 
     // Get the time information
-    let time = this.songPlayer.getTime();
-    let [beat, index] = this.song.getBeat(time);
+    this.time = this.songPlayer.getTime();
+    let [beat, index] = this.song.getBeat(this.time);
+    this.beat = beat;
+
 
     // Update the note stream
-    //this.updateWindow(beat, time);
-    this.updateAction(time);
+    //this.updateWindow(beat);
+    this.updateAction();
     this.graphicComponent.update(beat);
 
     // update the missed notes
-    this.updateMissed(time);
+    this.updateMissed();
+
+    // Do the scheduled Actions
+    this.handleScheduled();
 
     // Handle the inputs
     let cmds = this.controller.handleInput();
@@ -88,7 +103,7 @@ class Engine {
     }
   }
 
-  updateAction(time) {
+  updateAction() {
 
     if (this.actionIndex >= this.steps.length - 2) {
       return;
@@ -96,7 +111,7 @@ class Engine {
 
     let step = this.steps[this.actionIndex + 1];
 
-    while (Math.abs(step.time - time) < this.missTiming) {
+    while (Math.abs(step.time - this.time) < this.missTiming) {
 
       // Add the notes to the action notes
       for (let note of step.notes) {
@@ -110,7 +125,7 @@ class Engine {
         list = this.actionNotes.get(note.direction);
 
         // Remove stale notes
-        while (list.length > 0 && list[0].getDistance(time) > this.missTiming) {
+        while (list.length > 0 && list[0].getDistance(this.time) > this.missTiming) {
           list.shift();
         }
 
@@ -130,7 +145,7 @@ class Engine {
 
   // TODO: Reduce to just find the actionStep?
   // The inside and out are not used currently
-  updateWindow(beat, time) {
+  updateWindow(beat) {
 
     if (this.firstStepIndex >= this.steps.length) {
       return;
@@ -142,13 +157,6 @@ class Engine {
     let distance = -1;
 
     while (step.beat < beat + 2 * this.fieldView){
-
-      // Step on which the cmd are performed is the closest from current time if less than the miss timing
-      let delay = Math.abs(step.time - time);
-      if ((this.actionStep === null && delay < this.missTiming) || (delay < distance)) {
-        this.actionStep = step;
-        distance = delay;
-      }
 
       // The step enter the existence window
       if (x > this.lastStepIndex) {
@@ -170,7 +178,7 @@ class Engine {
 
   }
 
-  updateMissed(time) {
+  updateMissed() {
 
     if (this.missedStepIndex >= this.steps.length) {
       return;
@@ -179,7 +187,7 @@ class Engine {
     let x = this.missedStepIndex;
     let step = this.steps[x];
 
-    while (step.time + this.missTiming <= time) {
+    while (step.time + this.missTiming <= this.time) {
 
       step.applyToNotes('miss');
       this.missedStepIndex++;
@@ -240,6 +248,41 @@ class Engine {
     return target;
 
   }
+
+  schedule(at, action, absolute=true, beat=true) {
+
+    let ev = {action};
+
+    if (beat) {
+      ev.beat = absolute ? at : at + this.beat;
+    } else {
+      ev.time = absolute ? at : at + this.time;
+    }
+
+    this.scheduledEvents.push(ev);
+    console.log(ev);
+  }
+
+  handleScheduled() {
+
+    let toRemove = [];
+
+    for (let x=0; x<this.scheduledEvents.length; x++) {
+      let ev = this.scheduledEvents[x];
+
+      if ((ev.beat !== undefined && ev.beat <= this.beat) ||
+          (ev.time !== undefined && ev.time <= this.time)) {
+        ev.action();
+        toRemove.push(x);
+      }
+    }
+
+    // Remove the processed Events
+    for (let i of toRemove) {
+      this.scheduledEvents.splice(i);
+    }
+  }
+
 
 }
 

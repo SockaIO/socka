@@ -23,6 +23,10 @@ const DOWN = Symbol.for('DOWN');
 const EVENT_NOTE_HIT = Symbol.for('EVENT_NOTE_HIT');
 const EVENT_STEP_HIT = Symbol.for('EVENT_STEP_HIT');
 
+//Timer types
+const RELEASE_TIMER = Symbol.for('RELEASE_TIMER');
+const END_TIMER = Symbol.for('END_TIMER');
+
 // Virtual Base Note Class
 class Note {
 
@@ -51,7 +55,7 @@ class Note {
     // TODO: Create the event
   }
 
-  static CreateNote(type, division, direction, step, duration=0) {
+  static CreateNote(type, division, direction, step, schedule, duration=0) {
 
     let note;
 
@@ -68,7 +72,7 @@ class Note {
 
     if ([ROLL_NOTE, HOLD_NOTE].includes(type)) {
       let graphicComponent = theme.createLongNoteGC();
-      note = new LongNote(type, division, direction, graphicComponent, step, duration);
+      note = new LongNote(type, division, direction, graphicComponent, step, duration, schedule);
     }
 
     return note;
@@ -273,14 +277,19 @@ class SimpleNoteGraphicComponent {
 // Note that have a duration (hold, roll)
 class LongNote extends Note {
 
-  constructor(type, division, direction, graphicComponent, step, duration) {
+  constructor(type, division, direction, graphicComponent, step, duration, schedule) {
     super(type, division, direction, graphicComponent, step);
     this.setState(new LongNoteFreshState(this));
     this.duration = duration;
+    this.schedule = schedule;
   }
 
-  expire(id) {
-    const state = this.state.expires(this, id);
+  getEnd() {
+    return this.step.beat + this.duration;
+  }
+
+  expire(type, id) {
+    const state = this.state.expire(type, id);
     if (state !== null) {
       this.setState(state);
     }
@@ -299,7 +308,7 @@ class LongNote extends Note {
 }
 
 class LongNoteState extends SimpleNoteState {
-  expire(id) {return null;}
+  expire(type, tid=null) {return null;}
 }
 
 class LongNoteFreshState extends LongNoteState {
@@ -326,7 +335,10 @@ class LongNoteActivatedState extends LongNoteState {
     if (this.delay !== null) {
       Note.NoteHit(this.note, this.delay);
     }
-    //TODO: Timer for expire command at the end of hold
+
+    this.note.schedule(this.note.getEnd(), () => {
+      this.note.expire(END_TIMER);
+    }, true, true);
   }
 
   constructor(note, delay) {
@@ -343,16 +355,16 @@ class LongNoteActivatedState extends LongNoteState {
 
   lift() {
     if (this.note.type === HOLD_NOTE) {
-      // TODO: Set timer to send expire command
-      const tid = null;
-      return new LongNoteReleasedState(this.note, tid);
+      return new LongNoteReleasedState(this.note);
     }
 
     return null;
   }
 
-  expire(tid) {
-    //TODO: Check if tid is expiration and finish note
+  expire(type) {
+    if (type === END_TIMER) {
+      return new LongNoteFinishedState(this.note);
+    }
     return null;
   }
 
@@ -360,23 +372,29 @@ class LongNoteActivatedState extends LongNoteState {
 
 class LongNoteReleasedState extends LongNoteState {
 
+  static GetTid() {
+    return LongNoteReleasedState.tid++;
+  }
+
   enter() {
+    this.tid = LongNoteReleasedState.GetTid();
+
+    this.note.schedule(0.01, () => {
+      this.note.expire(RELEASE_TIMER, this.tid);
+    },false, false);
+
     console.log('Long note now released');
   }
 
-  constructor(note, tid) {
-    super(note);
-    // Expiration timer ID
-    this.tid = tid;
-  }
-
-  expire(tid) {
+  expire(type, tid) {
+    console.log('--', tid, this.tid);
     if (tid === this.tid) {
       return new LongNoteDeactivatedState(this.note, false);
-
     }
 
-    //TODO: handle when this is hold finish timer
+    if (type === END_TIMER) {
+      return new LongNoteFinishedState(this.note);
+    }
 
     return null;
   }
@@ -386,6 +404,8 @@ class LongNoteReleasedState extends LongNoteState {
   }
 
 }
+
+LongNoteReleasedState.tid = 0;
 
 class LongNoteDeactivatedState extends LongNoteState {
   enter() {
@@ -408,7 +428,7 @@ class LongNoteFinishedState extends LongNoteState {
   enter() {
     if (this.note.type === HOLD_NOTE) {
       // TODO: Timing TM_OK 
-      Note.NoteHit(this.note);
+      //Note.NoteHit(this.note);
     }
 
     console.log('Long note finished');
