@@ -85,12 +85,13 @@ class DanceCommand {
     }
 
     // Action on the step
-    let step = engine.actionStep;
-    if (step === null) {
+    let note = engine.getActionNote(this.direction, this.time);
+
+    if (note === null) {
       return;
     }
 
-    step.process(this);
+    note.process(this);
 
   }
 

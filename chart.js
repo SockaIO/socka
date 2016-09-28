@@ -94,6 +94,24 @@ class Note {
     this.state.enter();
   }
 
+  getDistance(time) {
+    return Math.abs(time - this.step.time);
+  }
+
+  getDelay(time) {
+    return this.getDistance(time);
+  }
+
+  process(cmd) {
+    let delay = this.getDelay(cmd.time);
+
+    if (cmd.action === TAP) {
+      this.tap(delay);
+    } else {
+      this.lift(delay);
+    }
+  }
+
   tap(delay) {
     const state = this.state.tap(delay);
     if (state !== null) {
@@ -200,7 +218,7 @@ class SimpleNoteFreshState extends SimpleNoteState {
     return null;
   }
 
-  out(note) {
+  miss(note) {
     return new SimpleNoteMissState(this.note);
   }
 }
@@ -267,6 +285,17 @@ class LongNote extends Note {
       this.setState(state);
     }
   }
+
+  getDistance(time) {
+    if (time > this.step.time && time < this.step.time + this.duration) {
+      return 0;
+    }
+    return this.getDelay(time);
+  }
+
+  getDelay(time) {
+    return Math.min(Math.abs(time - this.step.time), Math.abs(time - this.step.time - this.duration));
+  }
 }
 
 class LongNoteState extends SimpleNoteState {
@@ -279,7 +308,7 @@ class LongNoteFreshState extends LongNoteState {
     this.note.graphicComponent.create();
   }
 
-  out() {
+  miss() {
     return new LongNoteDeactivatedState();
   }
 
@@ -292,6 +321,7 @@ class LongNoteActivatedState extends LongNoteState {
 
   enter() {
     //TODO: Not sure if feedback
+    console.log('Long note now activated');
     
     if (this.delay !== null) {
       Note.NoteHit(this.note, this.delay);
@@ -321,10 +351,6 @@ class LongNoteActivatedState extends LongNoteState {
     return null;
   }
 
-  out() {
-    return new LongNoteFinishedState(this.note);
-  }
-
   expire(tid) {
     //TODO: Check if tid is expiration and finish note
     return null;
@@ -333,6 +359,10 @@ class LongNoteActivatedState extends LongNoteState {
 }
 
 class LongNoteReleasedState extends LongNoteState {
+
+  enter() {
+    console.log('Long note now released');
+  }
 
   constructor(note, tid) {
     super(note);
@@ -363,6 +393,8 @@ class LongNoteDeactivatedState extends LongNoteState {
     if (this.missed) {
       Note.noteMiss(this.note);
     }
+
+    console.log('Long note deactivated');
   }
 
   constructor(note, missed) {
@@ -378,6 +410,8 @@ class LongNoteFinishedState extends LongNoteState {
       // TODO: Timing TM_OK 
       Note.NoteHit(this.note);
     }
+
+    console.log('Long note finished');
 
     // TODO: Graphic feedback??
   }
@@ -417,8 +451,6 @@ class NoteStep {
 
     let [timing, score] = judge.judge(step, delay);
 
-    console.log(delay, score, timing);
-
     let ev = {
       step,
       timing,
@@ -431,20 +463,6 @@ class NoteStep {
     // The idea is to have the possibility to have observers for all events
     // no matter the engine
     NoteStep.subject.notify(ev, [step.engine]);
-  }
-
-  process(cmd) {
-    let delay = Math.abs(cmd.time - this.time);
-
-    for (let note of this.notes) {
-      if (note.direction === cmd.direction) {
-        if (cmd.action === TAP) {
-           note.tap(delay);
-        } else {
-           note.lift(delay);
-        }
-      }
-    }
   }
 
   // TODO: Replace by something more aptomized?

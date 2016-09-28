@@ -12,7 +12,8 @@ class Engine {
     this.fieldView = fieldView;
     this.firstStepIndex = 0;
     this.lastStepIndex = -1;
-    this.actionStep = null;
+    this.actionIndex = -1;
+    this.actionNotes = new Map();
 
     // Missed steps
     this.missedStepIndex = 0;
@@ -73,7 +74,8 @@ class Engine {
     let [beat, index] = this.song.getBeat(time);
 
     // Update the note stream
-    this.updateWindow(beat, time);
+    //this.updateWindow(beat, time);
+    this.updateAction(time);
     this.graphicComponent.update(beat);
 
     // update the missed notes
@@ -84,6 +86,46 @@ class Engine {
     for (let cmd of cmds) {
       cmd.execute(this);
     }
+  }
+
+  updateAction(time) {
+
+    if (this.actionIndex >= this.steps.length - 2) {
+      return;
+    }
+
+    let step = this.steps[this.actionIndex + 1];
+
+    while (Math.abs(step.time - time) < this.missTiming) {
+
+      // Add the notes to the action notes
+      for (let note of step.notes) {
+
+        let list;
+        // Initialisation
+        if (!this.actionNotes.has(note.direction)) {
+          this.actionNotes.set(note.direction, []);
+        }
+
+        list = this.actionNotes.get(note.direction);
+
+        // Remove stale notes
+        while (list.length > 0 && list[0].getDistance(time) > this.missTiming) {
+          list.shift();
+        }
+
+        list.push(note);
+      }
+
+      this.actionIndex++;
+      if (this.actionIndex >= this.steps.length - 2) {
+        return;
+      }
+
+      step = this.steps[this.actionIndex + 1];
+
+    }
+
   }
 
   // TODO: Reduce to just find the actionStep?
@@ -137,7 +179,7 @@ class Engine {
     let x = this.missedStepIndex;
     let step = this.steps[x];
 
-    while (step.time + this.missTiming >= time) {
+    while (step.time + this.missTiming <= time) {
 
       step.applyToNotes('miss');
       this.missedStepIndex++;
@@ -170,6 +212,32 @@ class Engine {
         // - Life Update (or in Note?)
         break;
     }
+
+  }
+
+  // Get the target note
+  getActionNote(direction, time) {
+
+    let list = this.actionNotes.get(direction) || [];
+
+    if (list.length === 0) {
+      return null;
+    }
+
+    let best = 9999;
+    let target = null;
+
+
+    for (let note of list) {
+      // Look for the min
+      // TODO: Could be optimized to stop at first increase
+      if (note.getDistance(time) < best) {
+        target = note;
+        best = note.getDistance(time);
+      }
+    }
+
+    return target;
 
   }
 
