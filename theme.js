@@ -25,7 +25,9 @@ class DefaultTheme {
       holdCap: 'theme/holdCap.png',
       holdBody: 'theme/holdBody.png',
       rollCap: 'theme/rollCap.png',
-      rollBody: 'theme/rollBody.png'
+      rollBody: 'theme/rollBody.png',
+      judgments: 'theme/judgments.png',
+      holdJudgments: 'theme/holdJudgments.png'
     };
 
     // Will be filled after loading
@@ -67,12 +69,37 @@ class DefaultTheme {
       }
       this.textures['mines'] = mineTextures;
 
+      // Judgments
+      let judgmentTextures = {};
+      let timings = [TM_W1, TM_W2, TM_W3, TM_W4, TM_W5, TM_MISS];
+      for (let x=0; x < 6; x++) {
+        let texture = PIXI.loader.resources[this.resources['judgments']].texture.clone();
+        texture.frame = new PIXI.Rectangle(0, x * 32, 192, 32);
+        judgmentTextures[timings.shift()] = texture;
+      }
+      this.textures['judgments'] = judgmentTextures;
+
+
+      // Hold Judgments
+      let holdJudgmentTextures = [];
+      timings = [S_OK, S_NG];
+      for (let x=0; x < 2; x++) {
+        let texture = PIXI.loader.resources[this.resources['holdJudgments']].texture.clone();
+        texture.frame = new PIXI.Rectangle(0, x * 32, 62, 32);
+        holdJudgmentTextures[timings.shift()] = texture;
+      }
+      this.textures['holdJudgments'] = holdJudgmentTextures;
+
     });
   }
 
   getTexture(name) {
     // TODO: Catch error?
     return this.textures[name];
+  }
+
+  getJudgmentTexture(timing) {
+    return this.getTexture('judgments')[timing];
   }
 
   getNoteTexture(note) {
@@ -94,8 +121,6 @@ class DefaultTheme {
 
   }
 
-
-
   createSimpleNoteGC() {
     return new SimpleNoteDefaultGraphicComponent(this);
   }
@@ -105,11 +130,27 @@ class DefaultTheme {
   }
 
   createReceptorGC() {
-    return new DetectorDefaultGraphicComponent(this);
+    return new ReceptorDefaultGraphicComponent(this);
   }
 
   createEngineGC(...args) {
     return new EngineDefaultGraphicComponent(this, ...args);
+  }
+
+  createJudgmentGC() {
+    return new JudgmentDefaultGraphicComponent(this);
+  }
+
+  createScoreGC() {
+    return new ScoreDefaultGraphicComponent(this);
+  }
+
+  createComboGC() {
+    return new ComboDefaultGraphicComponent(this);
+  }
+
+  createLifeGC() {
+    return new LifeDefaultGraphicComponent(this);
   }
 
 }
@@ -334,6 +375,7 @@ class EngineDefaultGraphicComponent {
 
     this.createField();
     this.createReceptor();
+    this.createJudgment();
   }
 
   createField() {
@@ -344,6 +386,13 @@ class EngineDefaultGraphicComponent {
     this.field.height = this.fieldHeight;
 
     this.multiplier = this.fieldHeight / this.fieldView;
+
+    this.background = new PIXI.Container();
+    this.foreground = new PIXI.Container();
+
+    this.field.addChild(this.background);
+    this.field.addChild(this.foreground);
+
   }
 
   // Craete the Note stream
@@ -369,17 +418,76 @@ class EngineDefaultGraphicComponent {
       }
     }
 
-    this.field.addChild(this.stream);
+    this.background.addChild(this.stream);
   }
 
   createReceptor() {
-    this.receptor = new ReceptorDefaultGraphicComponent(this.theme);
+    this.receptor = this.theme.createReceptorGC();
     this.receptor.create(this.fieldWidth);
-    this.field.addChild(this.receptor.sprite);
+    this.background.addChild(this.receptor.sprite);
   }
 
   update(beat) {
-    this.field.children[1].y = -1 * beat * this.multiplier;
+    this.background.children[1].y = -1 * beat * this.multiplier;
+  }
+
+  createJudgment() {
+    this.judgment = this.theme.createJudgmentGC();
+    this.judgment.create(this.fieldWidth, this.fieldHeight);
+    this.foreground.addChild(this.judgment.sprite);
+  }
+
+  // We prosses the event in case some
+  // more complicated stuff need to be added
+  feedback(ev) {
+
+    switch (ev.type) {
+      case EVENT_NOTE_MISS:
+      case EVENT_NOTE_HIT:
+        this.judgment.show(ev.timing);
+        break;
+    }
+  }
+}
+
+class JudgmentDefaultGraphicComponent {
+
+  constructor(theme) {
+    this.theme = theme;
+  }
+
+  create(fieldWidth, fieldHeight) {
+
+    // We keep the current timing not to reload texture uselessly
+    this.timing = TM_W1;
+
+    this.sprite = new PIXI.Sprite(this.theme.getJudgmentTexture(this.timing));
+    this.sprite.anchor.x = 0.5;
+    this.sprite.anchor.y = 0.5;
+
+    this.sprite.x = fieldWidth / 2;
+    this.sprite.y = fieldHeight / 2;
+    this.sprite.alpha = 0;
+
+    this.duration = 0.1;
+  }
+
+  show(timing) {
+
+    if (timing === this.timing) {
+      this.sprite.alpha = 0.3;
+      this.sprite.scale.x = 0.5;
+      this.sprite.scale.y = 0.5;
+    } else {
+      this.timing = timing;
+      this.sprite.alpha = 0;
+      this.sprite.scale.x = 0.1;
+      this.sprite.scale.y = 0.1;
+      this.sprite.texture = this.theme.getJudgmentTexture(timing);
+    }
+
+    this.tween = TweenLite.to(this.sprite, this.duration, {alpha: 1});
+    this.tween = TweenLite.to(this.sprite.scale, this.duration, {x: 1, y: 1});
   }
 }
 

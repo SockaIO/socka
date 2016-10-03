@@ -203,6 +203,10 @@ class Engine {
   // Refactor function call instead of switch?
   onNotify(ev) {
 
+    // Common processing
+    this.graphicComponent.feedback(ev);
+
+    // Type dependent processing
     switch(ev.type) {
       case EVENT_NOTE_MISS:
         console.log("[Engine] A note is it missed", ev.note);

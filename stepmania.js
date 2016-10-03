@@ -43,7 +43,6 @@ function init() {
     songPlayer.load(song).then(() => songPlayer.play());
 
     engine.setSongPlayer(songPlayer);
-
     engine.setMissTiming(judge.getMissTiming());
 
     let controller = new KeyboardController;
