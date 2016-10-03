@@ -204,6 +204,14 @@ class Engine {
   onNotify(ev) {
 
     switch(ev.type) {
+      case EVENT_NOTE_MISS:
+        console.log("[Engine] A note is it missed", ev.note);
+        break;
+
+      case EVENT_NOTE_FINISH:
+        console.log("[Engine] A note is it finished", ev.note, ev.timing);
+        break;
+
       case EVENT_NOTE_HIT:
         console.log("[Engine] A note is it hit", ev.note, ev.timing);
 

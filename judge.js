@@ -13,6 +13,8 @@ const TM_HOLD = Symbol.for('TM_HOLD');
 const TM_ROLL = Symbol.for('TM_ROLL');
 const TM_MINE = Symbol.for('TM_MINE');
 
+const S_NG = Symbol.for('S_NG');
+const S_OK = Symbol.for('S_OK');
 
 // Score Symbols
 const S_W1 = Symbol.for('S_W1');
@@ -21,8 +23,6 @@ const S_W3 = Symbol.for('S_W3');
 const S_W4 = Symbol.for('S_W4');
 const S_W5 = Symbol.for('S_W5');
 const S_MISS = Symbol.for('S_MISS');
-const S_NG = Symbol.for('S_NG');
-const S_OK = Symbol.for('S_OK');
 
 // Grade Symbols
 const AAA = Symbol.for('AAA');
@@ -39,6 +39,10 @@ class Judge {
 
   getMissTiming() {
     return this.timingWindow[TM_W5];
+  }
+
+  getHoldTiming() {
+    return this.timingWindow[TM_HOLD];
   }
 
   // We create the judge for a particular song
@@ -106,12 +110,17 @@ class Judge {
 
     for (let s of steps) {
       s.score =  Math.floor(B / S) * index++;
+      s.holdTiming = this.getHoldTiming();
     }
   }
 
   getTiming(delay) {
 
     let timing = TM_MISS;
+
+    if (delay < 0) {
+      return timing;
+    }
 
     for (let t of [TM_W1, TM_W2, TM_W3, TM_W4, TM_W5]) {
       if (delay < this.timingWindow[t]) {

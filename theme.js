@@ -120,6 +120,7 @@ class SimpleNoteDefaultGraphicComponent extends SimpleNoteGraphicComponent {
 
   constructor(theme) {
     super(theme);
+    this.fadeout = 0.2;
   }
 
   resize(scale, multiplier) {
@@ -147,9 +148,14 @@ class SimpleNoteDefaultGraphicComponent extends SimpleNoteGraphicComponent {
   }
 
   miss() {
+    // No feedback
   }
 
-  hit() {
+  hit(timing) {
+    // We hide the note only in the best 3 timings
+    if ([TM_W1, TM_W2, TM_W3].includes(timing)) {
+      TweenLite.to(this.sprite, this.fadeout, {alpha: 0});
+    }
   }
 }
 
@@ -258,8 +264,7 @@ class LongNoteDefaultGraphicComponent extends LongNoteGraphicComponent {
 
   create() {
 
-    // TODO: Compute length for the long note
-    // Maybe length not accessible at that point ?
+    // legngth is taken care of later when  resize is called
     let length = 0;
 
     let c = new PIXI.Container();

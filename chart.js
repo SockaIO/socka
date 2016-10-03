@@ -21,6 +21,8 @@ const DOWN = Symbol.for('DOWN');
 
 // Events
 const EVENT_NOTE_HIT = Symbol.for('EVENT_NOTE_HIT');
+const EVENT_NOTE_FINISH = Symbol.for('EVENT_NOTE_FINISH');
+const EVENT_NOTE_MISS = Symbol.for('EVENT_NOTE_MISS');
 const EVENT_STEP_HIT = Symbol.for('EVENT_STEP_HIT');
 
 //Timer types
@@ -32,14 +34,13 @@ class Note {
 
   static NoteHit(note, delay) {
 
-    // TODO: Compute and return the score + put in event
     let timing = judge.getTiming(delay);
 
     let ev = {
       note,
       delay,
       timing,
-      type: EVENT_NOTE_HIT,
+      type: EVENT_NOTE_HIT
     }
 
     // Add the note step as an extra observer
@@ -51,8 +52,37 @@ class Note {
     return timing;
   }
 
-  static noteMiss(note) {
-    // TODO: Create the event
+  static NoteMiss(note) {
+
+    let ev = {
+      note,
+      timing: TM_MISS,
+      type: EVENT_NOTE_MISS
+    }
+
+    // Add the note step as an extra observer
+    // TODO: Maybe handle more gracefully
+    // The idea is to have the possibility to have global observers
+    // for such events
+    Note.subject.notify(ev, [note.step]);
+  }
+
+  static NoteFinish(note, success) {
+
+    let timing = success ? S_OK : S_NG;
+
+    let ev = {
+      note,
+      timing,
+      type: EVENT_NOTE_FINISH
+    }
+
+    // Add the note step as an extra observer
+    // TODO: Maybe handle more gracefully
+    // The idea is to have the possibility to have global observers
+    // for such events
+    Note.subject.notify(ev, [note.step]);
+
   }
 
   static CreateNote(type, division, direction, step, schedule, duration=0) {
@@ -249,7 +279,7 @@ class SimpleNoteHitState extends SimpleNoteState {
 class SimpleNoteMissState extends SimpleNoteState {
 
   enter() {
-    Note.noteMiss(this.note);
+    Note.NoteMiss(this.note);
     this.note.graphicComponent.miss();
   }
 }
@@ -318,7 +348,7 @@ class LongNoteFreshState extends LongNoteState {
   }
 
   miss() {
-    return new LongNoteDeactivatedState();
+    return new LongNoteDeactivatedState(this.note, true);
   }
 
   tap(delay) {
@@ -329,9 +359,6 @@ class LongNoteFreshState extends LongNoteState {
 class LongNoteActivatedState extends LongNoteState {
 
   enter() {
-    //TODO: Not sure if feedback
-    console.log('Long note now activated');
-    
     if (this.delay !== null) {
       Note.NoteHit(this.note, this.delay);
     }
@@ -379,15 +406,12 @@ class LongNoteReleasedState extends LongNoteState {
   enter() {
     this.tid = LongNoteReleasedState.GetTid();
 
-    this.note.schedule(0.01, () => {
+    this.note.schedule(this.note.step.holdTiming, () => {
       this.note.expire(RELEASE_TIMER, this.tid);
     },false, false);
-
-    console.log('Long note now released');
   }
 
   expire(type, tid) {
-    console.log('--', tid, this.tid);
     if (tid === this.tid) {
       return new LongNoteDeactivatedState(this.note, false);
     }
@@ -409,17 +433,22 @@ LongNoteReleasedState.tid = 0;
 
 class LongNoteDeactivatedState extends LongNoteState {
   enter() {
-    //TODO: Deactivated sprite
-    if (this.missed) {
-      Note.noteMiss(this.note);
-    }
 
-    console.log('Long note deactivated');
+    this.note.graphicComponent.deactivate();
+
+    // We did not hit the initial note
+    if (this.missed) {
+      Note.NoteMiss(this.note);
+
+    } // We stopped in the middle
+    else if (this.note.type === HOLD_NOTE) {
+      Note.NoteFinish(this.note, false);
+    }
   }
 
   constructor(note, missed) {
     super(note);
-    this.misssed = missed;
+    this.missed = missed;
   }
 }
 
@@ -427,13 +456,8 @@ class LongNoteFinishedState extends LongNoteState {
 
   enter() {
     if (this.note.type === HOLD_NOTE) {
-      // TODO: Timing TM_OK 
-      //Note.NoteHit(this.note);
+      Note.NoteFinish(this.note, true);
     }
-
-    console.log('Long note finished');
-
-    // TODO: Graphic feedback??
   }
 }
 
@@ -507,15 +531,17 @@ class NoteStep {
 
     switch(ev.type) {
       case EVENT_NOTE_HIT:
-        console.log('[Step] A note is hit', ev.delay);
 
         // better notify the note before the step
         this.engine.onNotify(ev);
-
         this.noteHit(ev.delay);
 
         break;
 
+      case EVENT_NOTE_MISS:
+      case EVENT_NOTE_FINISH:
+        this.engine.onNotify(ev);
+        break;
     }
   }
 }
