@@ -17,13 +17,13 @@ function init() {
   theme = new DefaultTheme();
   theme.loadTextures()
     .then(() => {
-      return Song.loadFromSMFile('Astro Troopers/Astro Troopers.sm') 
+      return Song.loadFromFile('Astro Troopers/Astro Troopers.sm');
     })
     .then((q) => {
       song = q; 
       songD = q;
       console.log(q);
-    })    
+    })
     
     .then(() => {
     Note.theme = theme;

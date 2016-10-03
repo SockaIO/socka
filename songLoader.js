@@ -5,7 +5,6 @@
  * Song (with multiple charts)
  */
 class Song {
-
   constructor() {
     
     // Textual informations
@@ -49,8 +48,8 @@ class Song {
 
         let isimage = ['png', 'jpeg', 'gif'].includes(ext);
 
-        if (ext == "sm") {
-          song = Song.loadFromSMFile(link);
+        if (ext in Song.ext_map) {
+          song = Song.loadFromFile(link, ext);
         }
         else if (isimage && (filename.includes("banner") || filename.endsWith("bn"))) {
           metadata.banner = fullname;
@@ -81,7 +80,7 @@ class Song {
     });
   }
 
-  static loadFromSMFile (url) {
+  static loadFromFile(url, ext) {
     return fetch(url, {credentials: 'same-origin'}).then((resp) => {
 
       if (!resp.ok) {
@@ -91,70 +90,124 @@ class Song {
       return resp.text();
 
     }).then((data) => {
-
-      const fields = getFields(data);
-      const fieldMap = new Map();
-
-      while (true) {
-        let v = fields.next().value;
-
-        if (v === undefined) {
-          break;
-        }
-
-        if (!fieldMap.has(v.tag)) {
-          fieldMap.set(v.tag, v.value);
-        } else {
-          let actual = fieldMap.get(v.tag);
-          let tmp = Array.isArray(actual) ? actual : [actual]; 
-          tmp.push(v.value);
-          fieldMap.set(v.tag, tmp);
-        } 
+      if (!ext) {
+        ext = url.split(".").slice("-1")[0].toLowerCase();
       }
 
-      // We process the fields that are mandatory
-      // The rest will just be passed as metadata
-
-      const song = new Song();
-
-      // Resources related attributes
+      let song = Song.ext_map[ext](data);
       song.path = url.slice(0, url.lastIndexOf("/") + 1);
+      return song;
+    });
+  }
 
-      song.banner = fieldMap.get('BANNER');
-      song.background = fieldMap.get('BACKGROUND');
-      song.cdTitle = fieldMap.get('CDTITLE');
-      song.music = fieldMap.get('MUSIC');
+  static loadFromDWIFile(data) {
+    const fields = getFields(data);
+    const fieldMap = new Map();
 
-      song.sampleStart = fieldMap.get('SAMPLESTART');
-      song.sampleLength = fieldMap.get('SAMPLELENGTH');
+    while (true) {
+      let v = fields.next().value;
 
-      // Timing Data
-      song.offset = fieldMap.get('OFFSET');
-      song.bpms = getList(fieldMap.get('BPMS'));
-      song.stops = getList(fieldMap.get('STOPS'));
-
-      createTimingPartition(song);
-
-      // Process the notes
-
-      let charts = fieldMap.get('NOTES');
-      charts = Array.isArray(charts) ? charts : [charts];
-      song.charts = getCharts(charts);
-
-      // Remove the used elements and store the metadata
-      for (let f of ['BANNER', 'BACKGROUND', 'CDTITLE', 'MUSIC',
-                 'SAMPLESTART', 'SAMPLELENGTH', 'OFFSET',
-                 'BPMS', 'STOPS', 'NOTES']) {
-
-        fieldMap.delete(f);
+      if (v === undefined) {
+        break;
       }
 
-      song.metadata = fieldMap;
-      song.populateStepTimes();
+      if (!fieldMap.has(v.tag)) {
+        fieldMap.set(v.tag, v.value);
+      } else {
+        let actual = fieldMap.get(v.tag);
+        let tmp = Array.isArray(actual) ? actual : [actual]; 
+        tmp.push(v.value);
+        fieldMap.set(v.tag, tmp);
+      } 
+    }
 
-      return song;
+    // We process the fields that are mandatory
+    // The rest will just be passed as metadata
 
-    }); 
+    const song = new Song();
+
+    // Resources related attributes
+
+    song.cdTitle = fieldMap.get('CDTITLE');
+    song.music = fieldMap.get('FILE');
+
+    song.sampleStart = fieldMap.get('SAMPLESTART');
+    song.sampleLength = fieldMap.get('SAMPLELENGTH');
+
+    // Timing Data
+    song.offset = fieldMap.get('OFFSET');
+
+    song.bpms = getList("0.000=" + fieldMap.get('BPM')).concat(getList(fieldMap.get('CHANGEBPMS') || ''));
+    song.stops = getList(fieldMap.get('FREEZE') || '');
+
+    createTimingPartition(song);
+
+    //TODO: Process the notes
+
+    return song;
+  }
+
+  static loadFromSMFile (data) {
+    const fields = getFields(data);
+    const fieldMap = new Map();
+
+    while (true) {
+      let v = fields.next().value;
+
+      if (v === undefined) {
+        break;
+      }
+
+      if (!fieldMap.has(v.tag)) {
+        fieldMap.set(v.tag, v.value);
+      } else {
+        let actual = fieldMap.get(v.tag);
+        let tmp = Array.isArray(actual) ? actual : [actual]; 
+        tmp.push(v.value);
+        fieldMap.set(v.tag, tmp);
+      } 
+    }
+
+    // We process the fields that are mandatory
+    // The rest will just be passed as metadata
+
+    const song = new Song();
+
+    // Resources related attributes
+
+    song.banner = fieldMap.get('BANNER');
+    song.background = fieldMap.get('BACKGROUND');
+    song.cdTitle = fieldMap.get('CDTITLE');
+    song.music = fieldMap.get('MUSIC');
+
+    song.sampleStart = fieldMap.get('SAMPLESTART');
+    song.sampleLength = fieldMap.get('SAMPLELENGTH');
+
+    // Timing Data
+    song.offset = fieldMap.get('OFFSET');
+    song.bpms = getList(fieldMap.get('BPMS'));
+    song.stops = getList(fieldMap.get('STOPS'));
+
+    createTimingPartition(song);
+
+    // Process the notes
+
+    let charts = fieldMap.get('NOTES');
+    charts = Array.isArray(charts) ? charts : [charts];
+    song.charts = getCharts(charts);
+
+    // Remove the used elements and store the metadata
+    for (let f of ['BANNER', 'BACKGROUND', 'CDTITLE', 'MUSIC',
+               'SAMPLESTART', 'SAMPLELENGTH', 'OFFSET',
+               'BPMS', 'STOPS', 'NOTES']) {
+
+      fieldMap.delete(f);
+    }
+
+    song.metadata = fieldMap;
+    song.populateStepTimes();
+
+    return song;
   }
 
   /*
@@ -250,6 +303,11 @@ class Song {
 
   }
 }
+
+Song.ext_map = {
+  'sm': Song.loadFromSMFile,
+  'dwi': Song.loadFromDWIFile
+};
 
 /*
  * List of steps for a given difficulty
