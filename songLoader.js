@@ -47,9 +47,13 @@ class Song {
         let filename = fullname.split(".")[0];
 
         let isimage = ['png', 'jpeg', 'gif'].includes(ext);
+        let ismusic = ["mp3", "ogg"].includes(ext);
 
         if (ext in Song.ext_map) {
           song = Song.loadFromFile(link, ext);
+        }
+        else if (ismusic) {
+          metadata.music = fullname;
         }
         else if (isimage && (filename.includes("banner") || filename.endsWith("bn"))) {
           metadata.banner = fullname;
@@ -73,6 +77,12 @@ class Song {
       }
       if (!song.background) {
         song.background = metadata.background;
+      }
+      if (!song.cdtitle) {
+        song.cdtitle = metadata.cdtitle;
+      }
+      if (!song.music) {
+        song.music = metadata.music;
       }
 
       return song;
@@ -145,7 +155,7 @@ class Song {
     //TODO: Process the notes
     song.charts = [];
 
-    for (let chartType of ["SINGLE", "DOUBLE", "COUPLE", "SOLO"]) {
+    for (let chartType of ['SINGLE', 'DOUBLE', 'COUPLE', 'SOLO']) {
       let rawCharts = fieldMap.get(chartType);
       if (!rawCharts) {
         continue;
@@ -163,7 +173,16 @@ class Song {
       }
     }
 
-    console.log(song);
+    // Remove the used elements and store the metadata
+    for (let f of ['CDTITLE', 'FILE', 'SAMPLESTART', 'SAMPLELENGTH',
+                   'OFFSET', 'BPM', 'CHANGEBPMS', 'FREEZE',
+                   'SINGLE', 'DOUBLE', 'COUPLE', 'SOLO']) {
+
+      fieldMap.delete(f);
+    }
+    song.metadata = fieldMap;
+
+    song.populateStepTimes();
 
     return song;
   }
