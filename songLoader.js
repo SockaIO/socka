@@ -143,6 +143,27 @@ class Song {
     createTimingPartition(song);
 
     //TODO: Process the notes
+    song.charts = [];
+
+    for (let chartType of ["SINGLE", "DOUBLE", "COUPLE", "SOLO"]) {
+      let rawCharts = fieldMap.get(chartType);
+      if (!rawCharts) {
+        continue;
+      }
+
+      rawCharts = Array.isArray(rawCharts) ? rawCharts : [rawCharts];
+
+      for (let rawChart of rawCharts) {
+        let difficulty, meter, steps;
+        [difficulty, meter, steps] = rawChart.split(":");
+
+        let chart = new Chart(chartType, undefined, difficulty, meter);
+        chart.steps = computeDWISteps(steps);
+        song.charts.push(chart);
+      }
+    }
+
+    console.log(song);
 
     return song;
   }
@@ -612,6 +633,126 @@ function getCharts(data) {
   }
 
   return charts;
+}
+
+function * iterDWISteps(data) {
+  const grouping = {"<": ">"};
+  const speed = {"(": 1/16, "[": 1/24, "{": 1/64, "`": 1/192};
+  const decreaseSpeed = [")", "]", "}", "'"];
+
+  let tempoStack = [1/8];
+  let beat = 0;
+  let idx = -1;
+  let step = '';
+
+  let groupNote = null;
+
+  for (let c of data) {
+    idx++;
+    step += c;
+
+    // Handle note group (eg. (572))
+    if (c in grouping) {
+      groupNote = c;
+      continue;
+    }
+
+    if (groupNote !== null) {
+      if (c !== grouping[groupNote]) {
+        continue;
+      } else {
+        groupNote = null;
+      }
+    }
+
+    // Handle long note (eg. 8!8)
+    if (data[idx+1] === "!" || c === "!") {
+      continue;
+    }
+
+    // Handle tempo change
+    if (step in speed) {
+      tempoStack.push(speed[step]);
+      step = '';
+      continue;
+    }
+    if (decreaseSpeed.includes(step)) {
+      tempoStack.pop();
+      step = '';
+      continue;
+    }
+
+    beat += tempoStack.slice(-1)[0];
+
+    // Ignore none beat
+    if (step !== "0") {
+      yield {"step": step, "beat": beat};
+    }
+
+    step = '';
+  }
+}
+
+// Combine 0011 + 0030 in 0031
+function _combine_step (steps) {
+  let newStep = steps[0];
+
+  for (let step of steps) {
+    let idx = 0;
+    for (let note of step) {
+      if (note !== "0") {
+        newStep = newStep.substr(0, idx) + note + newStep.substr(idx+1, newStep.length);
+      }
+      idx++;
+    }
+  }
+  return newStep;
+}
+
+function DWIToSMStep(step, default_note="1") {
+  if (step.length === 1 && step in DWIToSMStep.map) {
+    return DWIToSMStep.map[step].split("1").join(default_note);
+  }
+
+  if (step.includes("!")) {
+    let long_note;
+    let note;
+    [long_note, note] = step.split("!");
+    return _combine_step([DWIToSMStep(long_note), DWIToSMStep(note, 3)]);
+  }
+
+  return step;
+}
+
+DWIToSMStep.map = {
+  "1": "1100",
+  "2": "0100",
+  "3": "0101",
+  "4": "1000",
+  "6": "0001",
+  "7": "1100",
+  "8": "0100",
+  "9": "0101",
+  "A": "0110",
+  "B": "1001",
+};
+
+function computeDWISteps(data) {
+  let stepData = [];
+  let prevStep = null;
+  let stepIndex = 1;
+
+  for (let note of iterDWISteps(data)) {
+    let newStep = new Step(note.beat, DWIToSMStep(note.step), stepIndex++);
+    if (prevStep !== null) {
+      prevStep.nextBeat = note.beat - prevStep.beat;
+      newStep.prevBeat = note.beat - prevStep.beat;
+    }
+    stepData.push(newStep);
+    prevStep = newStep;
+  }
+
+  return stepData;
 }
 
 /*
