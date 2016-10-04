@@ -22,6 +22,7 @@ class DefaultTheme {
       mines: 'theme/mines.png',
       receptor: 'theme/receptor.png',
       receptorFlash: 'theme/receptor_flash.png',
+      receptorGlow: 'theme/receptor_glow.png',
       holdCap: 'theme/holdCap.png',
       holdBody: 'theme/holdBody.png',
       rollCap: 'theme/rollCap.png',
@@ -100,6 +101,10 @@ class DefaultTheme {
 
   getJudgmentTexture(timing) {
     return this.getTexture('judgments')[timing];
+  }
+
+  getHoldJudgmentTexture(timing) {
+    return this.getTexture('holdJudgments')[timing];
   }
 
   getNoteTexture(note) {
@@ -205,12 +210,19 @@ class ReceptorDefaultGraphicComponent extends ReceptorGraphicComponent {
   constructor(theme) {
     super(theme);
     this.flashDuration = 0.2;
+    this.judgmentDuration = 0.8;
+    this.glowDuration = 0.4;
   }
 
   create(width) {
 
     let c = new PIXI.Container();
+    let d = new PIXI.Container();
     this.notes = [];
+    this.glows = [];
+
+    this.judgments = [];
+    this.judgmentTweens = {};
 
     let offset = width / 5;
     let texture = this.theme.getTexture('receptor');
@@ -228,7 +240,6 @@ class ReceptorDefaultGraphicComponent extends ReceptorGraphicComponent {
       let flash = new PIXI.Sprite(textureFlash);
       flash.alpha = 0;
 
-
       noteC.addChild(flash);
       noteC.addChild(note);
 
@@ -243,9 +254,37 @@ class ReceptorDefaultGraphicComponent extends ReceptorGraphicComponent {
       noteC.x = (x + 1) * offset;
       c.addChild(noteC);
       this.notes.push(noteC);
+
+      // Glow
+      let glow = new PIXI.Sprite(this.theme.getTexture('receptorGlow'));
+      glow.anchor.x = 0.5;
+      glow.anchor.y = 0.5;
+      glow.rotation = DefaultTheme.angleMap[x];
+      glow.scale.x = scale;
+      glow.scale.y = scale;
+      glow.x = (x + 1) * offset;
+      glow.alpha = 0;
+
+      d.addChild(glow);
+      this.glows.push(glow);
+
+      // Create the judgment
+      let j = new PIXI.Sprite(this.theme.getHoldJudgmentTexture(S_OK));
+      j.anchor.x = 0.5;
+      j.anchor.y = 0.5;
+      j.y = note.height;
+      j.x = (x + 1) * offset;
+      j.alpha = 0;
+
+      d.addChild(j);
+
+      this.judgments.push(j);
+      this.judgmentTweens[x] = null;
+
     }
 
-    this.sprite = c;
+    this.background = c;
+    this.foreground = d;
   }
 
   flash(direction) {
@@ -258,7 +297,6 @@ class ReceptorDefaultGraphicComponent extends ReceptorGraphicComponent {
 
     TweenLite.to(flash.scale, this.flashDuration, {x: this.flashMaxScale, y: this.flashMaxScale});
     TweenLite.to(flash, this.flashDuration, {alpha: 0});
-
   }
 
 
@@ -269,6 +307,32 @@ class ReceptorDefaultGraphicComponent extends ReceptorGraphicComponent {
     this.sprite.destroy(); 
   }
 
+  holdJudge(note, timing) {
+
+    let sprite = this.judgments[note.direction];
+    sprite.texture = this.theme.getHoldJudgmentTexture(timing);
+    sprite.alpha = 1;
+
+    if (this.judgmentTweens[note.direction] !== null) {
+      this.judgmentTweens[note.direction].kill();
+    }
+
+    this.judgmentTweens[note.direction] = TweenLite.to(sprite, this.judgmentDuration, {alpha: 0, ease: 'bounce'});
+  }
+
+  glow(note, timing) {
+
+    // TODO: Different color based on timing
+    let tint = 0x8800ff;
+
+
+    let glow = this.glows[note.direction];
+    glow.alpha = 0.7;
+    glow.tint = tint;
+
+    TweenLite.to(glow, this.glowDuration, {alpha: 0});
+
+  }
 }
 
 class LongNoteDefaultGraphicComponent extends LongNoteGraphicComponent {
@@ -424,7 +488,8 @@ class EngineDefaultGraphicComponent {
   createReceptor() {
     this.receptor = this.theme.createReceptorGC();
     this.receptor.create(this.fieldWidth);
-    this.background.addChild(this.receptor.sprite);
+    this.background.addChild(this.receptor.background);
+    this.foreground.addChild(this.receptor.foreground);
   }
 
   update(beat) {
@@ -437,14 +502,29 @@ class EngineDefaultGraphicComponent {
     this.foreground.addChild(this.judgment.sprite);
   }
 
+  // Get the score graphic Component
+  placeScore(sprite) {
+    console.log(sprite);
+    this.foreground.addChild(sprite);
+    sprite.x = (this.fieldWidth / 2) - (sprite.width / 2);
+    sprite.y = this.fieldHeight - 100;
+  }
+
+
   // We prosses the event in case some
   // more complicated stuff need to be added
   feedback(ev) {
 
     switch (ev.type) {
       case EVENT_NOTE_MISS:
+        this.judgment.show(ev.timing);
+        break;
       case EVENT_NOTE_HIT:
         this.judgment.show(ev.timing);
+        this.receptor.glow(ev.note, ev.timing);
+        break;
+      case EVENT_NOTE_FINISH:
+        this.receptor.holdJudge(ev.note, ev.timing);
         break;
     }
   }
@@ -491,4 +571,42 @@ class JudgmentDefaultGraphicComponent {
   }
 }
 
+class ScoreDefaultGraphicComponent {
 
+  constructor() {
+    this.sprite = new PIXI.Text('', {font : '24px Arial', fill : 0xff1010, align : 'center'});
+    this.update(0);
+  }
+
+  update(score) {
+    this.sprite.text = this.formatScoreText(score);
+  }
+
+  formatScoreText(value) {
+
+    let text = '' + value;
+    let output = '';
+    let len = text.length;
+    let x;
+
+    for (x=len - 3; x > 0; x-=3) {
+      output = text.slice(x, x + 3) + ' ' + output;
+    }
+
+    x += 3;
+    output = text.slice(0, x) + ' ' + output;
+    output = output.slice(0, -1);
+
+    while (output.length < 11) {
+      if (output.length % 4 === 3) {
+        output = ' ' + output;
+      } else {
+        output = '0' + output;
+      }
+    }
+
+    return output;
+  }
+
+
+}

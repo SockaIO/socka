@@ -30,6 +30,10 @@ class Engine {
     this.graphicComponent = theme.createEngineGC(width, height, fieldView);
 
     // TODO: Link to player, score, input
+
+    // Score
+    this.score = new Score();
+    this.graphicComponent.placeScore(this.score.sprite);
   }
 
   loadSong(song, chartIndex, judge) {
@@ -219,17 +223,14 @@ class Engine {
       case EVENT_NOTE_HIT:
         console.log("[Engine] A note is it hit", ev.note, ev.timing);
 
+
         // TODO Trigger
         // - Combo
-        // - Good, perfect
-        // - Receptor Glowing
+        // - Life Update (or in Note?)
         break;
       case EVENT_STEP_HIT:
         console.log("[Engine] A step is it hit", ev.step, ev.timing);
-
-        // TODO Trigger
-        // - Score Update
-        // - Life Update (or in Note?)
+        this.score.add(ev.score);
         break;
     }
 
@@ -298,7 +299,27 @@ class Engine {
 
 }
 
+class Score {
+
+  constructor() {
+    this.score = 0;
+    this.graphicComponent = theme.createScoreGC();
+  }
+
+  add(amount) {
+    this.score += amount;
+    this.graphicComponent.update(this.score);
+  }
+
+  get sprite() {
+    return this.graphicComponent.sprite;
+  }
+
+
+}
+
 // The Receptor only function is the graphic component
+// TODO: Complete the interface
 class ReceptorGraphicComponent {
 
   constructor(theme) {
