@@ -219,6 +219,16 @@ class Song {
       let timeIndex = 0;
       for (let s of c.steps) {
         [s.time, timeIndex] = this.getTime(s.beat, timeIndex);
+
+        // We need to get the duration in seconds as well
+        for (let direction in s.arrows) {
+          let a = s.arrows[direction];
+          if (a.duration > 0) {
+            let [endTime, ] = this.getTime(s.beat + a.duration, timeIndex);
+            s.arrows[direction].durationS = endTime - s.time;
+          }
+
+        }
       }
     }
   }

@@ -85,7 +85,7 @@ class Note {
 
   }
 
-  static CreateNote(type, division, direction, step, schedule, duration=0) {
+  static CreateNote(type, division, direction, step, schedule, duration=0, durationS=0) {
 
     let note;
 
@@ -102,7 +102,7 @@ class Note {
 
     if ([ROLL_NOTE, HOLD_NOTE].includes(type)) {
       let graphicComponent = theme.createLongNoteGC();
-      note = new LongNote(type, division, direction, graphicComponent, step, duration, schedule);
+      note = new LongNote(type, division, direction, graphicComponent, step, duration, durationS, schedule);
     }
 
     return note;
@@ -307,10 +307,11 @@ class SimpleNoteGraphicComponent {
 // Note that have a duration (hold, roll)
 class LongNote extends Note {
 
-  constructor(type, division, direction, graphicComponent, step, duration, schedule) {
+  constructor(type, division, direction, graphicComponent, step, duration, durationS, schedule) {
     super(type, division, direction, graphicComponent, step);
     this.setState(new LongNoteFreshState(this));
     this.duration = duration;
+    this.durationS = durationS;
     this.schedule = schedule;
   }
 
@@ -326,14 +327,14 @@ class LongNote extends Note {
   }
 
   getDistance(time) {
-    if (time > this.step.time && time < this.step.time + this.duration) {
+    if (time > this.step.time && time < this.step.time + this.durationS) {
       return 0;
     }
     return this.getDelay(time);
   }
 
   getDelay(time) {
-    return Math.min(Math.abs(time - this.step.time), Math.abs(time - this.step.time - this.duration));
+    return Math.min(Math.abs(time - this.step.time), Math.abs(time - this.step.time - this.durationS));
   }
 }
 

@@ -56,7 +56,7 @@ class Engine {
           return this.schedule(time, action, absolute, beat);
         }
 
-        let note = Note.CreateNote(arrow.type, step.division, direction, noteStep, schedule, arrow.duration);
+        let note = Note.CreateNote(arrow.type, step.division, direction, noteStep, schedule, arrow.duration, arrow.durationS);
 
         noteStep.notes.push(note);
       }
