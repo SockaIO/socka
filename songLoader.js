@@ -408,6 +408,23 @@ class Step {
       }
     }
   }
+
+  get division () {
+    let div = Math.round(this.beat*10000)/10000 - Math.floor(this.beat);
+
+    let mult = 1;
+    let idx = 0;
+
+    while (mult <= 256) {
+      if (Number.isInteger(div*mult)) {
+        return idx;
+      }
+      idx++;
+      mult*=2;
+    }
+
+    return 0;
+  }
 }
 
 /*
@@ -854,15 +871,12 @@ function getChart(data) {
     let tempo = 4 / m.length;
     let maxType = m.length / 4;
 
-    let division = 0;
-
     for (let s of m) {
 
       // TODO Support more tracks
       if (s !== '0000') {
 
         let newStep = new Step(beat, s, stepIndex++);
-        newStep.division = division;
 
         if (prevStep !== null) {
           prevStep.nextBeat = beat - prevStep.beat;
@@ -873,7 +887,6 @@ function getChart(data) {
         prevStep = newStep;
       }
 
-      division = (division + 1) % maxType;
       beat += tempo;
     }
   }
