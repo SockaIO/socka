@@ -522,10 +522,17 @@ class EngineDefaultGraphicComponent {
 
   // Get the score graphic Component
   placeScore(sprite) {
-    console.log(sprite);
     this.foreground.addChild(sprite);
-    sprite.x = (this.fieldWidth / 2) - (sprite.width / 2);
+    sprite.anchor.x = 0.5;
+    sprite.x = this.fieldWidth / 2;
     sprite.y = this.fieldHeight - 100;
+  }
+
+  placeCombo(sprite) {
+    this.foreground.addChild(sprite);
+    sprite.anchor.x = 0.5;
+    sprite.x = this.fieldWidth / 2;
+    sprite.y = this.fieldHeight - 200;
   }
 
 
@@ -635,6 +642,27 @@ class ScoreDefaultGraphicComponent {
 
     return output;
   }
+}
 
+class ComboDefaultGraphicComponent {
 
+  constructor() {
+    this.sprite = new PIXI.Text('', {font : '24px Arial', fill : 0xff1010, align : 'center'});
+    this.update(0);
+  }
+
+  update(combo) {
+    this.sprite.text = this.formatComboText(combo);
+  }
+
+  formatComboText(value) {
+
+    let output = '';
+
+    if (value > 1) {
+      output += value + ' Combo';
+    }
+
+    return output;
+  }
 }

@@ -97,6 +97,8 @@ class Judge {
       [TM_W5]: 0,
       [TM_MISS]: 0
     }
+
+    this.goodTimings = [TM_W1, TM_W2, TM_W3];
   }
 
   populateSteps(steps, chart) {
@@ -146,5 +148,8 @@ class Judge {
     return step.score * p;
   }
 
+  isGoodTiming(timing) {
+    return this.goodTimings.includes(timing);
+  }
 
 }

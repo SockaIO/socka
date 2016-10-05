@@ -34,6 +34,10 @@ class Engine {
     // Score
     this.score = new Score();
     this.graphicComponent.placeScore(this.score.sprite);
+
+    // Combo
+    this.combo = new Combo();
+    this.graphicComponent.placeCombo(this.combo.sprite);
   }
 
   loadSong(song, chartIndex, judge) {
@@ -214,6 +218,7 @@ class Engine {
     switch(ev.type) {
       case EVENT_NOTE_MISS:
         console.log("[Engine] A note is it missed", ev.note);
+        this.combo.reset();
         break;
 
       case EVENT_NOTE_FINISH:
@@ -223,10 +228,14 @@ class Engine {
       case EVENT_NOTE_HIT:
         console.log("[Engine] A note is it hit", ev.note, ev.timing);
 
+        if (judge.isGoodTiming(ev.timing)) {
+          this.combo.add();
+        } else {
+          this.combo.reset();
+        }
 
         // TODO Trigger
-        // - Combo
-        // - Life Update (or in Note?)
+        // - Life Update
         break;
       case EVENT_STEP_HIT:
         console.log("[Engine] A step is it hit", ev.step, ev.timing);
@@ -314,9 +323,30 @@ class Score {
   get sprite() {
     return this.graphicComponent.sprite;
   }
-
-
 }
+
+class Combo {
+
+  constructor() {
+    this.combo = 0;
+    this.graphicComponent = theme.createComboGC();
+  }
+
+  add() {
+    this.combo++;
+    this.graphicComponent.update(this.combo);
+  }
+
+  reset() {
+    this.combo = 0;
+    this.graphicComponent.update(this.combo);
+  }
+
+  get sprite() {
+    return this.graphicComponent.sprite;
+  }
+}
+
 
 // The Receptor only function is the graphic component
 // TODO: Complete the interface
