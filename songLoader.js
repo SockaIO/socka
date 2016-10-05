@@ -750,10 +750,14 @@ function DWIToSMStep(step, default_note="1") {
   }
 
   if (step.includes("!")) {
-    let long_note;
-    let note;
-    [long_note, note] = step.split("!");
-    return _combine_step([DWIToSMStep(long_note), DWIToSMStep(note, 3)]);
+    let [long_note, note] = step.split("!");
+    return _combine_step([DWIToSMStep(long_note), DWIToSMStep(note, 2)]);
+  }
+
+  if (step.startsWith("<") && step.endsWith(">")) {
+    return _combine_step(step.slice(1, -1).split('').map(function(obj) {
+      return DWIToSMStep(obj);
+    }));
   }
 
   return step;
@@ -777,12 +781,45 @@ function computeDWISteps(data) {
   let prevStep = null;
   let stepIndex = 1;
 
+  let startStep = {
+    '0': 0,
+    '1': 0,
+    '2': 0,
+    '3': 0
+  };
+
   for (let note of iterDWISteps(data)) {
-    let newStep = new Step(note.beat, DWIToSMStep(note.step), stepIndex++);
+    let data = DWIToSMStep(note.step);
+
+    // in DWI a tap note mark the end of a hold
+    let tmp = '';
+    for (let d in data) {
+      if (data[d] === '1' && startStep[d] !== 0) {
+        tmp += '3';
+      } else {
+        tmp += data[d];
+      }
+    }
+    data = tmp;
+
+    let newStep = new Step(note.beat, data, stepIndex++);
     if (prevStep !== null) {
       prevStep.nextBeat = note.beat - prevStep.beat;
       newStep.prevBeat = note.beat - prevStep.beat;
     }
+
+    // Compute helpers for the hold and roll
+    for (let d in data) {
+      if (data[d] === '2') {
+        startStep[d] = newStep;
+      }
+
+      if (data[d] === '3' && startStep[d] !== 0) {
+        startStep[d].arrows[d].duration = newStep.beat - startStep[d].beat;
+        startStep[d] = 0;
+      }
+    }
+
     stepData.push(newStep);
     prevStep = newStep;
   }
@@ -904,7 +941,7 @@ function getChart(data) {
     for (let d in s.data) {
       if (s.data[d] === '2' || s.data[d] === '4') {
         startStep[d] = s;
-      } 
+      }
 
       if (s.data[d] == '3') {
         startStep[d].arrows[d].duration = s.beat - startStep[d].beat;
