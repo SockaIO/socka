@@ -145,7 +145,7 @@ class Song {
     song.sampleLength = fieldMap.get('SAMPLELENGTH');
 
     // Timing Data
-    song.offset = fieldMap.get('OFFSET');
+    song.offset = fieldMap.get('GAP')/1000;
 
     song.bpms = getList("0.000=" + fieldMap.get('BPM')).concat(getList(fieldMap.get('CHANGEBPMS') || ''));
     song.stops = getList(fieldMap.get('FREEZE') || '');
@@ -175,7 +175,7 @@ class Song {
 
     // Remove the used elements and store the metadata
     for (let f of ['CDTITLE', 'FILE', 'SAMPLESTART', 'SAMPLELENGTH',
-                   'OFFSET', 'BPM', 'CHANGEBPMS', 'FREEZE',
+                   'GAP', 'BPM', 'CHANGEBPMS', 'FREEZE',
                    'SINGLE', 'DOUBLE', 'COUPLE', 'SOLO']) {
 
       fieldMap.delete(f);
@@ -673,10 +673,10 @@ function getCharts(data) {
 
 function * iterDWISteps(data) {
   const grouping = {"<": ">"};
-  const speed = {"(": 1/16, "[": 1/24, "{": 1/64, "`": 1/192};
+  const speed = {"(": 1/4, "[": 1/8, "{": 1/16, "`": 1/32};
   const decreaseSpeed = [")", "]", "}", "'"];
 
-  let tempoStack = [1/8];
+  let tempoStack = [1/2];
   let beat = 0;
   let idx = -1;
   let step = '';
@@ -718,13 +718,12 @@ function * iterDWISteps(data) {
       continue;
     }
 
-    beat += tempoStack.slice(-1)[0];
-
     // Ignore none beat
     if (step !== "0") {
       yield {"step": step, "beat": beat};
     }
 
+    beat += tempoStack.slice(-1)[0];
     step = '';
   }
 }
