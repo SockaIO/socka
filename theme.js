@@ -355,6 +355,17 @@ class LongNoteDefaultGraphicComponent extends LongNoteGraphicComponent {
     return;
   }
 
+  // The note sticks in the receptor and the length decreases
+  stick(beat, multiplier) {
+
+    let duration = this.note.duration - beat + this.note.step.beat;
+
+    this.sprite.y = beat * multiplier;
+
+    this.sprite.children[1].y = duration * multiplier;
+    this.sprite.children[0].height = duration * multiplier;
+  }
+
   resize(scale, multiplier) {
 
     this.sprite.children[2].scale.x = scale;
@@ -440,6 +451,8 @@ class EngineDefaultGraphicComponent {
     this.createField();
     this.createReceptor();
     this.createJudgment();
+
+    this.stickyNotes = new Set();
   }
 
   createField() {
@@ -493,6 +506,11 @@ class EngineDefaultGraphicComponent {
   }
 
   update(beat) {
+
+    for (let note of this.stickyNotes) {
+      note.stick(beat, this.multiplier);
+    }
+
     this.background.children[1].y = -1 * beat * this.multiplier;
   }
 
@@ -522,9 +540,19 @@ class EngineDefaultGraphicComponent {
       case EVENT_NOTE_HIT:
         this.judgment.show(ev.timing);
         this.receptor.glow(ev.note, ev.timing);
+
+        // handle the Long Note Stickyness
+        if (ev.note.duration > 0) {
+          this.stickyNotes.add(ev.note.graphicComponent);
+        }
         break;
       case EVENT_NOTE_FINISH:
         this.receptor.holdJudge(ev.note, ev.timing);
+
+        // Remove the sticky note
+        if (ev.note.duration > 0) {
+          this.stickyNotes.delete(ev.note.graphicComponent);
+        }
         break;
     }
   }
