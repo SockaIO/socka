@@ -68,13 +68,13 @@ class Judge {
       [TM_MISS]: S_MISS,
     };
 
-    this.precisionPoints = {
-      [S_W1]: 2,
-      [S_W2]: 2,
-      [S_W3]: 1,
-      [S_W4]: 0,
-      [S_W5]: -4,
-      [S_MISS]: -8,
+    this.timingPoints = {
+      [TM_W1]: 2,
+      [TM_W2]: 2,
+      [TM_W3]: 1,
+      [TM_W4]: 0,
+      [TM_W5]: -4,
+      [TM_MISS]: -8,
       [S_NG]: 0, // miss the end of a hold
       [S_OK]: 6 // catch the end of a hold
     }
@@ -150,6 +150,11 @@ class Judge {
 
   isGoodTiming(timing) {
     return this.goodTimings.includes(timing);
+  }
+
+  getPoints(note, timing) {
+    // TODO: implement score for mines
+    return this.timingPoints[timing];
   }
 
 }

@@ -35,7 +35,7 @@ function init() {
 
     let field = engine.sprite;
     field.x = 100;
-    field.y = 50;
+    field.y = 0;
 
     stage.addChild(field);
 

@@ -29,8 +29,6 @@ class Engine {
     // Graphic Component
     this.graphicComponent = theme.createEngineGC(width, height, fieldView);
 
-    // TODO: Link to player, score, input
-
     // Score
     this.score = new Score();
     this.graphicComponent.placeScore(this.score.sprite);
@@ -38,6 +36,11 @@ class Engine {
     // Combo
     this.combo = new Combo();
     this.graphicComponent.placeCombo(this.combo.sprite);
+
+    // Life
+    this.lifemeter = new Lifemeter();
+    console.log(this.lifemeter.sprite);
+    this.graphicComponent.placeLifemeter(this.lifemeter.sprite);
   }
 
   loadSong(song, chartIndex, judge) {
@@ -82,7 +85,7 @@ class Engine {
   }
 
   get sprite() {
-    return this.graphicComponent.field;
+    return this.graphicComponent.sprite;
   }
 
   update() {
@@ -219,10 +222,12 @@ class Engine {
       case EVENT_NOTE_MISS:
         console.log("[Engine] A note is it missed", ev.note);
         this.combo.reset();
+        this.lifemeter.updateLife(judge.getPoints(ev.note, ev.timing));
         break;
 
       case EVENT_NOTE_FINISH:
         console.log("[Engine] A note is it finished", ev.note, ev.timing);
+        this.lifemeter.updateLife(judge.getPoints(ev.note, ev.timing));
         break;
 
       case EVENT_NOTE_HIT:
@@ -233,9 +238,8 @@ class Engine {
         } else {
           this.combo.reset();
         }
+        this.lifemeter.updateLife(judge.getPoints(ev.note, ev.timing));
 
-        // TODO Trigger
-        // - Life Update
         break;
       case EVENT_STEP_HIT:
         console.log("[Engine] A step is it hit", ev.step, ev.timing);
@@ -345,6 +349,31 @@ class Combo {
   get sprite() {
     return this.graphicComponent.sprite;
   }
+}
+
+class Lifemeter {
+
+  constructor() {
+    this.maximum = 100;
+    this.life = 50;
+
+    this.graphicComponent = theme.createLifemeterGC();
+    this.updateLife(0);
+  }
+
+  updateLife(amount) {
+
+    this.life += amount;
+    this.life = Math.max(Math.min(this.life, this.maximum), 0)
+
+    this.graphicComponent.update(this.life / this.maximum);
+  }
+
+  get sprite() {
+    return this.graphicComponent.sprite;
+  }
+
+
 }
 
 

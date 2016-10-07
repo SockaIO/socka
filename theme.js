@@ -28,7 +28,10 @@ class DefaultTheme {
       rollCap: 'theme/rollCap.png',
       rollBody: 'theme/rollBody.png',
       judgments: 'theme/judgments.png',
-      holdJudgments: 'theme/holdJudgments.png'
+      holdJudgments: 'theme/holdJudgments.png',
+      lifemeterOver: 'theme/lifemeterOver.png',
+      lifemeterMiddle: 'theme/lifemeterMiddle.png',
+      lifemeterUnder: 'theme/lifemeterUnder.png',
     };
 
     // Will be filled after loading
@@ -154,8 +157,8 @@ class DefaultTheme {
     return new ComboDefaultGraphicComponent(this);
   }
 
-  createLifeGC() {
-    return new LifeDefaultGraphicComponent(this);
+  createLifemeterGC() {
+    return new LifemeterDefaultGraphicComponent(this);
   }
 
 }
@@ -441,12 +444,20 @@ class EngineDefaultGraphicComponent {
 
   constructor(theme, width, height, fieldView) {
 
+    // Engine Container
+    this.height = height;
+    this.width = width;
+
     // Field related info
+    this.fieldYProportion = 0.85;
+
     this.fieldWidth = width;
-    this.fieldHeight = height;
+    this.fieldHeight = this.fieldYProportion * height;
     this.fieldView = fieldView;
 
     this.theme = theme;
+
+    this.createMainSprite();
 
     this.createField();
     this.createReceptor();
@@ -455,21 +466,33 @@ class EngineDefaultGraphicComponent {
     this.stickyNotes = new Set();
   }
 
+  createMainSprite() {
+    this.sprite = new PIXI.Container();
+
+    this.background = new PIXI.Container();
+    this.foreground = new PIXI.Container();
+
+    this.sprite.addChild(this.background);
+    this.sprite.addChild(this.foreground);
+
+  }
+
   createField() {
 
     // Create the container
     this.field = new PIXI.Container();
     this.field.width = this.fieldWidth;
     this.field.height = this.fieldHeight;
+    this.field.y = this.height - this.fieldHeight;
+    this.background.addChild(this.field);
 
     this.multiplier = this.fieldHeight / this.fieldView;
 
-    this.background = new PIXI.Container();
-    this.foreground = new PIXI.Container();
+    this.fieldBackground = new PIXI.Container();
+    this.fieldForeground = new PIXI.Container();
 
-    this.field.addChild(this.background);
-    this.field.addChild(this.foreground);
-
+    this.field.addChild(this.fieldBackground);
+    this.field.addChild(this.fieldForeground);
   }
 
   // Craete the Note stream
@@ -495,14 +518,14 @@ class EngineDefaultGraphicComponent {
       }
     }
 
-    this.background.addChild(this.stream);
+    this.fieldBackground.addChild(this.stream);
   }
 
   createReceptor() {
     this.receptor = this.theme.createReceptorGC();
     this.receptor.create(this.fieldWidth);
-    this.background.addChild(this.receptor.background);
-    this.foreground.addChild(this.receptor.foreground);
+    this.fieldBackground.addChild(this.receptor.background);
+    this.fieldForeground.addChild(this.receptor.foreground);
   }
 
   update(beat) {
@@ -511,7 +534,7 @@ class EngineDefaultGraphicComponent {
       note.stick(beat, this.multiplier);
     }
 
-    this.background.children[1].y = -1 * beat * this.multiplier;
+    this.stream.y = -1 * beat * this.multiplier;
   }
 
   createJudgment() {
@@ -533,6 +556,12 @@ class EngineDefaultGraphicComponent {
     sprite.anchor.x = 0.5;
     sprite.x = this.fieldWidth / 2;
     sprite.y = this.fieldHeight - 200;
+  }
+
+  placeLifemeter(sprite) {
+    this.foreground.addChild(sprite);
+    sprite.x = (this.fieldWidth / 2) - (sprite.width / 2);
+    sprite.y = 0;
   }
 
 
@@ -665,4 +694,52 @@ class ComboDefaultGraphicComponent {
 
     return output;
   }
+}
+
+class LifemeterDefaultGraphicComponent {
+
+  constructor(theme) {
+
+    this.theme = theme;
+
+    this.sprite = new PIXI.Container();
+
+    this.sprite.addChild(new PIXI.Sprite(theme.getTexture('lifemeterUnder')));
+    this.bar = new PIXI.Sprite(theme.getTexture('lifemeterMiddle'));
+    this.sprite.addChild(this.bar);
+    this.sprite.addChild(new PIXI.Sprite(theme.getTexture('lifemeterOver')));
+
+    this.bar.x = 5;
+    this.bar.y = 5;
+    this.bar.scale.y = 1.7;
+
+    this.changing = false;
+    this.target = 0;
+    this.current = 0;
+    this.tweenDuration = 0.2;
+  }
+
+  update(fraction) {
+    if (this.changing === false) {
+      this.target = fraction;
+      this.doUpdate();
+    } else {
+      this.target = fraction;
+    }
+  }
+
+  doUpdate() {
+
+    this.current = this.target;
+    this.changing = true;
+
+    TweenLite.to(this.bar.scale, this.tweenDuration, {x: this.current, ease: 'bounce', onComplete: () => {
+      if (this.target !== this.current) {
+        this.doUpdate();
+      } else {
+        this.changing = false;
+      }
+    }});
+  }
+
 }
