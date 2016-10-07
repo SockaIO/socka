@@ -85,9 +85,12 @@ class Note {
 
   }
 
-  static CreateNote(type, division, direction, step, schedule, duration=0, durationS=0) {
+  static CreateNote(arrow, direction, step, schedule) {
 
     let note;
+    let type = arrow.type;
+    let duration = arrow.duration;
+    let durationS = arrow.durationS;
 
     if (typeof(Note.theme) === 'undefined') {
       console.log('You need to specify the theme for the Note factory');
@@ -97,22 +100,21 @@ class Note {
     // Create the right type of Note
     if ([TAP_NOTE, MINE_NOTE, LIFT_NOTE, FAKE_NOTE].includes(type)) {
       let graphicComponent = theme.createSimpleNoteGC();
-      note = new SimpleNote(type, division, direction, graphicComponent, step);
+      note = new SimpleNote(type, direction, graphicComponent, step);
     }
 
     if ([ROLL_NOTE, HOLD_NOTE].includes(type)) {
       let graphicComponent = theme.createLongNoteGC();
-      note = new LongNote(type, division, direction, graphicComponent, step, duration, durationS, schedule);
+      note = new LongNote(type, direction, graphicComponent, step, duration, durationS, schedule);
     }
 
     return note;
 
   }
 
-  constructor(type, division, direction, graphicComponent, step) {
+  constructor(type, direction, graphicComponent, step) {
 
     this.type = type;
-    this.division = division;
     this.direction = direction;
     this.graphicComponent = graphicComponent;
     this.step = step;
@@ -121,6 +123,23 @@ class Note {
     this.graphicComponent.note = this;
 
     this.state = null;
+  }
+
+  get division () {
+    let div = Math.round(this.step.beat*10000)/10000 - Math.floor(this.step.beat);
+
+    let mult = 1;
+    let idx = 0;
+
+    while (mult <= 256) {
+      if (Number.isInteger(div*mult)) {
+        return idx;
+      }
+      idx++;
+      mult*=2;
+    }
+
+    return 0;
   }
 
   setState(state) {
@@ -200,8 +219,8 @@ Note.subject = new Subject();
 
 // Note that have no duration (tap, lift...)
 class SimpleNote extends Note {
-  constructor(type, division, direction, graphicComponent, step) {
-    super(type, division, direction, graphicComponent, step);
+  constructor(type, direction, graphicComponent, step) {
+    super(type, direction, graphicComponent, step);
     this.setState(new SimpleNoteFreshState(this));
   }
 }
@@ -307,8 +326,8 @@ class SimpleNoteGraphicComponent {
 // Note that have a duration (hold, roll)
 class LongNote extends Note {
 
-  constructor(type, division, direction, graphicComponent, step, duration, durationS, schedule) {
-    super(type, division, direction, graphicComponent, step);
+  constructor(type, direction, graphicComponent, step, duration, durationS, schedule) {
+    super(type, direction, graphicComponent, step);
     this.setState(new LongNoteFreshState(this));
     this.duration = duration;
     this.durationS = durationS;

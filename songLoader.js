@@ -408,23 +408,6 @@ class Step {
       }
     }
   }
-
-  get division () {
-    let div = Math.round(this.beat*10000)/10000 - Math.floor(this.beat);
-
-    let mult = 1;
-    let idx = 0;
-
-    while (mult <= 256) {
-      if (Number.isInteger(div*mult)) {
-        return idx;
-      }
-      idx++;
-      mult*=2;
-    }
-
-    return 0;
-  }
 }
 
 /*
