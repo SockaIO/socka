@@ -49,6 +49,9 @@ function init() {
     controller.setup();
     controller.setSongPlayer(engine.songPlayer);
 
+    PadController.Subject.addObserver(engine);
+    PadController.Setup();
+
     engine.controller = controller;
 
     gameLoop();

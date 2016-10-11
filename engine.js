@@ -5,6 +5,9 @@ class Engine {
 
   constructor(width, height, fieldView) {
 
+    // Controller
+    this.controller = null;
+
     // Song related info
     this.chart = null;
 
@@ -108,9 +111,11 @@ class Engine {
     this.handleScheduled();
 
     // Handle the inputs
-    let cmds = this.controller.handleInput();
-    for (let cmd of cmds) {
-      cmd.execute(this);
+    if (this.controller !== null) {
+      let cmds = this.controller.handleInput();
+      for (let cmd of cmds) {
+        cmd.execute(this);
+      }
     }
   }
 
@@ -244,6 +249,11 @@ class Engine {
       case EVENT_STEP_HIT:
         console.log("[Engine] A step is it hit", ev.step, ev.timing);
         this.score.add(ev.score);
+        break;
+      case EVENT_PAD_CONNECTED:
+        console.log('[Engine] Pad Connected');
+        this.controller = ev.pad;
+        this.controller.setSongPlayer(this.songPlayer);
         break;
     }
 

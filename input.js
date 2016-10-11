@@ -5,6 +5,9 @@
 const TAP = Symbol.for('TAP');
 const LIFT = Symbol.for('LIFT');
 
+const EVENT_PAD_CONNECTED = Symbol.for('EVENT_PAD_CONNECTED');
+const EVENT_PAD_DISCONNECTED = Symbol.for('EVENT_PAD_DISCONNECTED');
+
 class KeyboardController {
 
   constructor() {
@@ -68,6 +71,102 @@ class KeyboardController {
     }
   }
 }
+
+class PadController {
+
+  // handle the events for pad connection
+  static Setup() {
+    window.addEventListener('gamepadconnected', (e) => PadController.Connect(e), false);
+    window.addEventListener('gamepaddisconnected', (e) => PadController.Disconnect(e), false);
+  }
+
+  static Connect(e) {
+
+    console.log('test');
+
+    let gamepad = e.gamepad;
+    let pad = new PadController(gamepad);
+
+    this.Controllers.set(gamepad.index, pad);
+
+    let ev = {
+      type: EVENT_PAD_CONNECTED,
+      pad
+    }
+
+    PadController.Subject.notify(ev);
+  }
+
+  static Disconnect(e) {
+    let gamepad = e.gamepad;
+    let pad = this.Controller.get(gamepad.index);
+
+    this.Controllers.delete(gamepad.index);
+
+    let ev = {
+      type: EVENT_PAD_DISCONNECTED,
+      pad
+    }
+
+    PadController.Subject.notify(ev);
+  }
+
+  //
+  // -----------------------------------------------------
+  //
+
+  constructor(gamepad) {
+    this.gamepad = gamepad;
+
+    this.state = {
+      0: LIFT,
+      1: LIFT,
+      3: LIFT,
+      2: LIFT,
+      80: LIFT,
+      81: LIFT
+    };
+
+    this.lookup = {
+      0: 0,
+      1: 1,
+      3: 3,
+      2: 2,
+      7: 80,
+      6: 81
+    };
+  }
+
+  setSongPlayer(player) {
+    this.songPlayer = player;
+  }
+
+  handleInput() {
+
+    let output = [];
+
+    for (let b in this.lookup) {
+
+      let action = this.state[this.lookup[b]] === LIFT ? TAP: LIFT;
+      let direction = this.lookup[b];
+
+      // Did the state of the direction changed
+      if (this.gamepad.buttons[b].pressed === (this.state[direction] === LIFT)) {
+
+        this.state[direction] = action;
+
+        let time = this.songPlayer !== null ? this.songPlayer.getTime() : 0;
+        let cmd = new DanceCommand(direction, action, time);
+        output.push(cmd);
+      }
+    }
+
+    return output;
+  }
+}
+
+PadController.Controllers = new Map();
+PadController.Subject = new Subject();
 
 class DanceCommand {
 
