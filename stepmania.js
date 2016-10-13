@@ -13,7 +13,7 @@ function init() {
 
       document.body.appendChild(mainview.renderer.view);
 
-      mainview.startSong(Song.loadFromSMFile('Astro Troopers/Astro Troopers.sm'));
+      mainview.startSong(Song.loadFromFile('Astro Troopers/Astro Troopers.sm'));
 
       gameLoop();
     });

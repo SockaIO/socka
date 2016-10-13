@@ -6,9 +6,10 @@ class MainView {
   constructor(width, height, theme) {
     this.width = width;
     this.height = height;
+    this.theme = theme;
 
-    this.stage = new PIXI.Container(),
-      this.renderer = PIXI.autoDetectRenderer(width, height,{backgroundColor : 0x1099bb});
+    this.stage = new PIXI.Container();
+    this.renderer = PIXI.autoDetectRenderer(width, height,{backgroundColor : 0x1099bb});
 
     this.views = [];
   }
