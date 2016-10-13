@@ -26,6 +26,9 @@ class Engine {
     // Missed steps
     this.missedStepIndex = 0;
 
+    // Collision step
+    this.collisionStepIndex = 0;
+
     // Timing
     this.missTiming = 0.250;
 
@@ -69,7 +72,7 @@ class Engine {
 
         let note = Note.CreateNote(arrow, direction, noteStep, schedule);
 
-        noteStep.notes.push(note);
+        noteStep.addNote(note);
       }
       this.steps.push(noteStep);
     }
@@ -82,6 +85,10 @@ class Engine {
 
   setMissTiming(timing) {
     this.missTiming = timing;
+  }
+
+  setMineTiming(timing) {
+    this.mineTiming = timing;
   }
 
   setSongPlayer(sp) {
@@ -106,7 +113,7 @@ class Engine {
     this.graphicComponent.update(beat);
 
     // update the missed notes
-    this.updateMissed();
+    this.updateEvents();
 
     // Do the scheduled Actions
     this.handleScheduled();
@@ -195,19 +202,38 @@ class Engine {
 
   }
 
-  updateMissed() {
+  updateEvents() {
 
-    if (this.missedStepIndex >= this.steps.length) {
+    let startStep = Math.min(this.missedStepIndex, this.collisionStepIndex)
+
+    if (startStep >= this.steps.length) {
       return;
     }
 
-    let x = this.missedStepIndex;
+    let x = startStep;
     let step = this.steps[x];
 
-    while (step.time + this.missTiming <= this.time) {
+    while (step.time - this.mineTiming <= this.time) {
 
-      step.applyToNotes('miss');
-      this.missedStepIndex++;
+      // Note passed the miss window
+      if (step.time + this.missTiming <= this.time && x >= this.missedStepIndex) {
+        step.applyToNotes('miss');
+        this.missedStepIndex++;
+      }
+
+      // Note is in the collision window
+      // TODO: This might fire too many events and slow down the game (maybe?)
+      if (x >= this.collisionStepIndex) {
+        let pressed = this.controller.getPressed();
+
+        if (pressed.length > 0) {
+          step.applyToDirections(this.controller.getPressed(), 'collide');
+        }
+
+        if (step.time + this.mineTiming <= this.time) {
+          this.collisionStepIndex++;
+        }
+      }
 
       if (++x >= this.steps.length) {
         break;

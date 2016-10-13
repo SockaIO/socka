@@ -618,6 +618,10 @@ class JudgmentDefaultGraphicComponent {
 
   show(timing) {
 
+    if (timing === TM_MINE) {
+      return;
+    }
+
     if (timing === this.timing) {
       this.sprite.alpha = 0.3;
       this.sprite.scale.x = 0.5;

@@ -21,7 +21,7 @@ class MainView {
       let judge = new Judge();
 
       let engine = new Engine(400, 600, 6);
-      engine.loadSong(song, 4, judge);
+      engine.loadSong(song, 2, judge);
 
       let field = engine.sprite;
       field.x = 100;
@@ -35,6 +35,7 @@ class MainView {
       engine.setSongPlayer(songPlayer);
 
       engine.setMissTiming(judge.getMissTiming());
+      engine.setMineTiming(judge.getMineTiming());
 
       let controller = new KeyboardController;
       controller.setup();

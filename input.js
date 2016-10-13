@@ -13,12 +13,12 @@ class KeyboardController {
   constructor() {
 
     this.state = {
-      37: 0,
-      40: 0,
-      39: 0,
-      38: 0,
-      13: 0,
-      8: 0
+      0: LIFT,
+      1: LIFT,
+      3: LIFT,
+      2: LIFT,
+      80: LIFT,
+      81: LIFT
     };
 
     this.lookup = {
@@ -54,6 +54,16 @@ class KeyboardController {
     let time = this.songPlayer !== null ? this.songPlayer.getTime() : 0;
     let cmd = new DanceCommand(direction, action, time);
     this.cmdQueue.push(cmd);
+  }
+
+  getPressed() {
+    let pressed = [];
+    for (let d in this.state) {
+      if (this.state[d] === TAP) {
+        pressed.push(parseInt(d, 10));
+      }
+    }
+    return pressed;
   }
 
   handleEvent(e) {
@@ -139,6 +149,16 @@ class PadController {
 
   setSongPlayer(player) {
     this.songPlayer = player;
+  }
+
+  getPressed() {
+    let pressed = [];
+    for (let d in this.state) {
+      if (this.state[d] === TAP) {
+        pressed.push(parseInt(d, 10));
+      }
+    }
+    return pressed;
   }
 
   handleInput() {

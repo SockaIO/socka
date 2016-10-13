@@ -34,10 +34,11 @@ class Note {
 
   static NoteHit(note, delay) {
 
-    let timing = note.step.engine.judge.getTiming(delay);
+    let [timing, score] = note.step.engine.judge.judgeNote(note, delay);
 
     let ev = {
       note,
+      score,
       delay,
       timing,
       type: EVENT_NOTE_HIT
@@ -203,6 +204,13 @@ class Note {
     }
   }
 
+  collide() {
+    const state = this.state.collide();
+    if (state !== null) {
+      this.setState(state);
+    }
+  }
+
   get sprite() {
     return this.graphicComponent.sprite;
   }
@@ -232,6 +240,7 @@ class SimpleNoteState {
   tap(delay) {return null;}
   lift(delay) {return null;}
   miss() {return null;}
+  collide() {return null;}
 
   out() {
     // Anti Optimization
@@ -258,7 +267,7 @@ class SimpleNoteFreshState extends SimpleNoteState {
   }
 
   tap(delay) {
-    if (this.note.type === TAP_NOTE || this.note.type == MINE_NOTE) {
+    if (this.note.type === TAP_NOTE) {
       return new SimpleNoteHitState(this.note, delay);
     } 
     return null;
@@ -268,6 +277,14 @@ class SimpleNoteFreshState extends SimpleNoteState {
     if (this.note.type === LIFT_NOTE) {
       return new SimpleNoteHitState(this.note, delay);
     } 
+    return null;
+  }
+
+  collide() {
+    if (this.note.type === MINE_NOTE) {
+      return new SimpleNoteHitState(this.note, 0);
+    }
+
     return null;
   }
 
@@ -509,11 +526,14 @@ class NoteStep {
     this.beat = beat;
     this.time = time;
     this.engine = engine;
+
+    // Number of notes to hit to trigger the step
+    this.toHit = 0;
   }
 
   static StepHit(step, delay) {
 
-    let [timing, score] = step.engine.judge.judge(step, delay);
+    let [timing, score] = step.engine.judge.judgeStep(step, delay);
 
     let ev = {
       step,
@@ -536,7 +556,31 @@ class NoteStep {
     }
   }
 
-  noteHit(delay) {
+  // TODO: Replace by something more aptomized?
+  applyToDirections(directions, methodName, ...args) {
+    for (let n of this.notes) {
+      if (directions.includes(n.direction)) {
+        n[methodName](...args);
+      }
+    }
+  }
+
+  addNote(note) {
+    this.notes.push(note);
+
+    if (note.type !== MINE_NOTE) {
+      this.toHit++;
+    }
+  }
+
+  noteHit(ev) {
+
+
+    if (ev.note.type === MINE_NOTE) {
+      return;
+    }
+
+    let delay = ev.delay;
 
     // Add the delay of the touched note to the list
     this.delays.push(delay);
@@ -554,7 +598,7 @@ class NoteStep {
 
         // better notify the note before the step
         this.engine.onNotify(ev);
-        this.noteHit(ev.delay);
+        this.noteHit(ev);
 
         break;
 

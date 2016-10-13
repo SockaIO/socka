@@ -45,6 +45,10 @@ class Judge {
     return this.timingWindow[TM_HOLD];
   }
 
+  getMineTiming() {
+    return this.timingWindow[TM_MINE];
+  }
+
   // We create the judge for a particular song
   constructor () {
 
@@ -75,6 +79,7 @@ class Judge {
       [TM_W4]: 0,
       [TM_W5]: -4,
       [TM_MISS]: -8,
+      [TM_MINE]: -8,
       [S_NG]: 0, // miss the end of a hold
       [S_OK]: 6 // catch the end of a hold
     }
@@ -134,17 +139,31 @@ class Judge {
     return timing;
   }
 
-  judge(step, delay) {
+  judgeNote(note, delay) {
     let timing = this.getTiming(delay);
-    let score = this.getScore(step, timing);
+    let score = this.getNoteScore(note, timing);
+
+    if (note.type === MINE_NOTE) {
+      timing = TM_MINE;
+    }
 
     return [timing, score];
   }
 
-  getScore(step, timing) {
+  judgeStep(step, delay) {
+    let timing = this.getTiming(delay);
+    let score = this.getStepScore(step, timing);
+
+    return [timing, score];
+  }
+
+  getNoteScore(note, timing) {
+    return 0;
+  }
+
+  getStepScore(step, timing) {
 
     let p = this.multiplier[timing];
-
     return step.score * p;
   }
 
@@ -153,7 +172,6 @@ class Judge {
   }
 
   getPoints(note, timing) {
-    // TODO: implement score for mines
     return this.timingPoints[timing];
   }
 
