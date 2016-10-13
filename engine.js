@@ -48,12 +48,13 @@ class Engine {
     
     this.chart = song.charts[chartIndex];
     this.song = song;
+    this.judge = judge;
 
     this.steps = [];
 
     for (let step of this.chart.steps) {
 
-      let noteStep = new NoteStep(step.beat, step.time, engine);
+      let noteStep = new NoteStep(step.beat, step.time, this);
 
       for (let directionS in step.arrows) {
         let direction = parseInt(directionS, 10);
@@ -61,7 +62,7 @@ class Engine {
 
         let schedule = (time, action, absolute, beat) => {
           return this.schedule(time, action, absolute, beat);
-        }
+        };
 
         let note = Note.CreateNote(arrow, direction, noteStep, schedule);
 
@@ -71,7 +72,7 @@ class Engine {
     }
 
     // Populate the step scores
-    judge.populateSteps(this.steps, this.chart);
+    this.judge.populateSteps(this.steps, this.chart);
 
     this.graphicComponent.createStream(this.steps);
   }
@@ -222,23 +223,23 @@ class Engine {
       case EVENT_NOTE_MISS:
         console.log("[Engine] A note is it missed", ev.note);
         this.combo.reset();
-        this.lifemeter.updateLife(judge.getPoints(ev.note, ev.timing));
+        this.lifemeter.updateLife(this.judge.getPoints(ev.note, ev.timing));
         break;
 
       case EVENT_NOTE_FINISH:
         console.log("[Engine] A note is it finished", ev.note, ev.timing);
-        this.lifemeter.updateLife(judge.getPoints(ev.note, ev.timing));
+        this.lifemeter.updateLife(this.judge.getPoints(ev.note, ev.timing));
         break;
 
       case EVENT_NOTE_HIT:
         console.log("[Engine] A note is it hit", ev.note, ev.timing);
 
-        if (judge.isGoodTiming(ev.timing)) {
+        if (this.judge.isGoodTiming(ev.timing)) {
           this.combo.add();
         } else {
           this.combo.reset();
         }
-        this.lifemeter.updateLife(judge.getPoints(ev.note, ev.timing));
+        this.lifemeter.updateLife(this.judge.getPoints(ev.note, ev.timing));
 
         break;
       case EVENT_STEP_HIT:

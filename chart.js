@@ -34,7 +34,7 @@ class Note {
 
   static NoteHit(note, delay) {
 
-    let timing = judge.getTiming(delay);
+    let timing = note.step.engine.judge.getTiming(delay);
 
     let ev = {
       note,
@@ -513,7 +513,7 @@ class NoteStep {
 
   static StepHit(step, delay) {
 
-    let [timing, score] = judge.judge(step, delay);
+    let [timing, score] = step.engine.judge.judge(step, delay);
 
     let ev = {
       step,
