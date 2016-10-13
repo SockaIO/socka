@@ -541,6 +541,8 @@ class EngineDefaultGraphicComponent {
     this.judgment = this.theme.createJudgmentGC();
     this.judgment.create(this.fieldWidth, this.fieldHeight);
     this.foreground.addChild(this.judgment.sprite);
+    this.judgment.sprite.x = this.width / 2;
+    this.judgment.sprite.y = this.height / 2;
   }
 
   // Get the score graphic Component
@@ -548,14 +550,14 @@ class EngineDefaultGraphicComponent {
     this.foreground.addChild(sprite);
     sprite.anchor.x = 0.5;
     sprite.x = this.fieldWidth / 2;
-    sprite.y = this.fieldHeight - 100;
+    sprite.y = this.height - 50;
   }
 
   placeCombo(sprite) {
     this.foreground.addChild(sprite);
     sprite.anchor.x = 0.5;
     sprite.x = this.fieldWidth / 2;
-    sprite.y = this.fieldHeight - 200;
+    sprite.y = this.height - 200;
   }
 
   placeLifemeter(sprite) {
@@ -609,8 +611,6 @@ class JudgmentDefaultGraphicComponent {
     this.sprite.anchor.x = 0.5;
     this.sprite.anchor.y = 0.5;
 
-    this.sprite.x = fieldWidth / 2;
-    this.sprite.y = fieldHeight / 2;
     this.sprite.alpha = 0;
 
     this.duration = 0.1;
