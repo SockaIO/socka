@@ -289,7 +289,10 @@ class SimpleNoteFreshState extends SimpleNoteState {
   }
 
   miss(note) {
-    return new SimpleNoteMissState(this.note);
+    if (this.note.type !== MINE_NOTE) {
+      return new SimpleNoteMissState(this.note);
+    }
+    return null;
   }
 }
 
