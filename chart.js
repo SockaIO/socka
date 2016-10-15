@@ -495,6 +495,8 @@ class LongNoteDeactivatedState extends LongNoteState {
 class LongNoteFinishedState extends LongNoteState {
 
   enter() {
+    this.note.graphicComponent.finish();
+
     if (this.note.type === HOLD_NOTE) {
       Note.NoteFinish(this.note, true);
     }

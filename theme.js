@@ -438,6 +438,10 @@ class LongNoteDefaultGraphicComponent extends LongNoteGraphicComponent {
     }
   }
 
+  finish() {
+    TweenLite.to(this.sprite, this.fadeout, {alpha: 0});
+  }
+
 }
 
 class EngineDefaultGraphicComponent {
