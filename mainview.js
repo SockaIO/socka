@@ -9,7 +9,10 @@ class MainView {
     this.theme = theme;
 
     this.stage = new PIXI.Container();
-    this.renderer = PIXI.autoDetectRenderer(width, height,{backgroundColor : 0x1099bb});
+    this.background = new PIXI.Container();
+    this.stage.addChild(this.background);
+
+    this.renderer = PIXI.autoDetectRenderer(width, height, {backgroundColor : 0x1099bb});
 
     this.views = [];
   }
@@ -19,6 +22,12 @@ class MainView {
       Note.theme = this.theme;
 
       let judge = new Judge();
+
+      song.getResources().then(() => {
+        song.backgroundTexture.width = this.width;
+        song.backgroundTexture.height = this.height;
+        this.background.addChild(song.backgroundTexture);
+      });
 
       let engine = new Engine(400, 600, 6);
       engine.loadSong(song, 2, judge);

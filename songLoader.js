@@ -278,28 +278,35 @@ class Song {
     let promises = [];
 
     // Get the Music
-    promises.push(fetch(this.path + this.music, {credentials: 'same-origin'}).then((resp) => {
-      if (!resp.ok) {
-        throw resp;
-      }
+    if (this.audiodata === undefined) {
+      promises.push(fetch(this.path + this.music, {credentials: 'same-origin'}).then((resp) => {
+        if (!resp.ok) {
+          throw resp;
+        }
 
-      this.audioData = resp.arrayBuffer();
-    }));
+        this.audioData = resp.arrayBuffer();
+      }));
+    }
 
-    promises.push(new Promise((resolve, reject) => {
-      // Get the images
-      PIXI.loader
-          .add(this.path + this.banner)
-          .add(this.path + this.background)
-          .load(resolve);
-    }).then(() => {
-      this.bannerTexture = new PIXI.Sprite(
-          PIXI.loader.resources[this.path + this.banner].texture
-      );
-      this.backgroundTexture = new PIXI.Sprite(
-          PIXI.loader.resources[this.path + this.background].texture
-      );
-    }));
+    if (this.bannerTexture === undefined && this.backgroundTexture === undefined) {
+      this.backgroundTexture = null;
+      this.bannerTexture = null;
+
+      promises.push(new Promise((resolve, reject) => {
+        // Get the images
+        PIXI.loader
+            .add(this.path + this.banner)
+            .add(this.path + this.background)
+            .load(resolve);
+      }).then(() => {
+        this.bannerTexture = new PIXI.Sprite(
+            PIXI.loader.resources[this.path + this.banner].texture
+        );
+        this.backgroundTexture = new PIXI.Sprite(
+            PIXI.loader.resources[this.path + this.background].texture
+        );
+      }));
+    }
 
     return Promise.all(promises);
 
