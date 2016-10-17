@@ -45,6 +45,10 @@ class Judge {
     return this.timingWindow[TM_HOLD];
   }
 
+  getRollTiming() {
+    return this.timingWindow[TM_ROLL];
+  }
+
   getMineTiming() {
     return this.timingWindow[TM_MINE];
   }
@@ -118,6 +122,7 @@ class Judge {
     for (let s of steps) {
       s.score =  Math.floor(B / S) * index++;
       s.holdTiming = this.getHoldTiming();
+      s.rollTiming = this.getRollTiming();
     }
   }
 

@@ -66,8 +66,8 @@ class Engine {
         let direction = parseInt(directionS, 10);
         let arrow = step.arrows[direction];
 
-        let schedule = (time, action, absolute, beat) => {
-          return this.schedule(time, action, absolute, beat);
+        let schedule = (time, action, absolute, beat, ev=null) => {
+          return this.schedule(time, action, absolute, beat, ev);
         };
 
         let note = Note.CreateNote(arrow, direction, noteStep, schedule);
@@ -312,9 +312,13 @@ class Engine {
 
   }
 
-  schedule(at, action, absolute=true, beat=true) {
+  schedule(at, action, absolute=true, beat=true, base_ev=null) {
 
     let ev = {action};
+
+    if (base_ev !== null) {
+      ev = base_ev;
+    }
 
     if (beat) {
       ev.beat = absolute ? at : at + this.beat;
@@ -322,7 +326,11 @@ class Engine {
       ev.time = absolute ? at : at + this.time;
     }
 
-    this.scheduledEvents.add(ev);
+    if (base_ev === null) {
+      this.scheduledEvents.add(ev);
+    }
+
+    return ev;
   }
 
   handleScheduled() {

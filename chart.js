@@ -27,6 +27,7 @@ const EVENT_STEP_HIT = Symbol.for('EVENT_STEP_HIT');
 
 //Timer types
 const RELEASE_TIMER = Symbol.for('RELEASE_TIMER');
+const ROLL_TIMER = Symbol.for('ROLL_TIMER');
 const END_TIMER = Symbol.for('END_TIMER');
 
 // Virtual Base Note Class
@@ -406,6 +407,12 @@ class LongNoteActivatedState extends LongNoteState {
     this.note.schedule(this.note.getEnd(), () => {
       this.note.expire(END_TIMER);
     }, true, true);
+
+    if (this.note.type === ROLL_NOTE) {
+      this.roll_timeout = this.note.schedule(this.note.step.rollTiming, () => {
+        this.note.expire(ROLL_TIMER);
+      }, false, false);
+    }
   }
 
   constructor(note, delay) {
@@ -415,7 +422,7 @@ class LongNoteActivatedState extends LongNoteState {
 
   tap(delay) {
     if (this.note.type === ROLL_NOTE) {
-      //TODO: What is the effect??
+      this.note.schedule(this.note.step.rollTiming, null, false, false, this.roll_timeout);
     }
     return null;
   }
@@ -431,6 +438,8 @@ class LongNoteActivatedState extends LongNoteState {
   expire(type) {
     if (type === END_TIMER) {
       return new LongNoteFinishedState(this.note);
+    } else if (type === ROLL_TIMER) {
+      return new LongNoteDeactivatedState(this.note, false);
     }
     return null;
   }
@@ -481,7 +490,7 @@ class LongNoteDeactivatedState extends LongNoteState {
       Note.NoteMiss(this.note);
 
     } // We stopped in the middle
-    else if (this.note.type === HOLD_NOTE) {
+    else {
       Note.NoteFinish(this.note, false);
     }
   }
@@ -496,10 +505,7 @@ class LongNoteFinishedState extends LongNoteState {
 
   enter() {
     this.note.graphicComponent.finish();
-
-    if (this.note.type === HOLD_NOTE) {
-      Note.NoteFinish(this.note, true);
-    }
+    Note.NoteFinish(this.note, true);
   }
 }
 
