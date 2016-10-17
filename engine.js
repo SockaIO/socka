@@ -21,7 +21,7 @@ class Engine {
     this.beat = 0;
 
     // Scheduling
-    this.scheduledEvents = [];
+    this.scheduledEvents = new Set();
 
     // Missed steps
     this.missedStepIndex = 0;
@@ -322,27 +322,17 @@ class Engine {
       ev.time = absolute ? at : at + this.time;
     }
 
-    this.scheduledEvents.push(ev);
-    console.log(ev);
+    this.scheduledEvents.add(ev);
   }
 
   handleScheduled() {
 
-    let toRemove = [];
-
-    for (let x=0; x<this.scheduledEvents.length; x++) {
-      let ev = this.scheduledEvents[x];
-
+    for (let ev of this.scheduledEvents) {
       if ((ev.beat !== undefined && ev.beat <= this.beat) ||
           (ev.time !== undefined && ev.time <= this.time)) {
         ev.action();
-        toRemove.push(x);
+        this.scheduledEvents.delete(ev);
       }
-    }
-
-    // Remove the processed Events
-    for (let i of toRemove) {
-      this.scheduledEvents.splice(i);
     }
   }
 
