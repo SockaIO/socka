@@ -10,11 +10,46 @@ class MainView {
 
     this.stage = new PIXI.Container();
     this.background = new PIXI.Container();
+    this.foreground = new PIXI.Container();
     this.stage.addChild(this.background);
+    this.stage.addChild(this.foreground);
 
     this.renderer = PIXI.autoDetectRenderer(width, height, {backgroundColor : 0x1099bb});
 
     this.views = [];
+    this.menu = null;
+  }
+
+  addView(view) {
+    this.foreground.addChild(view.sprite);
+    this.views.push(view);
+  }
+
+  removeView(view) {
+    this.foreground.removeChild(view.sprite);
+    this.views.splice(this.views.indexOf(view), 1);
+  }
+
+  update() {
+    for (let view of this.views) {
+      view.update();
+    }
+  }
+
+  addMenu(entries) {
+    let controller = new KeyboardController;
+    controller.setup();
+
+    let mainview = this;
+
+    let menu = new Menu(this.width, this.height, entries);
+    menu.controller = controller;
+
+    menu.sprite.x = 100;
+    menu.sprite.y = 0;
+
+    this.addView(menu);
+    this.menu = menu;
   }
 
   startSong(song) {
@@ -32,11 +67,8 @@ class MainView {
       let engine = new Engine(400, 600, 6);
       engine.loadSong(song, 2, judge);
 
-      let field = engine.sprite;
-      field.x = 100;
-      field.y = 0;
-
-      this.stage.addChild(field);
+      engine.sprite.x = 100;
+      engine.sprite.y = 0;
 
       let songPlayer = new SongPlayer();
       songPlayer.load(song).then(() => songPlayer.play());
@@ -54,14 +86,9 @@ class MainView {
       PadController.Setup();
 
       engine.controller = controller;
-      this.views.push(engine);
+      this.addView(engine);
     });
   }
 
-  update() {
-    for (let view of this.views) {
-      view.update();
-    }
-  }
 }
 

@@ -1,4 +1,4 @@
-///* jshint esnext: true */
+/* jshint esnext: true */
 "use strict";
 
 // Note Types

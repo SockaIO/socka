@@ -13,7 +13,29 @@ function init() {
 
       document.body.appendChild(mainview.renderer.view);
 
-      mainview.startSong(Song.loadFromFile('Astro Troopers/Astro Troopers.sm'));
+      mainview.addMenu([
+        {
+          name: "Astro Troopers",
+          action: function() {
+            mainview.startSong(
+              Song.loadFromFile('Astro Troopers/Astro Troopers.sm')
+            );
+            mainview.removeView(mainview.menu);
+          }
+        },
+        {
+          name: "entry2",
+          action: function() {
+            console.log("entry2");
+          }
+        },
+        {
+          name: "entry3",
+          action: function() {
+            console.log("entry3");
+          }
+        },
+    ]);
 
       gameLoop();
     });

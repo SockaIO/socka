@@ -141,6 +141,10 @@ class DefaultTheme {
     return new ReceptorDefaultGraphicComponent(this);
   }
 
+  createMenuGC(...args) {
+    return new MenuDefaultGraphicComponent(this, ...args);
+  }
+
   createEngineGC(...args) {
     return new EngineDefaultGraphicComponent(this, ...args);
   }
@@ -447,6 +451,84 @@ class LongNoteDefaultGraphicComponent extends LongNoteGraphicComponent {
   }
 
 }
+
+class MenuDefaultGraphicComponent {
+
+  constructor(theme, width, height, entries) {
+
+    // Engine Container
+    this.height = height;
+    this.width = width;
+
+    this.createMainSprite();
+
+    this.textHoverOptions = {
+      fontFamily : 'bold Arial',
+      fontSize: 24,
+      fill : 0xffff11,
+      align : 'center'
+    };
+
+    this.textOptions = {
+      fontFamily : 'Arial',
+      fontSize: 24,
+      fill : 0xff1010,
+      align : 'center'
+    };
+
+    this.PIXIEntries = [];
+    let i = 0;
+    for (let entry of entries) {
+      let sprite = new PIXI.Text(entry.name, i === 0 ? this.textHoverOptions : this.textOptions);
+      this.PIXIEntries.push(sprite);
+      i++;
+    }
+
+    this.theme = theme;
+
+    this.placeEntries();
+  }
+
+  createMainSprite() {
+    this.sprite = new PIXI.Container();
+
+    this.background = new PIXI.Container();
+    this.foreground = new PIXI.Container();
+
+    this.sprite.addChild(this.background);
+    this.sprite.addChild(this.foreground);
+  }
+
+  hover(entryIndex) {
+    let i = 0;
+    for (let sprite of this.PIXIEntries) {
+      if (i === entryIndex) {
+        sprite.style = this.textHoverOptions;
+      } else {
+        sprite.style = this.textOptions;
+      }
+      i++;
+    }
+  }
+
+  placeEntries() {
+    let y = this.yText;
+    for (let sprite of this.PIXIEntries) {
+      sprite.y = y;
+      this.foreground.addChild(sprite);
+      y+= sprite.height;
+    }
+  }
+
+  get textSize() {
+    return this.PIXIEntries[0].height * this.PIXIEntries.length;
+  }
+
+  get yText() {
+    return this.height/2 - this.textSize/2;
+  }
+}
+
 
 class EngineDefaultGraphicComponent {
 
