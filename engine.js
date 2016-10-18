@@ -217,7 +217,13 @@ class Engine {
 
       // Note passed the miss window
       if (step.time + this.missTiming <= this.time && x >= this.missedStepIndex) {
-        step.applyToNotes('miss');
+        for (let n of step.notes) {
+          if (n.type === MINE_NOTE) {
+            n.dodge();
+          } else {
+            n.miss();
+          }
+        }
         this.missedStepIndex++;
       }
 
@@ -255,6 +261,10 @@ class Engine {
         console.log("[Engine] A note is it missed", ev.note);
         this.combo.reset();
         this.lifemeter.updateLife(this.judge.getPoints(ev.note, ev.timing));
+        break;
+
+      case EVENT_NOTE_DODGE:
+        console.log("[Engine] A note is it dodged", ev.note);
         break;
 
       case EVENT_NOTE_FINISH:

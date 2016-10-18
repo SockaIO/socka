@@ -196,6 +196,10 @@ class SimpleNoteDefaultGraphicComponent extends SimpleNoteGraphicComponent {
     this.sprite.destroy(); 
   }
 
+  dodge() {
+    TweenLite.to(this.sprite, this.fadeout, {alpha: 0});
+  }
+
   miss() {
     // No feedback
   }

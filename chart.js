@@ -1,4 +1,4 @@
-/* jshint esnext: true */
+///* jshint esnext: true */
 "use strict";
 
 // Note Types
@@ -24,6 +24,7 @@ const EVENT_NOTE_HIT = Symbol.for('EVENT_NOTE_HIT');
 const EVENT_NOTE_FINISH = Symbol.for('EVENT_NOTE_FINISH');
 const EVENT_NOTE_MISS = Symbol.for('EVENT_NOTE_MISS');
 const EVENT_STEP_HIT = Symbol.for('EVENT_STEP_HIT');
+const EVENT_NOTE_DODGE = Symbol.for('EVENT_NOTE_DODGE');
 
 //Timer types
 const RELEASE_TIMER = Symbol.for('RELEASE_TIMER');
@@ -60,7 +61,7 @@ class Note {
       note,
       timing: TM_MISS,
       type: EVENT_NOTE_MISS
-    }
+    };
 
     // Add the note step as an extra observer
     // TODO: Maybe handle more gracefully
@@ -77,15 +78,30 @@ class Note {
       note,
       timing,
       type: EVENT_NOTE_FINISH
-    }
+    };
 
     // Add the note step as an extra observer
     // TODO: Maybe handle more gracefully
     // The idea is to have the possibility to have global observers
     // for such events
     Note.subject.notify(ev, [note.step]);
-
   }
+
+  static NoteDodge(note) {
+
+    let ev = {
+      note,
+      timing: TM_MISS,
+      type: EVENT_NOTE_DODGE
+    };
+
+    // Add the note step as an extra observer
+    // TODO: Maybe handle more gracefully
+    // The idea is to have the possibility to have global observers
+    // for such events
+    Note.subject.notify(ev, [note.step]);
+  }
+
 
   static CreateNote(arrow, direction, step, schedule) {
 
@@ -197,6 +213,13 @@ class Note {
     }
   }
 
+  dodge() {
+    const state = this.state.dodge();
+    if (state !== null) {
+      this.setState(state);
+    }
+  }
+
   // Note in existence window
   inside(stream) {
     const state = this.state.inside(stream);
@@ -242,6 +265,7 @@ class SimpleNoteState {
   lift(delay) {return null;}
   miss() {return null;}
   collide() {return null;}
+  dodge() {return null;}
 
   out() {
     // Anti Optimization
@@ -290,10 +314,11 @@ class SimpleNoteFreshState extends SimpleNoteState {
   }
 
   miss(note) {
-    if (this.note.type !== MINE_NOTE) {
-      return new SimpleNoteMissState(this.note);
-    }
-    return null;
+    return new SimpleNoteMissState(this.note);
+  }
+
+  dodge(note) {
+    return new SimpleNoteDodgeState(this.note);
   }
 }
 
@@ -321,6 +346,14 @@ class SimpleNoteMissState extends SimpleNoteState {
   enter() {
     Note.NoteMiss(this.note);
     this.note.graphicComponent.miss();
+  }
+}
+
+class SimpleNoteDodgeState extends SimpleNoteState {
+
+  enter() {
+    Note.NoteDodge(this.note);
+    this.note.graphicComponent.dodge();
   }
 }
 
@@ -614,6 +647,7 @@ class NoteStep {
         break;
 
       case EVENT_NOTE_MISS:
+      case EVENT_NOTE_DODGE:
       case EVENT_NOTE_FINISH:
         this.engine.onNotify(ev);
         break;
