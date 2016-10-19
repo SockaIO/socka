@@ -18,7 +18,28 @@ class Menu {
 
     this.graphicComponent = theme.createMenuGC(width, height, entries);
 
+    let menu = this;
+
     this._lastKeyPressed = [];
+
+    for (let sprite of this.graphicComponent.PIXIEntries) {
+      sprite.interactive = true;
+      sprite.mouseup = function(mouseData){
+        menu.mouseup(menu.graphicComponent.PIXIEntries.indexOf(this));
+      };
+      sprite.mouseover = function(mouseData){
+        menu.mouseover(menu.graphicComponent.PIXIEntries.indexOf(this));
+      };
+    }
+  }
+
+  mouseup(entryIndex) {
+    this.entries[entryIndex].action();
+  }
+
+  mouseover(entryIndex) {
+    this.selectrdEntry = entryIndex;
+    this.graphicComponent.hover(entryIndex);
   }
 
   up() {
