@@ -38,7 +38,7 @@ class Menu {
   }
 
   mouseover(entryIndex) {
-    this.selectrdEntry = entryIndex;
+    this.selectedEntry = entryIndex;
     this.graphicComponent.hover(entryIndex);
   }
 
