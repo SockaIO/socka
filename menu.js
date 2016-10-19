@@ -8,38 +8,71 @@ class Menu {
     this.controller = null;
 
     this.controllerActions = {
+      0: 'left',
       1: 'down',
       2: 'up',
-      80: 'start'
+      3: 'right',
+      80: 'start',
+      81: 'back'
     };
 
     this.selectedEntry = 0;
     this.entries = entries;
 
-    this.graphicComponent = theme.createMenuGC(width, height, entries);
+    this.selectedSubEntries = [];
+    for (let entry of entries) {
+      if (entry.subEntries === undefined) {
+        this.selectedSubEntries.push(undefined);
+        continue;
+      }
+      let def = entry.subEntries.indexOf(entry.default);
+      if (def === -1) {
+        def = 0;
+      }
+      this.selectedSubEntries.push(def);
+    }
 
-    let menu = this;
+    this.graphicComponent = theme.createMenuGC(width, height, entries);
 
     this._lastKeyPressed = [];
 
-    for (let sprite of this.graphicComponent.PIXIEntries) {
+    this.handleMouse();
+
+    this.graphicComponent.hover(this.selectedEntry, this.selectedSubEntries);
+  }
+
+  handleMouse() {
+    let menu = this;
+    for (let sprite of this.graphicComponent.iterSprites()) {
       sprite.interactive = true;
       sprite.mouseup = function(mouseData){
-        menu.mouseup(menu.graphicComponent.PIXIEntries.indexOf(this));
+        menu.mouseup(
+          menu.graphicComponent.spritesMapping.get(this)[0],
+          menu.graphicComponent.spritesMapping.get(this)[1]
+        );
       };
       sprite.mouseover = function(mouseData){
-        menu.mouseover(menu.graphicComponent.PIXIEntries.indexOf(this));
+        menu.mouseover(menu.graphicComponent.spritesMapping.get(this)[0]);
       };
     }
   }
 
-  mouseup(entryIndex) {
-    this.entries[entryIndex].action();
+  mouseup(entryIndex, subIndex) {
+    this.selectedEntry = entryIndex;
+    if (subIndex !== undefined) {
+      this.selectedSubEntry = subIndex;
+      this.graphicComponent.hover(entryIndex, this.selectedSubEntries);
+    } else {
+      this.currentEntry.action();
+    }
   }
 
   mouseover(entryIndex) {
     this.selectedEntry = entryIndex;
-    this.graphicComponent.hover(entryIndex);
+    this.graphicComponent.hover(entryIndex, this.selectedSubEntries);
+  }
+
+  back() {
   }
 
   up() {
@@ -58,8 +91,30 @@ class Menu {
     }
   }
 
+  left() {
+    if (this.selectedSubEntry === undefined) {
+      return;
+    }
+    if (this.selectedSubEntry === 0) {
+      this.selectedSubEntry = this.currentEntry.subEntries.length - 1;
+    } else {
+      this.selectedSubEntry--;
+    }
+  }
+
+  right() {
+    if (this.selectedSubEntry === undefined) {
+      return;
+    }
+    if (this.selectedSubEntry >= this.currentEntry.subEntries.length - 1) {
+      this.selectedSubEntry = 0;
+    } else {
+      this.selectedSubEntry++;
+    }
+  }
+
   start() {
-    this.entries[this.selectedEntry].action();
+    this.currentEntry.action();
   }
 
   update() {
@@ -68,15 +123,85 @@ class Menu {
       if (!this._lastKeyPressed.includes(d)) {
         if (d in this.controllerActions) {
           this[this.controllerActions[d]]();
-          this.graphicComponent.hover(this.selectedEntry);
+          this.graphicComponent.hover(this.selectedEntry, this.selectedSubEntries);
         }
       }
     }
     this._lastKeyPressed = pressed;
   }
 
+  get selectedSubEntry() {
+    return this.selectedSubEntries[this.selectedEntry];
+  }
+
+  set selectedSubEntry(val) {
+    this.selectedSubEntries[this.selectedEntry] = val;
+  }
+
+  get currentEntry() {
+    return this.entries[this.selectedEntry];
+  }
+
   get sprite() {
     return this.graphicComponent.sprite;
+  }
+
+  get selections() {
+    let res = {};
+    let i = 0;
+    for (let entry of this.entries) {
+      if (entry.subEntries) {
+        res[entry.name] = entry.subEntries[this.selectedSubEntries[i]];
+      }
+      i++;
+    }
+    return res;
+  }
+}
+
+class MenuGraphicComponent {
+
+  constructor(theme, width, height, entries) {
+    this.spritesMapping = new WeakMap();
+
+    this.PIXIEntries = [];
+    let i = 0;
+    for (let entry of entries) {
+      let sprite = new PIXI.Text(entry.name);
+      this.spritesMapping.set(sprite, [i]);
+
+      let subsprites = [];
+      if (entry.subEntries) {
+        let j = 0;
+        for (let e of entry.subEntries) {
+          let s = new PIXI.Text(e);
+          subsprites.push(s);
+          this.spritesMapping.set(s, [i, j]);
+          j++;
+        }
+      }
+
+      this.PIXIEntries.push({
+        'mainsprite': sprite,
+        'entry': entry,
+        'subsprites': subsprites,
+        'index': i
+      });
+      i++;
+    }
+  }
+
+  * iterSprites() {
+    for (let sprite of this.PIXIEntries) {
+      yield sprite.mainsprite;
+
+      for (let s of sprite.subsprites) {
+        yield s;
+      }
+    }
+  }
+
+  hover(entryIndex, subEntries) {
   }
 }
 

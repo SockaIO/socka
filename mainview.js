@@ -50,6 +50,41 @@ class MainView {
 
     this.addView(menu);
     this.menu = menu;
+    return menu;
+  }
+
+  addOptionMenu(options, returnAction) {
+    let entries = [];
+    for (let opt of options) {
+      entries.push({
+        name: opt.name,
+        subEntries: opt.options,
+        action: function() {},
+        'default': opt.default
+      });
+    }
+
+    let mainview = this;
+
+    entries.push({
+      name: 'Save'
+    });
+
+    let oldEntries = this.menu.entries;
+    this.removeView(this.menu)
+
+    let newMenu = this.addMenu(entries);
+
+    newMenu.entries.slice(-1)[0].action = function () {
+      console.log(newMenu.selections);
+      mainview.removeView(newMenu);
+      mainview.addMenu(oldEntries);
+    };
+
+    newMenu.back = function() {
+      mainview.removeView(newMenu);
+      mainview.addMenu(oldEntries);
+    };
   }
 
   startSong(song) {

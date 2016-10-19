@@ -452,9 +452,10 @@ class LongNoteDefaultGraphicComponent extends LongNoteGraphicComponent {
 
 }
 
-class MenuDefaultGraphicComponent {
+class MenuDefaultGraphicComponent extends MenuGraphicComponent {
 
   constructor(theme, width, height, entries) {
+    super(theme, width, height, entries);
 
     // Engine Container
     this.height = height;
@@ -476,14 +477,6 @@ class MenuDefaultGraphicComponent {
       align : 'center'
     };
 
-    this.PIXIEntries = [];
-    let i = 0;
-    for (let entry of entries) {
-      let sprite = new PIXI.Text(entry.name, i === 0 ? this.textHoverOptions : this.textOptions);
-      this.PIXIEntries.push(sprite);
-      i++;
-    }
-
     this.theme = theme;
 
     this.placeEntries();
@@ -499,29 +492,45 @@ class MenuDefaultGraphicComponent {
     this.sprite.addChild(this.foreground);
   }
 
-  hover(entryIndex) {
-    let i = 0;
+  hover(entryIndex, subEntries) {
     for (let sprite of this.PIXIEntries) {
-      if (i === entryIndex) {
-        sprite.style = this.textHoverOptions;
+      if (sprite.index === entryIndex) {
+        sprite.mainsprite.style = this.textHoverOptions;
       } else {
-        sprite.style = this.textOptions;
+        sprite.mainsprite.style = this.textOptions;
       }
-      i++;
+
+      let i = 0;
+      for (let s of sprite.subsprites) {
+        if (i === subEntries[sprite.index]) {
+          s.style = this.textHoverOptions;
+        } else {
+          s.style = this.textOptions;
+        }
+        i ++;
+      }
     }
   }
 
   placeEntries() {
     let y = this.yText;
+    let marginX = 20;
     for (let sprite of this.PIXIEntries) {
-      sprite.y = y;
-      this.foreground.addChild(sprite);
-      y+= sprite.height;
+      sprite.mainsprite.y = y;
+      this.foreground.addChild(sprite.mainsprite);
+      let x = sprite.mainsprite.x + sprite.mainsprite.width + marginX;
+      for (let s of sprite.subsprites) {
+        s.x = x;
+        s.y = y;
+        this.foreground.addChild(s);
+        x += s.width + marginX;
+      }
+      y += sprite.mainsprite.height;
     }
   }
 
   get textSize() {
-    return this.PIXIEntries[0].height * this.PIXIEntries.length;
+    return this.PIXIEntries[0].mainsprite.height * this.PIXIEntries.length;
   }
 
   get yText() {

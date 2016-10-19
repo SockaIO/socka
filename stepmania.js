@@ -30,12 +30,16 @@ function init() {
           }
         },
         {
-          name: "entry3",
+          name: "Options",
           action: function() {
-            console.log("entry3");
+            mainview.addOptionMenu([
+              {name: 'theme', options: ['theme1', 'theme2']},
+              {name: 'options', options: ['opt1', 'opt2']},
+              {name: 'coucou', options: ['bidule', 'chose', 'machin']},
+            ]);
           }
         },
-    ]);
+      ]);
 
       gameLoop();
     });
