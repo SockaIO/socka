@@ -355,7 +355,7 @@ class Song {
 
     let timing = this.timingPartition[index];
     let time = timing.startTime + (beat - timing.startBeat) / timing.bps;
-    
+
     return [time, index];
 
   }
@@ -465,17 +465,16 @@ function createTimingPartition(song) {
   
   let sections = [];
 
-  song.bpms.sort((a, b) => a < b);
+  song.bpms.sort((a, b) => a.beat -b.beat);
 
   for (let change of song.bpms) {
 
     let section = new TimingSection(change.beat, change.value);
     sections.push(section);
   }
-  
-  song.stops.sort((a, b) => a < b);
-  let sectionIndex = 0;
 
+  song.stops.sort((a, b) => a.beat - b.beat);
+  let sectionIndex = 0;
 
   // Add the stop sections
 
