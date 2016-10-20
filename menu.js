@@ -40,17 +40,16 @@ class Menu {
   }
 
   handleMouse() {
-    let menu = this;
     for (let sprite of this.graphicComponent.iterSprites()) {
       sprite.interactive = true;
-      sprite.mouseup = function(mouseData){
-        menu.mouseup(
-          menu.graphicComponent.spritesMapping.get(this)[0],
-          menu.graphicComponent.spritesMapping.get(this)[1]
+      sprite.mouseup = (m) => {
+        this.mouseup(
+          this.graphicComponent.spritesMapping.get(m.target)[0],
+          this.graphicComponent.spritesMapping.get(m.target)[1]
         );
       };
-      sprite.mouseover = function(mouseData){
-        menu.mouseover(menu.graphicComponent.spritesMapping.get(this)[0]);
+      sprite.mouseover = (m) => {
+        this.mouseover(this.graphicComponent.spritesMapping.get(m.target)[0]);
       };
     }
   }

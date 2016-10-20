@@ -40,8 +40,6 @@ class MainView {
     let controller = new KeyboardController;
     controller.setup();
 
-    let mainview = this;
-
     let menu = new Menu(this.width, this.height, entries);
     menu.controller = controller;
 
@@ -59,31 +57,29 @@ class MainView {
       entries.push({
         name: opt.name,
         subEntries: opt.options,
-        action: function() {},
+        action: ()  => {},
         'default': opt.default
       });
     }
-
-    let mainview = this;
 
     entries.push({
       name: 'Save'
     });
 
     let oldEntries = this.menu.entries;
-    this.removeView(this.menu)
+    this.removeView(this.menu);
 
     let newMenu = this.addMenu(entries);
 
-    newMenu.entries.slice(-1)[0].action = function () {
+    newMenu.entries.slice(-1)[0].action = () => {
       console.log(newMenu.selections);
-      mainview.removeView(newMenu);
-      mainview.addMenu(oldEntries);
+      this.removeView(newMenu);
+      this.addMenu(oldEntries);
     };
 
-    newMenu.back = function() {
-      mainview.removeView(newMenu);
-      mainview.addMenu(oldEntries);
+    newMenu.back = () => {
+      this.removeView(newMenu);
+      this.addMenu(oldEntries);
     };
   }
 
@@ -100,7 +96,7 @@ class MainView {
       });
 
       let engine = new Engine(400, 600, 6);
-      engine.loadSong(song, 2, judge);
+      engine.loadSong(song, 0, judge);
 
       engine.sprite.x = 100;
       engine.sprite.y = 0;
