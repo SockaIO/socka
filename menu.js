@@ -42,7 +42,7 @@ class Menu {
   handleMouse() {
     for (let sprite of this.graphicComponent.iterSprites()) {
       sprite.interactive = true;
-      sprite.mouseup = (m) => {
+      sprite.mouseup = sprite.tap = (m) => {
         this.mouseup(
           this.graphicComponent.spritesMapping.get(m.target)[0],
           this.graphicComponent.spritesMapping.get(m.target)[1]
