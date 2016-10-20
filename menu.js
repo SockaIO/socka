@@ -34,8 +34,6 @@ class Menu {
 
     this.graphicComponent = theme.createMenuGC(width, height, entries);
 
-    this._lastKeyPressed = [];
-
     this.handleMouse();
 
     this.graphicComponent.hover(this.selectedEntry, this.selectedSubEntries);
@@ -118,16 +116,13 @@ class Menu {
   }
 
   update() {
-    let pressed = this.controller.getPressed();
-    for (let d of pressed) {
-      if (!this._lastKeyPressed.includes(d)) {
-        if (d in this.controllerActions) {
-          this[this.controllerActions[d]]();
-          this.graphicComponent.hover(this.selectedEntry, this.selectedSubEntries);
-        }
+    let cmds = this.controller.handleInput();
+    for (let cmd of cmds) {
+      if (cmd.action === TAP) {
+        this[this.controllerActions[cmd.direction]]();
+        this.graphicComponent.hover(this.selectedEntry, this.selectedSubEntries);
       }
     }
-    this._lastKeyPressed = pressed;
   }
 
   get selectedSubEntry() {
