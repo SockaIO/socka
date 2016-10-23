@@ -38,6 +38,10 @@ class DefaultTheme {
     this.textures = {};
   }
 
+  init() {
+    return this.loadTextures();
+  }
+
   loadTextures() {
 
     for (let r of Object.keys(this.resources)) {

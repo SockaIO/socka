@@ -1,20 +1,16 @@
 /* jshint esnext: true */
 "use strict";
 
-class Menu {
+
+
+/**
+ * View Class for a simple menu
+ *
+ * @extends View
+ */
+class MenuView extends View {
   constructor(width, height, entries) {
-    this.mainview = mainview;
-
-    this.controller = null;
-
-    this.controllerActions = {
-      0: 'left',
-      1: 'down',
-      2: 'up',
-      3: 'right',
-      80: 'start',
-      81: 'back'
-    };
+    super();
 
     this.selectedEntry = 0;
     this.entries = entries;
@@ -32,7 +28,7 @@ class Menu {
       this.selectedSubEntries.push(def);
     }
 
-    this.graphicComponent = theme.createMenuGC(width, height, entries);
+    this.graphicComponent = game.theme.createMenuGC(width, height, entries);
 
     this.handleMouse();
 
@@ -70,6 +66,7 @@ class Menu {
   }
 
   back() {
+    game.popView();
   }
 
   up() {
@@ -115,14 +112,25 @@ class Menu {
   }
 
   update() {
-    let cmds = this.controller.handleInput();
-    for (let cmd of cmds) {
-      if (cmd.action === TAP) {
-        this[this.controllerActions[cmd.direction]]();
-        this.graphicComponent.hover(this.selectedEntry, this.selectedSubEntries);
-      }
+    this.graphicComponent.hover(this.selectedEntry, this.selectedSubEntries);
+  }
+
+  onFocus() {
+
+    console.log('Setting the controller factories');
+    let factories = new Map();
+
+    factories.set([KEY_UP, TAP], () => {this.up ()});
+    factories.set([KEY_DOWN, TAP], () => {this.down ()});
+    factories.set([KEY_BACK, TAP], () => {this.back ()});
+    factories.set([KEY_ENTER, TAP], () => {this.start ()});
+
+
+    for (let c of Controller.Controllers.values()) {
+      c.setCommands(factories);
     }
   }
+
 
   get selectedSubEntry() {
     return this.selectedSubEntries[this.selectedEntry];
@@ -136,7 +144,7 @@ class Menu {
     return this.entries[this.selectedEntry];
   }
 
-  get sprite() {
+  getView() {
     return this.graphicComponent.sprite;
   }
 
