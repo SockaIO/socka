@@ -200,7 +200,11 @@ class DanceCommand {
 
     // Visual Effect
     if (this.action === TAP) {
-      engine.graphicComponent.receptor.flash(this.direction);
+      engine.graphicComponent.receptor.tap(this.direction);
+    }
+
+    if (this.action === LIFT) {
+      engine.graphicComponent.receptor.lift(this.direction);
     }
 
     // Action on the step

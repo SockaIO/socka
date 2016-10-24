@@ -240,8 +240,10 @@ class ReceptorDefaultGraphicComponent extends ReceptorGraphicComponent {
     let textureFlash = this.theme.getTexture('receptorFlash');
     let scale = offset / texture.frame.width;
 
-    this.flashMinScale = scale * 0.7;
-    this.flashMaxScale = scale * 1.5;
+    this.flashMinScale = scale;
+    this.flashMaxScale = scale * 1.3;
+    this.noteMinScale = scale * 0.8;
+    this.noteScale = scale;
 
     for (let x=0; x < 4; x++) {
 
@@ -298,13 +300,25 @@ class ReceptorDefaultGraphicComponent extends ReceptorGraphicComponent {
     this.foreground = d;
   }
 
-  flash(direction) {
+  tap(direction) {
 
     let arrow = this.notes[direction];
     let flash = arrow.children[0];
+    let note = arrow.children[1];
 
+    TweenLite.killTweensOf(flash);
+    TweenLite.killTweensOf(flash.scale);
     flash.scale = {x: this.flashMinScale, y: this.flashMinScale};
     flash.alpha = 1;
+
+    note.scale = {x: this.noteMinScale, y: this.noteMinScale};
+    TweenLite.to(note.scale, this.flashDuration, {x: this.noteScale, y: this.noteScale});
+ }
+
+  lift(direction) {
+
+    let arrow = this.notes[direction];
+    let flash = arrow.children[0];
 
     TweenLite.to(flash.scale, this.flashDuration, {x: this.flashMaxScale, y: this.flashMaxScale});
     TweenLite.to(flash, this.flashDuration, {alpha: 0});
