@@ -47,6 +47,9 @@ class Engine {
     this.lifemeter = new Lifemeter();
     console.log(this.lifemeter.sprite);
     this.graphicComponent.placeLifemeter(this.lifemeter.sprite);
+
+    this.progressionBar = new ProgressionBar();
+    this.graphicComponent.placeProgressionBar(this.progressionBar.sprite);
   }
 
   loadSong(song, chartIndex, judge) {
@@ -92,6 +95,7 @@ class Engine {
   }
 
   setSongPlayer(sp) {
+    this.progressionBar.setSongPlayer(sp);
     this.songPlayer = sp;
   }
 
@@ -103,6 +107,7 @@ class Engine {
 
     // Get the time information
     this.time = this.songPlayer.getTime();
+
     let [beat, index] = this.song.getBeat(this.time);
     this.beat = beat;
 
@@ -111,6 +116,8 @@ class Engine {
     //this.updateWindow(beat);
     this.updateAction();
     this.graphicComponent.update(beat);
+
+    this.progressionBar.update();
 
     // update the missed notes
     this.updateEvents();
@@ -419,6 +426,42 @@ class Lifemeter {
   }
 
 
+}
+
+class ProgressionBar {
+  constructor() {
+    this.songDuration = null;
+    this.secondPassed = 0;
+    this.songPlayer = null;
+    this.percentage = 0;
+
+    this.graphicComponent = theme.createProgressionBarGC();
+  }
+
+  setSongPlayer(sp) {
+    this.songPlayer = sp;
+  }
+
+  update() {
+    if (!this.songDuration) {
+      if (this.songPlayer.source.buffer) {
+        this.songDuration = this.songPlayer.source.buffer.duration;
+      } else {
+        return;
+      }
+    }
+
+    if (this.songPlayer.getTime() > 0) {
+      this.secondPassed = this.songPlayer.getTime();
+    }
+
+    this.percentage = 1 - (this.songDuration - this.secondPassed)/this.songDuration;
+    this.graphicComponent.update(this.percentage)
+  }
+
+  get sprite() {
+    return this.graphicComponent.sprite;
+  }
 }
 
 

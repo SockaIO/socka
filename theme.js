@@ -165,6 +165,10 @@ class DefaultTheme {
     return new LifemeterDefaultGraphicComponent(this);
   }
 
+  createProgressionBarGC() {
+    return new ProgressionBarDefaultGraphicComponent(this);
+  }
+
 }
 
 DefaultTheme.angleMap = [1, 0, 2, 3].map((x) => 2 * x * Math.PI / 4);
@@ -679,6 +683,12 @@ class EngineDefaultGraphicComponent {
     sprite.y = 0;
   }
 
+  placeProgressionBar(sprite) {
+    this.foreground.addChild(sprite);
+    sprite.x = 0;
+    sprite.y = (this.height / 2) - (sprite.height / 2);
+  }
+
 
   // We prosses the event in case some
   // more complicated stuff need to be added
@@ -813,12 +823,37 @@ class ComboDefaultGraphicComponent {
   }
 }
 
+class ProgressionBarDefaultGraphicComponent {
+  constructor(theme) {
+    this.theme = theme;
+
+    this.sprite = new PIXI.Container();
+
+
+    this.receptor = new PIXI.Sprite(theme.getTexture('lifemeterUnder'));
+    this.receptor.width = 10;
+    this.receptor.height = 400;
+
+    this.bar = new PIXI.Sprite(theme.getTexture('lifemeterMiddle'));
+    this.bar.x = this.receptor.x + 1;
+    this.bar.y = this.receptor.y + 1;
+    this.bar.width = this.receptor.width - 2;
+    this.bar.height = 0;
+
+    this.sprite.addChild(this.receptor);
+    this.sprite.addChild(this.bar);
+  }
+
+  update(progression) {
+    this.bar.height = this.receptor.height*progression;
+  }
+}
+
 class LifemeterDefaultGraphicComponent {
 
   constructor(theme) {
 
     this.theme = theme;
-
     this.sprite = new PIXI.Container();
 
     this.sprite.addChild(new PIXI.Sprite(theme.getTexture('lifemeterUnder')));
