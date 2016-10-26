@@ -32,6 +32,8 @@ class DefaultTheme {
       lifemeterOver: 'theme/lifemeterOver.png',
       lifemeterMiddle: 'theme/lifemeterMiddle.png',
       lifemeterUnder: 'theme/lifemeterUnder.png',
+      progressBarMiddle: 'theme/progressBarMiddle.png',
+      progressBarUnder: 'theme/progressBarUnder.png',
     };
 
     // Will be filled after loading
@@ -827,11 +829,11 @@ class ProgressionBarDefaultGraphicComponent {
 
     this.sprite = new PIXI.Container();
 
-    this.receptor = new PIXI.Sprite(theme.getTexture('lifemeterUnder'));
+    this.receptor = new PIXI.Sprite(theme.getTexture('progressBarUnder'));
     this.receptor.width = 10;
     this.receptor.height = 400;
 
-    this.bar = new PIXI.Sprite(theme.getTexture('lifemeterMiddle'));
+    this.bar = new PIXI.Sprite(theme.getTexture('progressBarMiddle'));
     this.bar.x = this.receptor.x + 1;
     this.bar.y = this.receptor.y + 1;
     this.bar.width = this.receptor.width - 2;
