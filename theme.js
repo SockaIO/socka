@@ -375,10 +375,8 @@ class LongNoteDefaultGraphicComponent extends LongNoteGraphicComponent {
     switch(this.note.type) {
       case ROLL_NOTE:
         return [this.theme.getTexture('rollBody'), this.theme.getTexture('rollCap')];
-        break
       case HOLD_NOTE:
         return [this.theme.getTexture('holdBody'), this.theme.getTexture('holdCap')];
-        break
     }
 
     return;
@@ -829,7 +827,6 @@ class ProgressionBarDefaultGraphicComponent {
 
     this.sprite = new PIXI.Container();
 
-
     this.receptor = new PIXI.Sprite(theme.getTexture('lifemeterUnder'));
     this.receptor.width = 10;
     this.receptor.height = 400;
@@ -845,7 +842,7 @@ class ProgressionBarDefaultGraphicComponent {
   }
 
   update(progression) {
-    this.bar.height = this.receptor.height*progression;
+    this.bar.height = (this.receptor.height - 2) * progression;
   }
 }
 

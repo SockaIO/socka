@@ -451,12 +451,15 @@ class ProgressionBar {
       }
     }
 
-    if (this.songPlayer.getTime() > 0) {
-      this.secondPassed = this.songPlayer.getTime();
+    let time = this.songPlayer.getTime();
+
+    if (time < 0 || time > this.songDuration) {
+      return;
     }
 
+    this.secondPassed = time;
     this.percentage = 1 - (this.songDuration - this.secondPassed)/this.songDuration;
-    this.graphicComponent.update(this.percentage)
+    this.graphicComponent.update(this.percentage);
   }
 
   get sprite() {
