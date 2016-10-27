@@ -194,7 +194,17 @@ class SimpleNoteDefaultGraphicComponent extends SimpleNoteGraphicComponent {
     sprite.anchor.x = 0.5;
     sprite.anchor.y = 0.5;
 
-    sprite.rotation = DefaultTheme.angleMap[this.note.direction];
+
+    if (this.note.type === MINE_NOTE) {
+      sprite._startRotation = new Date();
+      Object.defineProperty(sprite, "rotation", {
+        get: function () {
+          return (new Date() - sprite._startRotation)/500;
+        }
+      });
+    } else {
+      sprite.rotation = DefaultTheme.angleMap[this.note.direction];
+    }
 
     this.sprite = sprite;
   }
