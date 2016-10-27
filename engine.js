@@ -142,7 +142,7 @@ class Engine {
 
     let step = this.steps[this.actionIndex + 1];
 
-    while (Math.abs(step.time - this.time) < this.missTiming) {
+    while (step.time - this.time < this.missTiming) {
 
       // Add the notes to the action notes
       for (let note of step.notes) {

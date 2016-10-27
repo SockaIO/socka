@@ -422,7 +422,7 @@ class Step {
  */
 class TimingSection {
 
-  constructor(startBeat, bpm, startTime=0, duration=-1, offset=0) {
+  constructor(startBeat, bpm, startTime=0, duration=null, offset=0) {
     this.startTime = startTime;
     this.duration = duration;
     this.startBeat = startBeat;
@@ -512,7 +512,7 @@ function createTimingPartition(song) {
 
     let prevSection = sections[i - 1];
 
-    if (prevSection.duration === -1) {
+    if (prevSection.duration === null) {
       prevSection.duration = (section.startBeat - prevSection.startBeat) / prevSection.bps;
     }
 
