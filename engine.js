@@ -3,7 +3,10 @@
 
 class Engine {
 
-  constructor(width, height, fieldView) {
+  constructor(width, height, fieldView, player) {
+
+    // Player
+    this.player = player;
 
     // Controller
     this.controller = null;
@@ -33,7 +36,7 @@ class Engine {
     this.missTiming = 0.250;
 
     // Graphic Component
-    this.graphicComponent = theme.createEngineGC(width, height, fieldView);
+    this.graphicComponent = game.theme.createEngineGC(width, height, fieldView);
 
     // Score
     this.score = new Score();
@@ -125,6 +128,8 @@ class Engine {
         cmd.execute(this);
       }
     }
+
+    console.log('update', this);
   }
 
   updateAction() {
@@ -230,7 +235,8 @@ class Engine {
       // Note is in the collision window
       // TODO: This might fire too many events and slow down the game (maybe?)
       if (x >= this.collisionStepIndex) {
-        let pressed = this.controller.getPressed();
+        //let pressed = this.controller.getPressed();
+        let pressed = [];
 
         if (pressed.length > 0) {
           step.applyToDirections(this.controller.getPressed(), 'collide');
@@ -361,7 +367,7 @@ class Score {
 
   constructor() {
     this.score = 0;
-    this.graphicComponent = theme.createScoreGC();
+    this.graphicComponent = game.theme.createScoreGC();
   }
 
   add(amount) {
@@ -378,7 +384,7 @@ class Combo {
 
   constructor() {
     this.combo = 0;
-    this.graphicComponent = theme.createComboGC();
+    this.graphicComponent = game.theme.createComboGC();
   }
 
   add() {
@@ -402,7 +408,7 @@ class Lifemeter {
     this.maximum = 100;
     this.life = 50;
 
-    this.graphicComponent = theme.createLifemeterGC();
+    this.graphicComponent = game.theme.createLifemeterGC();
     this.updateLife(0);
   }
 

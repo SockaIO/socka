@@ -30,6 +30,8 @@ class Game {
 
     // Create the services
     this.theme = new DefaultTheme();
+
+    this.judge = new Judge();
   }
 
   /**
@@ -43,6 +45,12 @@ class Game {
 
     // Input
     Controller.Setup();
+
+    // Create the players
+    for (let c of Controller.Controllers.values()) {
+      let p = Player.CreatePlayer();
+      p.setController(c);
+    }
 
     return Promise.all(promises);
   }

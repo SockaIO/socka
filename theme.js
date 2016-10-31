@@ -169,6 +169,10 @@ class DefaultTheme {
     return new LifemeterDefaultGraphicComponent(this);
   }
 
+  createEngineViewGC(...args) {
+    return new EngineViewGraphicComponent(this, ...args);
+  }
+
 }
 
 DefaultTheme.angleMap = [1, 0, 2, 3].map((x) => 2 * x * Math.PI / 4);
@@ -849,4 +853,51 @@ class LifemeterDefaultGraphicComponent {
     }});
   }
 
+}
+
+/**
+ * Engine view simple graphic Component
+ */
+class EngineViewGraphicComponent {
+
+  /**
+   * Create a Engien View
+   * @param {Number} width - View width
+   * @param {Number} height - View height
+   */
+  constructor(theme, width, height) {
+
+    this.sprite = new PIXI.Container();
+    this.theme = theme;
+
+    this.background = new PIXI.Sprite();
+    this.background.width = width;
+    this.background.height = height;
+    this.sprite.addChild(this.background);
+  }
+
+  /**
+   * Set background texture
+   * @param {PIXI.BaseTexture} texture - background Texture
+   */
+  setBackground(texture) {
+    this.background.texture = texture;
+  }
+
+  /**
+   * Add an engine to the view
+   * @param {PIXI.DisplayObject} engine - Engine sprite
+   */
+  addEngine(engine) {
+    this.sprite.addChild(engine);
+  }
+}
+
+/**
+ * Empty Graphic Component
+ */
+class EmptyGraphicComponent {
+  constructor() {
+    this.sprite = new PIXI.Container();
+  }
 }

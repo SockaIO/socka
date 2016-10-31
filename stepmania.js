@@ -17,7 +17,10 @@ function init() {
         menu = new MenuView(800, 600, [
           {
             name: "Astro Troopers",
-            action: function() {}
+            action: function() {
+              let gView = new EngineView(800, 600, 'Astro Troopers/Astro Troopers.sm', 2, Player.Players.values());
+              game.pushView(gView);
+            }
           },
           {
             name: "entry2",

@@ -299,12 +299,8 @@ class Song {
             .add(this.path + this.background)
             .load(resolve);
       }).then(() => {
-        this.bannerTexture = new PIXI.Sprite(
-            PIXI.loader.resources[this.path + this.banner].texture
-        );
-        this.backgroundTexture = new PIXI.Sprite(
-            PIXI.loader.resources[this.path + this.background].texture
-        );
+        this.bannerTexture = PIXI.loader.resources[this.path + this.banner].texture;
+        this.backgroundTexture = PIXI.loader.resources[this.path + this.background].texture;
       }));
     }
 
