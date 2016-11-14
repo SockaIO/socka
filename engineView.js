@@ -64,12 +64,37 @@ class EngineView extends View {
 
   /**
    * Wait for the promises and start the song
-   * @listens onFocus
+   * @listens onPushed
    */
-  onFocus() {
+  onPushed() {
     this.songPromise.then(() => {
       this.songPlayer.play();
     });
+  }
+
+
+  /**
+   * Configure the input
+   * @listens onFocus
+   */
+  onFocus() {
+
+    for (let engine of this.engines) {
+      let player = engine.player;
+      let mapping = new Map();
+
+      let createBinding = (keycode, action, engine) => {
+        return () => engine.danceInput(keycode, action, engine);
+      }
+
+      for (let keycode of [KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT]) {
+        for (let action of [TAP, LIFT]) {
+          mapping.set([keycode, action], createBinding(keycode, action, engine));
+        }
+      }
+
+      player.controller.setCommands(mapping);
+    }
   }
 
 
@@ -90,16 +115,6 @@ class EngineView extends View {
     }
   }
 
-  /**
-   * Return the engine
-   * @param {Number} n - Engine index
-   */
-  getEngine(n) {
-    if (n < this.engines.length) {
-      return this.engines[n];
-    }
-    throw new UserException("InvalidEngineId");
-  }
 }
 
 

@@ -121,15 +121,39 @@ class Engine {
     // Do the scheduled Actions
     this.handleScheduled();
 
-    // Handle the inputs
-    if (this.controller !== null) {
-      let cmds = this.controller.handleInput();
-      for (let cmd of cmds) {
-        cmd.execute(this);
-      }
+  }
+
+  /**
+   * Called on dance inputs
+   */
+  danceInput(keycode, action) {
+
+    let convert = {
+      [KEY_UP]:2,
+      [KEY_LEFT]:0,
+      [KEY_DOWN]:1,
+      [KEY_RIGHT]:3
+    };
+
+    let direction = convert[keycode];
+
+
+    // TODO: More accuracy for the time ?
+    let time = this.songPlayer.getTime();
+
+    // Visual Effect
+    if (action === TAP) {
+      this.graphicComponent.receptor.flash(direction);
     }
 
-    console.log('update', this);
+    // Action on the step
+    let note = this.getActionNote(direction, time);
+
+    if (note === null) {
+      return;
+    }
+
+    note.process(action, time);
   }
 
   updateAction() {

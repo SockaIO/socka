@@ -168,10 +168,10 @@ class Note {
     return this.getDistance(time);
   }
 
-  process(cmd) {
-    let delay = this.getDelay(cmd.time);
+  process(action, time) {
+    let delay = this.getDelay(time);
 
-    if (cmd.action === TAP) {
+    if (action === TAP) {
       this.tap(delay);
     } else {
       this.lift(delay);

@@ -62,7 +62,32 @@ class Controller {
    *
    * @abstract
    */
-  setCommands() {}
+  setCommands(cmds) {
+
+    this.commands = new Map();
+    this.commands.set(TAP, new Map());
+    this.commands.set(LIFT, new Map());
+
+    for (let [[keycode, action], cmd] of cmds.entries()) {
+      this.commands.get(action).set(keycode, cmd);
+    }
+  }
+
+  /**
+   * Get the cmd associated with action and direction
+   *
+   * @param {Symbol} Action
+   * @param {Symbol} Keycode
+   *
+   *
+   */
+  getCmd(action, keycode) {
+    if (!this.commands.has(action)) {
+      return null;
+    }
+
+    return this.commands.get(action).get(keycode) || null;
+  }
 
   /**
    * Setup the listener for the gamepad connection/disconnection
@@ -168,25 +193,6 @@ class KeyboardController extends Controller{
     this.setup();
   }
 
-  setCommands(cmds) {
-
-    this.commands = new Map();
-    this.commands.set(TAP, new Map());
-    this.commands.set(LIFT, new Map());
-
-    for (let [[keycode, action], cmd] of cmds.entries()) {
-      this.commands.get(action).set(keycode, cmd);
-    }
-  }
-
-  getCmd(action, keycode) {
-    if (!this.commands.has(action)) {
-      return null;
-    }
-
-    return this.commands.get(action).get(keycode) || null;
-  }
-
   handleInput() {
     let output = this.cmdQueue;
     this.cmdQueue = [];
@@ -233,6 +239,7 @@ class KeyboardController extends Controller{
 
 /**
  * Gamepad Controller.
+ * @TODO: Redo for the new architecture
  *
  * @extends Controller
  */
@@ -297,40 +304,11 @@ class PadController extends Controller {
         this.state[direction] = action;
 
         let time = this.songPlayer !== null ? this.songPlayer.getTime() : 0;
-        let cmd = new DanceCommand(direction, action, time);
+        //let cmd = new DanceCommand(direction, action, time);
         output.push(cmd);
       }
     }
 
     return output;
   }
-}
-
-
-class DanceCommand {
-
-  constructor(direction, action, time) {
-    this.direction = direction;
-    this.time = time;
-    this.action = action;
-  }
-
-  execute(engine) {
-
-    // Visual Effect
-    if (this.action === TAP) {
-      engine.graphicComponent.receptor.flash(this.direction);
-    }
-
-    // Action on the step
-    let note = engine.getActionNote(this.direction, this.time);
-
-    if (note === null) {
-      return;
-    }
-
-    note.process(this);
-
-  }
-
 }
