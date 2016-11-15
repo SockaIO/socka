@@ -110,19 +110,14 @@ class Note {
     let duration = arrow.duration;
     let durationS = arrow.durationS;
 
-    if (typeof(Note.theme) === 'undefined') {
-      console.log('You need to specify the theme for the Note factory');
-      return;
-    }
-
     // Create the right type of Note
     if ([TAP_NOTE, MINE_NOTE, LIFT_NOTE, FAKE_NOTE].includes(type)) {
-      let graphicComponent = theme.createSimpleNoteGC();
+      let graphicComponent = game.theme.createSimpleNoteGC();
       note = new SimpleNote(type, direction, graphicComponent, step);
     }
 
     if ([ROLL_NOTE, HOLD_NOTE].includes(type)) {
-      let graphicComponent = theme.createLongNoteGC();
+      let graphicComponent = game.theme.createLongNoteGC();
       note = new LongNote(type, direction, graphicComponent, step, duration, durationS, schedule);
     }
 
@@ -173,10 +168,10 @@ class Note {
     return this.getDistance(time);
   }
 
-  process(cmd) {
-    let delay = this.getDelay(cmd.time);
+  process(action, time) {
+    let delay = this.getDelay(time);
 
-    if (cmd.action === TAP) {
+    if (action === TAP) {
       this.tap(delay);
     } else {
       this.lift(delay);

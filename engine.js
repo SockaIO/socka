@@ -3,7 +3,10 @@
 
 class Engine {
 
-  constructor(width, height, fieldView) {
+  constructor(width, height, fieldView, player) {
+
+    // Player
+    this.player = player;
 
     // Controller
     this.controller = null;
@@ -33,7 +36,7 @@ class Engine {
     this.missTiming = 0.250;
 
     // Graphic Component
-    this.graphicComponent = theme.createEngineGC(width, height, fieldView);
+    this.graphicComponent = game.theme.createEngineGC(width, height, fieldView);
 
     // Score
     this.score = new Score();
@@ -125,13 +128,44 @@ class Engine {
     // Do the scheduled Actions
     this.handleScheduled();
 
-    // Handle the inputs
-    if (this.controller !== null) {
-      let cmds = this.controller.handleInput();
-      for (let cmd of cmds) {
-        cmd.execute(this);
-      }
+  }
+
+  /**
+   * Called on dance inputs
+   */
+  danceInput(keycode, action) {
+
+    let convert = {
+      [KEY_UP]:2,
+      [KEY_LEFT]:0,
+      [KEY_DOWN]:1,
+      [KEY_RIGHT]:3
+    };
+
+    let direction = convert[keycode];
+
+
+    // TODO: More accuracy for the time ?
+    let time = this.songPlayer.getTime();
+
+    // Visual Effect
+    if (action === TAP) {
+      this.graphicComponent.receptor.tap(direction);
     }
+
+    // Visual Effect
+    if (action === LIFT) {
+      this.graphicComponent.receptor.lift(direction);
+    }
+
+    // Action on the step
+    let note = this.getActionNote(direction, time);
+
+    if (note === null) {
+      return;
+    }
+
+    note.process(action, time);
   }
 
   updateAction() {
@@ -237,7 +271,8 @@ class Engine {
       // Note is in the collision window
       // TODO: This might fire too many events and slow down the game (maybe?)
       if (x >= this.collisionStepIndex) {
-        let pressed = this.controller.getPressed();
+        //let pressed = this.controller.getPressed();
+        let pressed = [];
 
         if (pressed.length > 0) {
           step.applyToDirections(this.controller.getPressed(), 'collide');
@@ -368,7 +403,7 @@ class Score {
 
   constructor() {
     this.score = 0;
-    this.graphicComponent = theme.createScoreGC();
+    this.graphicComponent = game.theme.createScoreGC();
   }
 
   add(amount) {
@@ -385,7 +420,7 @@ class Combo {
 
   constructor() {
     this.combo = 0;
-    this.graphicComponent = theme.createComboGC();
+    this.graphicComponent = game.theme.createComboGC();
   }
 
   add() {
@@ -409,7 +444,7 @@ class Lifemeter {
     this.maximum = 100;
     this.life = 50;
 
-    this.graphicComponent = theme.createLifemeterGC();
+    this.graphicComponent = game.theme.createLifemeterGC();
     this.updateLife(0);
   }
 
@@ -435,7 +470,7 @@ class ProgressionBar {
     this.songPlayer = null;
     this.percentage = 0;
 
-    this.graphicComponent = theme.createProgressionBarGC();
+    this.graphicComponent = game.theme.createProgressionBarGC();
   }
 
   setSongPlayer(sp) {
