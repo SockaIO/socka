@@ -26,6 +26,7 @@ class EngineView extends View {
     this.graphicComponent = game.theme.createEngineViewGC(width, height);
 
     this.engines = [];
+    this.started = false;
 
     const engineWidth = width / 2;
     const engineHeight = height;
@@ -69,6 +70,7 @@ class EngineView extends View {
   onPushed() {
     this.songPromise.then(() => {
       this.songPlayer.play();
+      this.started = true;
     });
   }
 
@@ -110,6 +112,11 @@ class EngineView extends View {
    * Update
    */
   update() {
+
+    if (!this.started) {
+      return;
+    }
+
     for (let e of this.engines) {
       e.update();
     }
