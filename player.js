@@ -31,10 +31,10 @@ class Player {
 
   /**
    * Controller setter
-   * @param {Controller} cotnroller - Controller used by the player
+   * @param {Mapping} mapping - Mapping used by the player
    */
-  setController(controller) {
-    this.controller = controller;
+  setMapping(mapping) {
+    this.mapping = mapping;
   }
 
 }

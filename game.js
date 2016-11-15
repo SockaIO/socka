@@ -46,11 +46,9 @@ class Game {
     // Input
     Controller.Setup();
 
-    // Create the players
-    for (let c of Controller.Controllers.values()) {
-      let p = Player.CreatePlayer();
-      p.setController(c);
-    }
+    // Create the first player
+    let p = Player.CreatePlayer();
+    p.setMapping(Mapping.GetDefaultKeyboardMapping());
 
     return Promise.all(promises);
   }

@@ -125,9 +125,8 @@ class MenuView extends View {
     factories.set([KEY_BACK, TAP], () => {this.back ()});
     factories.set([KEY_ENTER, TAP], () => {this.start ()});
 
-
-    for (let c of Controller.Controllers.values()) {
-      c.setCommands(factories);
+    for (let p of Player.Players.values()) {
+      p.mapping.setCommands(factories);
     }
   }
 

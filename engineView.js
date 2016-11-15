@@ -93,7 +93,7 @@ class EngineView extends View {
         }
       }
 
-      player.controller.setCommands(mapping);
+      player.mapping.setCommands(mapping);
     }
   }
 

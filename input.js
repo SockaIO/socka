@@ -29,6 +29,18 @@ const KEY_ENTER = Symbol.for('KEY_ENTER');
 /** @global */
 const KEY_BACK = Symbol.for('KEY_BACK');
 
+
+/** @global */
+const KEYS = [
+  KEY_LEFT,
+  KEY_RIGHT,
+  KEY_DOWN,
+  KEY_UP,
+  KEY_ENTER,
+  KEY_BACK
+]
+
+
 /**
  * Interface for the controllers
  *
@@ -47,49 +59,37 @@ class Controller {
   handleInput() {}
 
   /**
-   * Return the buttons that are pressed
+   * Set the binding between a button and a comman
    *
-   * @return {Number|Array} Array of buttons
-   *
-   * @abstract
-   */
-  getPressed() {}
-
-  /**
-   * Set the commands
-   *
-   * @param {Map} | Command for each key
+   * @param {Number} button | Button ID
+   * @param {Symbol} action | Action
+   * @param {function} cmd | Command function
    *
    * @abstract
    */
-  setCommands(cmds) {
-
-    this.commands = new Map();
-    this.commands.set(TAP, new Map());
-    this.commands.set(LIFT, new Map());
-
-    for (let [[keycode, action], cmd] of cmds.entries()) {
-      this.commands.get(action).set(keycode, cmd);
-    }
-  }
+  setCommand(action, button, cmd) {}
 
   /**
    * Get the cmd associated with action and direction
    *
-   * @param {Symbol} Action
-   * @param {Symbol} Keycode
+   * @param {Symbol} action | Action
+   * @param {Number} button | Button ID
    *
-   *
+   * @abstract
    */
-  getCmd(action, keycode) {
-    if (!this.commands.has(action)) {
-      return null;
-    }
-
-    return this.commands.get(action).get(keycode) || null;
-  }
+  getCommand(action, button) {}
 
   /**
+   * Reset the command associated with a button
+   *
+   * @param {Symbol} action | Action
+   * @param {Number} button | Button ID
+   *
+   * @abstract
+   */
+  resetCommand(action, keycode) {}
+
+   /**
    * Setup the listener for the gamepad connection/disconnection
    * and create the keyboard controller.
    *
@@ -100,6 +100,13 @@ class Controller {
     window.addEventListener('gamepaddisconnected', (e) => PadController.Disconnect(e), false);
 
     Controller.Controllers.set(-1, new KeyboardController());
+  }
+
+  /**
+   * Get the default keyboard Controller
+   */
+  static GetDefaultKeyboardController() {
+    return Controller.Controllers.get(-1);
   }
 
   /**
@@ -167,25 +174,11 @@ class KeyboardController extends Controller{
 
     super();
 
-    this.state = {
-      KEY_LEFT: LIFT,
-      KEY_UP: LIFT,
-      KEY_DOWN: LIFT,
-      KEY_RIHT: LIFT,
-      KEY_ENTER: LIFT,
-      KEY_BACK: LIFT
-    };
-
-    this.lookup = {
-      37: KEY_LEFT, // left
-      40: KEY_DOWN, // down
-      39: KEY_RIGHT, // right
-      38: KEY_UP, // up
-      13: KEY_ENTER, //start
-      8: KEY_BACK //back
-    };
+    this.pushed = new Set();
 
     this.commands = new Map();
+    this.commands.set(TAP, new Map());
+    this.commands.set(LIFT, new Map());
 
     this.songPlayer = null;
     this.cmdQueue = [];
@@ -205,34 +198,44 @@ class KeyboardController extends Controller{
     document.addEventListener('keyup', this);
   }
 
-  getPressed() {
-    let pressed = [];
-    for (let d in this.state) {
-      if (this.state[d] === TAP) {
-        pressed.push(parseInt(d, 10));
-      }
+  resetCommand(action, button) {
+   if (!this.commands.has(action)) { // Should not happen
+      throw new Error("Action not present in Controller");
     }
-    return pressed;
+
+    this.commands.get(action).delete(button);
+  }
+
+  setCommand(action, button, cmd) {
+    this.commands.get(action).set(button, cmd);
+  }
+
+  getCommand(action, button) {
+   if (!this.commands.has(action)) { // Should not happen
+      throw new Error("Action not present in Controller");
+    }
+
+    return this.commands.get(action).get(button) || null;
   }
 
   handleEvent(e) {
     const key = e.keyCode;
 
-    let keycode = this.lookup[key];
+    // Debouncing if kedown only
+    if (e.type == 'keydown' && this.pushed.has(key)) {
+      return;
+    }
 
-    if (keycode !== undefined){
+    const action = (e.type === 'keydown') ? TAP : LIFT;
+    if (action === TAP) {
+      this.pushed.add(key);
+    } else {
+      this.pushed.delete(key);
+    }
 
-      // Debouncing if kedown only
-      if (e.type == 'keydown' && this.state[keycode] === TAP) {
-        return;
-      }
-      const action = (e.type === 'keydown') ? TAP : LIFT;
-      this.state[keycode] = action;
-
-      let cmd = this.getCmd(action, keycode);
-      if (cmd !== null) {
-        this.cmdQueue.push(cmd);
-      }
+    let cmd = this.getCommand(action, key);
+    if (cmd !== null) {
+      this.cmdQueue.push(cmd);
     }
   }
 }
@@ -279,16 +282,6 @@ class PadController extends Controller {
     this.songPlayer = player;
   }
 
-  getPressed() {
-    let pressed = [];
-    for (let d in this.state) {
-      if (this.state[d] === TAP) {
-        pressed.push(parseInt(d, 10));
-      }
-    }
-    return pressed;
-  }
-
   handleInput() {
 
     let output = [];
@@ -311,4 +304,96 @@ class PadController extends Controller {
 
     return output;
   }
+}
+
+
+/**
+ * Key mapping for a player
+ */
+class Mapping {
+
+  /**
+   * Return the default keyboard mapping
+   *
+   * @return {Mapping} Default keyboard mapping
+   *
+   * @static
+   */
+  static GetDefaultKeyboardMapping() {
+    let m = new Mapping();
+    let c = Controller.GetDefaultKeyboardController();
+
+    m.setKey(KEY_UP, 38, c);
+    m.setKey(KEY_DOWN, 40, c);
+    m.setKey(KEY_LEFT, 37, c);
+    m.setKey(KEY_RIGHT, 39, c);
+
+    m.setKey(KEY_ENTER, 13, c);
+    m.setKey(KEY_BACK, 8, c);
+
+    return m;
+  }
+
+  constructor() {
+    this.mapping = new Map();
+
+    // Initialize all the keys
+    for (let k of KEYS) {
+      this.mapping.set(k, new Set());
+    }
+
+    this.bindings = new Set();
+  }
+
+  /**
+   * Affect a controller button to a key
+   *
+   * @param {Symbol} key | Key Symbol
+   * @param {Number} button | Button ID
+   * @param {Controller} controller | Controller
+   *
+   */
+  setKey(key, button, controller) {
+    this.mapping.get(key).add([controller, button]);
+  }
+
+  /**
+   * Set the commands
+   *
+   * @param {Map} | Command for each key
+   *
+   * @abstract
+   */
+  setCommands(cmds) {
+    this.resetBindings();
+    for (let [[key, action], cmd] of cmds.entries()) {
+      this.bind(action, key, cmd);
+    }
+  }
+
+  /**
+   * Bind a command to a key
+   *
+   * @param {Symbol} action | Action
+   * @param {Symbol} key | Key Symbol
+   * @param {function} cmd | Command function
+   *
+   */
+  bind(action, key,  cmd) {
+    for (let [controller, button] of this.mapping.get(key).values()) {
+      controller.setCommand(action, button, cmd);
+      this.bindings.add([controller, action, button]);
+    }
+  }
+
+
+  /**
+   * Reset all the bindings
+   */
+  resetBindings() {
+    for (let [controller, action, button] of this.bindings.values()) {
+      controller.resetCommand(action, button);
+    }
+  }
+
 }
