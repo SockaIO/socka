@@ -50,6 +50,21 @@ class Game {
     let p = Player.CreatePlayer();
     p.setMapping(Mapping.GetDefaultKeyboardMapping());
 
+    // Create a second plauer for test purpose
+    let q = Player.CreatePlayer();
+    let m = new Mapping();
+    let c = Controller.GetDefaultKeyboardController();
+
+    m.setKey(KEY_UP, 87, c);
+    m.setKey(KEY_DOWN, 83, c);
+    m.setKey(KEY_LEFT, 65, c);
+    m.setKey(KEY_RIGHT, 68, c);
+
+    m.setKey(KEY_ENTER, 32, c);
+    m.setKey(KEY_BACK, 27, c);
+
+    q.setMapping(m);
+
     return Promise.all(promises);
   }
 
