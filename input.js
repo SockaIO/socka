@@ -48,6 +48,12 @@ const KEYS = [
  */
 class Controller {
 
+  constructor() {
+    this.commands = new Map();
+    this.commands.set(TAP, new Map());
+    this.commands.set(LIFT, new Map());
+  }
+
   /**
    * Return commands for the input that
    * occured since the last call.
@@ -65,9 +71,10 @@ class Controller {
    * @param {Symbol} action | Action
    * @param {function} cmd | Command function
    *
-   * @abstract
    */
-  setCommand(action, button, cmd) {}
+  setCommand(action, button, cmd) {
+    this.commands.get(action).set(button, cmd);
+  }
 
   /**
    * Get the cmd associated with action and direction
@@ -75,9 +82,14 @@ class Controller {
    * @param {Symbol} action | Action
    * @param {Number} button | Button ID
    *
-   * @abstract
    */
-  getCommand(action, button) {}
+  getCommand(action, button) {
+   if (!this.commands.has(action)) { // Should not happen
+      throw new Error("Action not present in Controller");
+    }
+
+    return this.commands.get(action).get(button) || null;
+  }
 
   /**
    * Reset the command associated with a button
@@ -85,9 +97,14 @@ class Controller {
    * @param {Symbol} action | Action
    * @param {Number} button | Button ID
    *
-   * @abstract
    */
-  resetCommand(action, keycode) {}
+  resetCommand(action, button) {
+   if (!this.commands.has(action)) { // Should not happen
+      throw new Error("Action not present in Controller");
+    }
+
+    this.commands.get(action).delete(button);
+  }
 
    /**
    * Setup the listener for the gamepad connection/disconnection
@@ -176,10 +193,6 @@ class KeyboardController extends Controller{
 
     this.pushed = new Set();
 
-    this.commands = new Map();
-    this.commands.set(TAP, new Map());
-    this.commands.set(LIFT, new Map());
-
     this.songPlayer = null;
     this.cmdQueue = [];
 
@@ -196,26 +209,6 @@ class KeyboardController extends Controller{
   setup() {
     document.addEventListener('keydown', this);
     document.addEventListener('keyup', this);
-  }
-
-  resetCommand(action, button) {
-   if (!this.commands.has(action)) { // Should not happen
-      throw new Error("Action not present in Controller");
-    }
-
-    this.commands.get(action).delete(button);
-  }
-
-  setCommand(action, button, cmd) {
-    this.commands.get(action).set(button, cmd);
-  }
-
-  getCommand(action, button) {
-   if (!this.commands.has(action)) { // Should not happen
-      throw new Error("Action not present in Controller");
-    }
-
-    return this.commands.get(action).get(button) || null;
   }
 
   handleEvent(e) {
@@ -242,68 +235,45 @@ class KeyboardController extends Controller{
 
 /**
  * Gamepad Controller.
- * @TODO: Redo for the new architecture
  *
  * @extends Controller
  */
 class PadController extends Controller {
 
-  
-
-  //
-  // -----------------------------------------------------
-  //
-
   constructor(gamepad) {
     super();
 
     this.gamepad = gamepad;
-
-    this.state = {
-      0: LIFT,
-      1: LIFT,
-      3: LIFT,
-      2: LIFT,
-      80: LIFT,
-      81: LIFT
-    };
-
-    this.lookup = {
-      0: 0,
-      1: 1,
-      3: 3,
-      2: 2,
-      7: 80,
-      6: 81
-    };
-  }
-
-  setSongPlayer(player) {
-    this.songPlayer = player;
+    this.pushed = new Set();
   }
 
   handleInput() {
 
     let output = [];
 
-    for (let b in this.lookup) {
+    for (let i = 0; i < this.gamepad.buttons.length; ++i) {
+      let b = this.gamepad.buttons[i];
 
-      let action = this.state[this.lookup[b]] === LIFT ? TAP: LIFT;
-      let direction = this.lookup[b];
+      // If there was a change
+      if (this.pushed.has(b) !==  b.pressed) {
 
-      // Did the state of the direction changed
-      if (this.gamepad.buttons[b].pressed === (this.state[direction] === LIFT)) {
+        const action = b.pressed ? TAP : LIFT;
+        if (action === TAP) {
+          this.pushed.add(b);
+        } else {
+          this.pushed.delete(b);
+        }
 
-        this.state[direction] = action;
-
-        let time = this.songPlayer !== null ? this.songPlayer.getTime() : 0;
-        //let cmd = new DanceCommand(direction, action, time);
-        output.push(cmd);
+        let cmd = this.getCommand(action, i);
+        if (cmd !== null) {
+          output.push(cmd);
+        }
       }
     }
 
     return output;
   }
+
 }
 
 
