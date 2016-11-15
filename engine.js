@@ -8,11 +8,11 @@ class Engine {
     // Player
     this.player = player;
 
-    // Controller
-    this.controller = null;
-
     // Song related info
     this.chart = null;
+
+    // Keypressed
+    this.keyPressed = new Set();
 
     // Window of existing notes
     this.fieldView = fieldView;
@@ -150,11 +150,13 @@ class Engine {
 
     // Visual Effect
     if (action === TAP) {
+      this.keyPressed.add(direction)
       this.graphicComponent.receptor.tap(direction);
     }
 
     // Visual Effect
     if (action === LIFT) {
+      this.keyPressed.delete(direction)
       this.graphicComponent.receptor.lift(direction);
     }
 
@@ -271,11 +273,10 @@ class Engine {
       // Note is in the collision window
       // TODO: This might fire too many events and slow down the game (maybe?)
       if (x >= this.collisionStepIndex) {
-        //let pressed = this.controller.getPressed();
-        let pressed = [];
+        let pressed = [...this.keyPressed];
 
         if (pressed.length > 0) {
-          step.applyToDirections(this.controller.getPressed(), 'collide');
+          step.applyToDirections(pressed, 'collide');
         }
 
         if (step.time + this.mineTiming <= this.time) {

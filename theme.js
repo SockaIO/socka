@@ -239,7 +239,7 @@ class SimpleNoteDefaultGraphicComponent extends SimpleNoteGraphicComponent {
   hit(timing) {
     if (this.note.type === MINE_NOTE) {
 
-      let explosion = new PIXI.Sprite(theme.getTexture('hitMineExplosion'));
+      let explosion = new PIXI.Sprite(this.theme.getTexture('hitMineExplosion'));
       explosion.anchor.x = 0.5;
       explosion.anchor.y = 0.5;
       this.sprite.removeChildAt(0);
