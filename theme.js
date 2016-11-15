@@ -20,6 +20,7 @@ class DefaultTheme {
     this.resources = {
       arrows: 'theme/arrows.png',
       mines: 'theme/mines.png',
+      hitMineExplosion: 'theme/hit_mine_explosion.png',
       receptor: 'theme/receptor.png',
       receptorFlash: 'theme/receptor_flash.png',
       receptorGlow: 'theme/receptor_glow.png',
@@ -188,25 +189,28 @@ class SimpleNoteDefaultGraphicComponent extends SimpleNoteGraphicComponent {
   }
 
   create() {
+    let c = new PIXI.Container();
+
     // Create the sprite
-    let sprite = new PIXI.Sprite(this.theme.getNoteTexture(this.note));
+    let arrow = new PIXI.Sprite(this.theme.getNoteTexture(this.note));
 
-    sprite.anchor.x = 0.5;
-    sprite.anchor.y = 0.5;
+    arrow.anchor.x = 0.5;
+    arrow.anchor.y = 0.5;
 
+    c.addChild(arrow);
 
     if (this.note.type === MINE_NOTE) {
-      sprite._startRotation = new Date();
-      Object.defineProperty(sprite, "rotation", {
+      arrow._startRotation = new Date();
+      Object.defineProperty(arrow, "rotation", {
         get: function () {
-          return (new Date() - sprite._startRotation)/500;
+          return (new Date() - arrow._startRotation)/500;
         }
       });
     } else {
-      sprite.rotation = DefaultTheme.angleMap[this.note.direction];
+      arrow.rotation = DefaultTheme.angleMap[this.note.direction];
     }
 
-    this.sprite = sprite;
+    this.sprite = c;
   }
 
   remove() {
@@ -225,11 +229,22 @@ class SimpleNoteDefaultGraphicComponent extends SimpleNoteGraphicComponent {
   }
 
   hit(timing) {
+    if (this.note.type === MINE_NOTE) {
+
+      let explosion = new PIXI.Sprite(theme.getTexture('hitMineExplosion'));
+      explosion.anchor.x = 0.5;
+      explosion.anchor.y = 0.5;
+      this.sprite.removeChildAt(0);
+      this.sprite.addChild(explosion);
+
+      TweenLite.to(this.sprite, this.fadeout, {alpha: 0});
+    }
+
     // We hide the note only in the best 3 timings
     if ([TM_W1, TM_W2, TM_W3].includes(timing)) {
       TweenLite.to(this.sprite, this.fadeout, {alpha: 0});
     }
-  }
+ }
 }
 
 class ReceptorDefaultGraphicComponent extends ReceptorGraphicComponent {
