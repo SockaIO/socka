@@ -20,6 +20,7 @@ class DefaultTheme {
     this.resources = {
       arrows: 'theme/arrows.png',
       mines: 'theme/mines.png',
+      blank: 'theme/blank.png',
       hitMineExplosion: 'theme/hit_mine_explosion.png',
       receptor: 'theme/receptor.png',
       receptorFlash: 'theme/receptor_flash.png',
@@ -178,6 +179,10 @@ class DefaultTheme {
 
   createEngineViewGC(...args) {
     return new EngineViewGraphicComponent(this, ...args);
+  }
+
+  createLoadingPageGC(...args) {
+    return new LoadingPageDefaultGraphicComponent(this, ...args);
   }
 
 }
@@ -934,7 +939,7 @@ class LifemeterDefaultGraphicComponent {
 class EngineViewGraphicComponent {
 
   /**
-   * Create a Engien View
+   * Create a Engine View
    * @param {Number} width - View width
    * @param {Number} height - View height
    */
@@ -947,6 +952,12 @@ class EngineViewGraphicComponent {
     this.background.width = width;
     this.background.height = height;
     this.sprite.addChild(this.background);
+
+    this.middleGround = new PIXI.Container();
+    this.sprite.addChild(this.middleGround);
+
+    this.foreGround = new PIXI.Container();
+    this.sprite.addChild(this.foreGround);
   }
 
   /**
@@ -962,9 +973,83 @@ class EngineViewGraphicComponent {
    * @param {PIXI.DisplayObject} engine - Engine sprite
    */
   addEngine(engine) {
-    this.sprite.addChild(engine);
+    this.middleGround.addChild(engine);
+  }
+
+  /**
+   * Add a loading page in foreground
+   * @param {PIXI.DisplayObject} loading - Loading sprite
+   */
+  placeLoadingPage(loading) {
+    this.foreGround.addChild(loading);
+    console.log(loading);
+  }
+
+  /**
+   * Remove the loading page
+   */
+  removeLoadingPage(loading) {
+    this.foreGround.removeChildren();
+  }
+
+}
+
+class LoadingPageDefaultGraphicComponent {
+  constructor(theme, width, height) {
+    this.theme = theme;
+    this._percentage = 0;
+    this._text = '';
+
+    this.sprite = new PIXI.Container();
+
+    this.background = new PIXI.Sprite(theme.getTexture('blank'));
+    this.background.width = width;
+    this.background.height = height;
+    this.background.tint = 0x1099bb;
+
+    this.textSprite = new PIXI.Text(this._text, {font : '24px Arial', fill : 0xffffff, align : 'center'});
+    this.textSprite.y = height - 90;
+    this.textSprite.x = width/2;
+    this.textSprite.anchor.x = 0.5;
+
+    this.receptor = new PIXI.Sprite(theme.getTexture('progressBarUnder'));
+    this.receptor.width = 500;
+    this.receptor.height = 30;
+    this.receptor.x = width/2 - this.receptor.width/2;
+    this.receptor.y = height - 60;
+
+    this.bar = new PIXI.Sprite(theme.getTexture('progressBarMiddle'));
+    this.bar.x = this.receptor.x + 2;
+    this.bar.y = this.receptor.y + 1;
+    this.bar.width = 0;
+    this.bar.height = this.receptor.height - 2;
+
+    this.sprite.addChild(this.background);
+    this.sprite.addChild(this.receptor);
+    this.sprite.addChild(this.bar);
+    this.sprite.addChild(this.textSprite);
+  }
+
+  get text () {
+    return this._text;
+  }
+
+  set text (text) {
+    this._text = text;
+    this.textSprite.text = text;
+  }
+
+  get percentage () {
+    return this._percentage;
+  }
+
+  set percentage (percentage) {
+    console.log(percentage);
+    this._percentage = percentage;
+    TweenLite.to(this.bar, 0.5, {width: (this.receptor.width - 2) * percentage/100, ease: 'bounce'});
   }
 }
+
 
 /**
  * Empty Graphic Component
