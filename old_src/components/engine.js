@@ -504,15 +504,3 @@ class ProgressionBar {
 }
 
 
-// The Receptor only function is the graphic component
-// TODO: Complete the interface
-class ReceptorGraphicComponent {
-
-  constructor(theme) {
-    this.theme = theme;
-  }
-
-  create() {}
-  remove() {}
-
-}

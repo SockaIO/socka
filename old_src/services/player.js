@@ -5,7 +5,7 @@
  * Player entity.
  * Store the configuration and controller
  */
-class Player {
+export default class Player {
 
 
   /**

@@ -1,6 +1,7 @@
 /* jshint esnext: true */
 "use strict";
 
+import View from './view'
 
 /**
  * View Class for the gameplay.
@@ -8,7 +9,7 @@
  *
  * @extends View
  */
-class EngineView extends View {
+export default class EngineView extends View {
 
   /**
    * Create an engine view

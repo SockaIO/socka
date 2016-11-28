@@ -1,6 +1,11 @@
 /* jshint esnext: true */
 "use strict";
 
+import {DefaultTheme as Theme } from '../themes'
+import {Controller, Player, Mapping, Judge} from '../services'
+
+import {KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_ENTER, KEY_BACK} from '../constants'
+
 /**
  * Global Game entity.
  *
@@ -8,7 +13,7 @@
  * of all the other components.
  *
  */
-class Game {
+export default class Game {
 
   /**
    * Create a Game object
@@ -29,7 +34,7 @@ class Game {
     this.createWindow();
 
     // Create the services
-    this.theme = new DefaultTheme();
+    this.theme = new Theme();
 
     this.judge = new Judge();
   }

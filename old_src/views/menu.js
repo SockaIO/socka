@@ -1,14 +1,14 @@
 /* jshint esnext: true */
 "use strict";
 
-
+import View from './view'
 
 /**
  * View Class for a simple menu
  *
  * @extends View
  */
-class MenuView extends View {
+export default class MenuView extends View {
   constructor(width, height, entries) {
     super();
 
@@ -157,52 +157,6 @@ class MenuView extends View {
       i++;
     }
     return res;
-  }
-}
-
-class MenuGraphicComponent {
-
-  constructor(theme, width, height, entries) {
-    this.spritesMapping = new WeakMap();
-
-    this.PIXIEntries = [];
-    let i = 0;
-    for (let entry of entries) {
-      let sprite = new PIXI.Text(entry.name);
-      this.spritesMapping.set(sprite, [i]);
-
-      let subsprites = [];
-      if (entry.subEntries) {
-        let j = 0;
-        for (let e of entry.subEntries) {
-          let s = new PIXI.Text(e);
-          subsprites.push(s);
-          this.spritesMapping.set(s, [i, j]);
-          j++;
-        }
-      }
-
-      this.PIXIEntries.push({
-        'mainsprite': sprite,
-        'entry': entry,
-        'subsprites': subsprites,
-        'index': i
-      });
-      i++;
-    }
-  }
-
-  * iterSprites() {
-    for (let sprite of this.PIXIEntries) {
-      yield sprite.mainsprite;
-
-      for (let s of sprite.subsprites) {
-        yield s;
-      }
-    }
-  }
-
-  hover(entryIndex, subEntries) {
   }
 }
 

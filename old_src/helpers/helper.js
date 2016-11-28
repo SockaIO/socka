@@ -1,7 +1,7 @@
 /* jshint esnext: true */
 "use strict";
 
-class Subject {
+export class Subject {
 
   constructor() {
     this.observers = new Set();

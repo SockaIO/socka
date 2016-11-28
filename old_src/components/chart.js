@@ -352,24 +352,6 @@ class SimpleNoteDodgeState extends SimpleNoteState {
   }
 }
 
-
-// Simple Note Graphics handling
-class SimpleNoteGraphicComponent {
-
-  constructor(theme) {
-    this.theme = theme;
-    this.sprite = null;
-  }
-
-  create() {}
-  remove() {}
-
-  // TODO: Replace with pure graphic function
-  miss() {}
-  hit(delay) {}
-
-}
-
 //-------------------------------------------------------------------
 
 // Note that have a duration (hold, roll)
@@ -535,22 +517,6 @@ class LongNoteFinishedState extends LongNoteState {
     this.note.graphicComponent.finish();
     Note.NoteFinish(this.note, true);
   }
-}
-
-
-class LongNoteGraphicComponent {
-
-  constructor(theme) {
-    this.theme = theme;
-  }
-
-  create() {}
-  remove() {}
-  deactivate() {}
-
-  activate() {}
-  finish() {}
-
 }
 
 

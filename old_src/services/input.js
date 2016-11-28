@@ -1,52 +1,15 @@
 /* jshint esnext: true */
 "use strict";
 
-/** @global */
-const TAP = Symbol.for('TAP');
-/** @global */
-const LIFT = Symbol.for('LIFT');
-
-/** @global */
-const EVENT_PAD_CONNECTED = Symbol.for('EVENT_PAD_CONNECTED');
-/** @global */
-const EVENT_PAD_DISCONNECTED = Symbol.for('EVENT_PAD_DISCONNECTED');
-
-/** @global */
-const KEY_LEFT = Symbol.for('KEY_LEFT');
-
-/** @global */
-const KEY_UP = Symbol.for('KEY_UP');
-
-/** @global */
-const KEY_RIGHT = Symbol.for('KEY_RIGHT');
-
-/** @global */
-const KEY_DOWN = Symbol.for('KEY_DOWN');
-
-/** @global */
-const KEY_ENTER = Symbol.for('KEY_ENTER');
-
-/** @global */
-const KEY_BACK = Symbol.for('KEY_BACK');
-
-
-/** @global */
-const KEYS = [
-  KEY_LEFT,
-  KEY_RIGHT,
-  KEY_DOWN,
-  KEY_UP,
-  KEY_ENTER,
-  KEY_BACK
-]
-
+import {Subject} from '../helpers'
+import {TAP, LIFT, KEYS, KEY_UP, KEY_LEFT, KEY_RIGHT, KEY_DOWN, KEY_ENTER, KEY_BACK} from '../constants'
 
 /**
  * Interface for the controllers
  *
  * @interface
  */
-class Controller {
+export class Controller {
 
   constructor() {
     this.commands = new Map();
@@ -280,7 +243,7 @@ class PadController extends Controller {
 /**
  * Key mapping for a player
  */
-class Mapping {
+export class Mapping {
 
   /**
    * Return the default keyboard mapping

@@ -9,7 +9,7 @@
  *
  * @interface
  */
-class View {
+export default class View {
 
   /**
    * Main loop to update the view content

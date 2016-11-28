@@ -1,41 +1,22 @@
 /* jshint esnext: true */
 "use strict";
 
+import {
+  TM_W1,
+  TM_W2,
+  TM_W3,
+  TM_W4,
+  TM_W5,
+  TM_MISS,
+  TM_HOLD,
+  TM_MINE,
+  TM_ROLL,
+
+} from '../constants'
+
 // Timing Symbols
-const TM_W1 = Symbol.for('TM_W1');
-const TM_W2 = Symbol.for('TM_W2');
-const TM_W3 = Symbol.for('TM_W3');
-const TM_W4 = Symbol.for('TM_W4');
-const TM_W5 = Symbol.for('TM_W5');
-const TM_MISS = Symbol.for('TM_MISS');
 
-const TM_HOLD = Symbol.for('TM_HOLD');
-const TM_ROLL = Symbol.for('TM_ROLL');
-const TM_MINE = Symbol.for('TM_MINE');
-
-const S_NG = Symbol.for('S_NG');
-const S_OK = Symbol.for('S_OK');
-
-// Score Symbols
-const S_W1 = Symbol.for('S_W1');
-const S_W2 = Symbol.for('S_W2');
-const S_W3 = Symbol.for('S_W3');
-const S_W4 = Symbol.for('S_W4');
-const S_W5 = Symbol.for('S_W5');
-const S_MISS = Symbol.for('S_MISS');
-
-// Grade Symbols
-const AAA = Symbol.for('AAA');
-const AA = Symbol.for('AA');
-const A = Symbol.for('A');
-const B = Symbol.for('B');
-const C = Symbol.for('C');
-const D = Symbol.for('D');
-const E = Symbol.for('E');
-
-
-
-class Judge {
+export default class Judge {
 
   getMissTiming() {
     return this.timingWindow[TM_W5];

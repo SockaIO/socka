@@ -1,57 +1,74 @@
-/* jshint esnext: true */
-"use strict";
+/* global require */
+'use strict';
+
+import * as PIXI from 'pixi.js';
+import { TweenLite } from 'gsap';
+import log from 'loglevel';
+
+import {theme as interfaces} from '../../src/interfaces';
+import {TM_W1, TM_W2, TM_W3, TM_W4, TM_W5, TM_MISS, TM_MINE, S_OK, S_NG} from '../../src/constants/judge';
+import {TAP_NOTE, FAKE_NOTE, ROLL_NOTE, MINE_NOTE, HOLD_NOTE, LIFT_NOTE, EVENT_NOTE_HIT, EVENT_NOTE_MISS, EVENT_NOTE_FINISH} from '../../src/constants/chart';
 
 /*
  * The Theme class is responsible for laoding 
  * the assets that will be used by the different graphic components
  */
 
-class Theme {
-  loadTextures(){}
-  getTexture(){}
-}
-
-class DefaultTheme {
+/**
+ * Default Theme provided with the game
+ *
+ * @extends Theme
+ */
+export default class DefaultTheme extends interfaces.Theme {
 
   constructor() {
 
+    super();
+
     // Must be modified manually
-    // TODO: Loader from file
     this.resources = {
-      arrows: 'theme/arrows.png',
-      mines: 'theme/mines.png',
-      hitMineExplosion: 'theme/hit_mine_explosion.png',
-      receptor: 'theme/receptor.png',
-      receptorFlash: 'theme/receptor_flash.png',
-      receptorGlow: 'theme/receptor_glow.png',
-      holdCap: 'theme/holdCap.png',
-      holdBody: 'theme/holdBody.png',
-      rollCap: 'theme/rollCap.png',
-      rollBody: 'theme/rollBody.png',
-      judgments: 'theme/judgments.png',
-      holdJudgments: 'theme/holdJudgments.png',
-      lifemeterOver: 'theme/lifemeterOver.png',
-      lifemeterMiddle: 'theme/lifemeterMiddle.png',
-      lifemeterUnder: 'theme/lifemeterUnder.png',
-      progressBarMiddle: 'theme/progressBarMiddle.png',
-      progressBarUnder: 'theme/progressBarUnder.png',
+      arrows: require('./img/arrows.png'),
+      mines: require('./img/mines.png'),
+      hitMineExplosion: require('./img/hit_mine_explosion.png'),
+      receptor: require('./img/receptor.png'),
+      receptorFlash: require('./img/receptor_flash.png'),
+      receptorGlow: require('./img/receptor_glow.png'),
+      holdCap: require('./img/holdCap.png'),
+      holdBody: require('./img/holdBody.png'),
+      rollCap: require('./img/rollCap.png'),
+      rollBody: require('./img/rollBody.png'),
+      judgments: require('./img/judgments.png'),
+      holdJudgments: require('./img/holdJudgments.png'),
+      lifemeterOver: require('./img/lifemeterOver.png'),
+      lifemeterMiddle: require('./img/lifemeterMiddle.png'),
+      lifemeterUnder: require('./img/lifemeterUnder.png'),
+      progressBarMiddle: require('./img/progressBarMiddle.png'),
+      progressBarUnder: require('./img/progressBarUnder.png'),
     };
 
-    // Will be filled after loading
-    this.textures = {};
   }
 
+  /**
+   * Initialization of the theme
+   * - Loas textures
+   */
   init() {
     return this.loadTextures();
   }
 
+  /**
+   * Load the textures using PIXI
+   *
+   * @TODO: use the file manager to get the texture
+   *
+   */
   loadTextures() {
 
     for (let r of Object.keys(this.resources)) {
       PIXI.loader.add(this.resources[r]);
     }
 
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       PIXI.loader.load(resolve);
     }).then(() => {
 
@@ -61,7 +78,7 @@ class DefaultTheme {
       }
 
       // Arrows
-      let arrowTextures = []
+      let arrowTextures = [];
       for (let x=0; x < 8; x++) {
         let texture = PIXI.loader.resources[this.resources['arrows']].texture.clone();
         texture.frame = new PIXI.Rectangle(0, x * 127, 128, 128);
@@ -70,7 +87,7 @@ class DefaultTheme {
       this.textures['arrows'] = arrowTextures;
 
       // Mines 
-      let mineTextures = []
+      let mineTextures = [];
       for (let y = 0; y < 2; y++) {
         for (let x=0; x < 4; x++) {
           let texture = PIXI.loader.resources[this.resources['mines']].texture.clone();
@@ -104,78 +121,121 @@ class DefaultTheme {
     });
   }
 
+  /**
+   * Get a texture by Name
+   */
   getTexture(name) {
     // TODO: Catch error?
     return this.textures[name];
   }
 
+  /**
+   * Get the right texture for a judgment based on timing
+   */
   getJudgmentTexture(timing) {
     return this.getTexture('judgments')[timing];
   }
 
+  /**
+   * Get the right texture for an hold note judgment based on timing
+   */
   getHoldJudgmentTexture(timing) {
     return this.getTexture('holdJudgments')[timing];
   }
 
+  /**
+   * Get the texture for a type of note
+   */
   getNoteTexture(note) {
 
     switch(note.type) {
-      case TAP_NOTE:
-      case FAKE_NOTE:
-      case HOLD_NOTE:
-      case ROLL_NOTE:
-        return this.getTexture('arrows')[note.division];
-        break;
-      case MINE_NOTE:
-        return this.getTexture('mines')[0];
-        break;
-      case LIFT_NOTE:
-        // TODO
-        break;
+    case TAP_NOTE:
+    case FAKE_NOTE:
+    case HOLD_NOTE:
+    case ROLL_NOTE:
+      return this.getTexture('arrows')[note.division];
+    case MINE_NOTE:
+      return this.getTexture('mines')[0];
+    case LIFT_NOTE:
+      // TODO
+      break;
     }
 
   }
 
+  /**
+   * Create Simple Note Graphic Component
+   */
   createSimpleNoteGC() {
     return new SimpleNoteDefaultGraphicComponent(this);
   }
 
+  /**
+   * Create Long Note Graphic Component
+   */
   createLongNoteGC() {
     return new LongNoteDefaultGraphicComponent(this);
   }
 
+  /**
+   * Create Receptor Note Graphic Component
+   */
   createReceptorGC() {
     return new ReceptorDefaultGraphicComponent(this);
   }
 
+  /**
+   * Create Menu Graphic Component
+   */
   createMenuGC(...args) {
     return new MenuDefaultGraphicComponent(this, ...args);
   }
 
+  /**
+   * Create Engine Graphic Component
+   */
   createEngineGC(...args) {
     return new EngineDefaultGraphicComponent(this, ...args);
   }
 
+  /**
+   * Create Judgment Graphic Component
+   */
   createJudgmentGC() {
     return new JudgmentDefaultGraphicComponent(this);
   }
 
+  /**
+   * Create Score Graphic Component
+   */
   createScoreGC() {
     return new ScoreDefaultGraphicComponent(this);
   }
 
+  /**
+   * Create Combo Graphic Component
+   */
   createComboGC() {
     return new ComboDefaultGraphicComponent(this);
   }
 
+  /**
+   * Create Lifemeter Graphic Component
+   */
   createLifemeterGC() {
     return new LifemeterDefaultGraphicComponent(this);
   }
 
+  /**
+   * Create Progression Bar Graphic Component
+   */
   createProgressionBarGC() {
     return new ProgressionBarDefaultGraphicComponent(this);
   }
 
+  /**
+   * Create Envine View Graphic Component
+   */
   createEngineViewGC(...args) {
     return new EngineViewGraphicComponent(this, ...args);
   }
@@ -184,14 +244,21 @@ class DefaultTheme {
 
 DefaultTheme.angleMap = [1, 0, 2, 3].map((x) => 2 * x * Math.PI / 4);
 
-class SimpleNoteDefaultGraphicComponent extends SimpleNoteGraphicComponent {
+
+/**
+ * Simple Note GC
+ */
+class SimpleNoteDefaultGraphicComponent extends interfaces.SimpleNoteGraphicComponent {
 
   constructor(theme) {
     super(theme);
     this.fadeout = 0.2;
   }
 
-  resize(scale, multiplier) {
+  /**
+   * Scale the note
+   */
+  resize(scale) {
     this.sprite.scale.x = scale;
     this.sprite.scale.y = scale;
   }
@@ -209,7 +276,7 @@ class SimpleNoteDefaultGraphicComponent extends SimpleNoteGraphicComponent {
 
     if (this.note.type === MINE_NOTE) {
       arrow._startRotation = new Date();
-      Object.defineProperty(arrow, "rotation", {
+      Object.defineProperty(arrow, 'rotation', {
         get: function () {
           return (new Date() - arrow._startRotation)/500;
         }
@@ -252,10 +319,10 @@ class SimpleNoteDefaultGraphicComponent extends SimpleNoteGraphicComponent {
     if ([TM_W1, TM_W2, TM_W3].includes(timing)) {
       TweenLite.to(this.sprite, this.fadeout, {alpha: 0});
     }
- }
+  }
 }
 
-class ReceptorDefaultGraphicComponent extends ReceptorGraphicComponent {
+class ReceptorDefaultGraphicComponent extends interfaces.ReceptorGraphicComponent {
 
   constructor(theme) {
     super(theme);
@@ -352,7 +419,7 @@ class ReceptorDefaultGraphicComponent extends ReceptorGraphicComponent {
 
     note.scale = {x: this.noteMinScale, y: this.noteMinScale};
     TweenLite.to(note.scale, this.flashDuration, {x: this.noteScale, y: this.noteScale});
- }
+  }
 
   lift(direction) {
 
@@ -388,7 +455,7 @@ class ReceptorDefaultGraphicComponent extends ReceptorGraphicComponent {
 
     // TODO: Different color based on timing
     let tint = 0x8800ff;
-
+    timing;
 
     let glow = this.glows[note.direction];
     glow.alpha = 0.7;
@@ -399,7 +466,7 @@ class ReceptorDefaultGraphicComponent extends ReceptorGraphicComponent {
   }
 }
 
-class LongNoteDefaultGraphicComponent extends LongNoteGraphicComponent {
+class LongNoteDefaultGraphicComponent extends interfaces.LongNoteGraphicComponent {
 
   constructor(theme) {
     super(theme);
@@ -408,10 +475,10 @@ class LongNoteDefaultGraphicComponent extends LongNoteGraphicComponent {
   getTextures() {
 
     switch(this.note.type) {
-      case ROLL_NOTE:
-        return [this.theme.getTexture('rollBody'), this.theme.getTexture('rollCap')];
-      case HOLD_NOTE:
-        return [this.theme.getTexture('holdBody'), this.theme.getTexture('holdCap')];
+    case ROLL_NOTE:
+      return [this.theme.getTexture('rollBody'), this.theme.getTexture('rollCap')];
+    case HOLD_NOTE:
+      return [this.theme.getTexture('holdBody'), this.theme.getTexture('holdCap')];
     }
 
     return;
@@ -503,7 +570,7 @@ class LongNoteDefaultGraphicComponent extends LongNoteGraphicComponent {
 
 }
 
-class MenuDefaultGraphicComponent extends MenuGraphicComponent {
+class MenuDefaultGraphicComponent extends interfaces.MenuGraphicComponent {
 
   constructor(theme, width, height, entries) {
     super(theme, width, height, entries);
@@ -728,26 +795,26 @@ class EngineDefaultGraphicComponent {
   feedback(ev) {
 
     switch (ev.type) {
-      case EVENT_NOTE_MISS:
-        this.judgment.show(ev.timing);
-        break;
-      case EVENT_NOTE_HIT:
-        this.judgment.show(ev.timing);
-        this.receptor.glow(ev.note, ev.timing);
+    case EVENT_NOTE_MISS:
+      this.judgment.show(ev.timing);
+      break;
+    case EVENT_NOTE_HIT:
+      this.judgment.show(ev.timing);
+      this.receptor.glow(ev.note, ev.timing);
 
-        // handle the Long Note Stickyness
-        if (ev.note.duration > 0) {
-          this.stickyNotes.add(ev.note.graphicComponent);
-        }
-        break;
-      case EVENT_NOTE_FINISH:
-        this.receptor.holdJudge(ev.note, ev.timing);
+      // handle the Long Note Stickyness
+      if (ev.note.duration > 0) {
+        this.stickyNotes.add(ev.note.graphicComponent);
+      }
+      break;
+    case EVENT_NOTE_FINISH:
+      this.receptor.holdJudge(ev.note, ev.timing);
 
-        // Remove the sticky note
-        if (ev.note.duration > 0) {
-          this.stickyNotes.delete(ev.note.graphicComponent);
-        }
-        break;
+      // Remove the sticky note
+      if (ev.note.duration > 0) {
+        this.stickyNotes.delete(ev.note.graphicComponent);
+      }
+      break;
     }
   }
 }
@@ -758,7 +825,7 @@ class JudgmentDefaultGraphicComponent {
     this.theme = theme;
   }
 
-  create(fieldWidth, fieldHeight) {
+  create() {
 
     // We keep the current timing not to reload texture uselessly
     this.timing = TM_W1;
@@ -963,14 +1030,5 @@ class EngineViewGraphicComponent {
    */
   addEngine(engine) {
     this.sprite.addChild(engine);
-  }
-}
-
-/**
- * Empty Graphic Component
- */
-class EmptyGraphicComponent {
-  constructor() {
-    this.sprite = new PIXI.Container();
   }
 }
