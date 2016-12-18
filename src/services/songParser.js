@@ -1,5 +1,7 @@
 'use strict';
 
+import { TAP_NOTE, HOLD_NOTE, ROLL_NOTE, MINE_NOTE, LIFT_NOTE, FAKE_NOTE} from '../constants/chart';
+
 /*
  * Song (with multiple charts)
  */
@@ -80,7 +82,7 @@ class Song {
 
   getAudioData() {
 
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       if (this.audioData !== undefined) {
         resolve(this.musicBuffer);
       }
@@ -319,48 +321,48 @@ function * getFields(data) {
       continue;
     }
     switch (state) {
-      // Looking for the field name
-      case 0:
-        if (c === '\n' || c === '\r') {
-          continue;
-        }
-        if (c !== '#') {
-          continue;
-        }
-        state++;
-        break;
-        
-      // Looking for the field value
-      case 1:
-        if (c === '\n' || c === '\r') {
-          continue;
-        }
-        if (c == ':') {
-          state++;
-          continue;
-        }
-        tag += c;
-        break;
+    // Looking for the field name
+    case 0:
+      if (c === '\n' || c === '\r') {
+        continue;
+      }
+      if (c !== '#') {
+        continue;
+      }
+      state++;
+      break;
 
-      // Filling the field value
-      case 2:
-        if (tag !== 'NOTES' && (c === '\n' || c === '\r')) {
-          continue;
-        }
-        if (c === ';') {
-          state = 0;
-          yield {tag, value};
-          tag = '';
-          value = '';
-          continue;
-        }
-        value += c;
-        break;
-      case 3:
-        if (c === '\n') {
-          state = lastState;
-          continue;
-        }
+    // Looking for the field value
+    case 1:
+      if (c === '\n' || c === '\r') {
+        continue;
+      }
+      if (c == ':') {
+        state++;
+        continue;
+      }
+      tag += c;
+      break;
+
+    // Filling the field value
+    case 2:
+      if (tag !== 'NOTES' && (c === '\n' || c === '\r')) {
+        continue;
+      }
+      if (c === ';') {
+        state = 0;
+        yield {tag, value};
+        tag = '';
+        value = '';
+        continue;
+      }
+      value += c;
+      break;
+    case 3:
+      if (c === '\n') {
+        state = lastState;
+        continue;
+      }
     }
     lastChar = c;
   }
@@ -427,9 +429,9 @@ function getCharts(data) {
 }
 
 function * iterDWISteps(data) {
-  const grouping = {"<": ">"};
-  const speed = {"(": 1/4, "[": 1/8, "{": 1/16, "`": 1/32};
-  const decreaseSpeed = [")", "]", "}", "'"];
+  const grouping = {'<': '>'};
+  const speed = {'(': 1/4, '[': 1/8, '{': 1/16, '`': 1/32};
+  const decreaseSpeed = [')', ']', '}', '\''];
 
   let tempoStack = [1/2];
   let beat = 0;
@@ -457,7 +459,7 @@ function * iterDWISteps(data) {
     }
 
     // Handle long note (eg. 8!8)
-    if (data[idx+1] === "!" || c === "!") {
+    if (data[idx+1] === '!' || c === '!') {
       continue;
     }
 
@@ -474,8 +476,8 @@ function * iterDWISteps(data) {
     }
 
     // Ignore none beat
-    if (step !== "0") {
-      yield {"step": step, "beat": beat};
+    if (step !== '0') {
+      yield {'step': step, 'beat': beat};
     }
 
     beat += tempoStack.slice(-1)[0];
@@ -490,7 +492,7 @@ function _combine_step (steps) {
   for (let step of steps) {
     let idx = 0;
     for (let note of step) {
-      if (note !== "0") {
+      if (note !== '0') {
         newStep = newStep.substr(0, idx) + note + newStep.substr(idx+1, newStep.length);
       }
       idx++;
@@ -499,17 +501,17 @@ function _combine_step (steps) {
   return newStep;
 }
 
-function DWIToSMStep(step, default_note="1") {
+function DWIToSMStep(step, default_note='1') {
   if (step.length === 1 && step in DWIToSMStep.map) {
-    return DWIToSMStep.map[step].split("1").join(default_note);
+    return DWIToSMStep.map[step].split('1').join(default_note);
   }
 
-  if (step.includes("!")) {
-    let [long_note, note] = step.split("!");
+  if (step.includes('!')) {
+    let [long_note, note] = step.split('!');
     return _combine_step([DWIToSMStep(long_note), DWIToSMStep(note, 2)]);
   }
 
-  if (step.startsWith("<") && step.endsWith(">")) {
+  if (step.startsWith('<') && step.endsWith('>')) {
     return _combine_step(step.slice(1, -1).split('').map(function(obj) {
       return DWIToSMStep(obj);
     }));
@@ -519,16 +521,16 @@ function DWIToSMStep(step, default_note="1") {
 }
 
 DWIToSMStep.map = {
-  "1": "1100",
-  "2": "0100",
-  "3": "0101",
-  "4": "1000",
-  "6": "0001",
-  "7": "1100",
-  "8": "0100",
-  "9": "0101",
-  "A": "0110",
-  "B": "1001",
+  '1': '1100',
+  '2': '0100',
+  '3': '0101',
+  '4': '1000',
+  '6': '0001',
+  '7': '1100',
+  '8': '0100',
+  '9': '0101',
+  'A': '0110',
+  'B': '1001',
 };
 
 function computeDWISteps(data) {
@@ -660,7 +662,7 @@ function getChart(data) {
 
   for (let m of measures) {
     let tempo = 4 / m.length;
-    let maxType = m.length / 4;
+    //let maxType = m.length / 4;
 
     for (let s of m) {
 
@@ -719,12 +721,12 @@ function loadFromSMFolder (url) {
 
     let song;
     for (let link of links) {
-      let fullname = decodeURIComponent(link.split("/").slice("-1")[0]);
-      let ext = fullname.split(".").slice("-1")[0].toLowerCase();
-      let filename = fullname.split(".")[0];
+      let fullname = decodeURIComponent(link.split('/').slice('-1')[0]);
+      let ext = fullname.split('.').slice('-1')[0].toLowerCase();
+      let filename = fullname.split('.')[0];
 
       let isimage = ['png', 'jpeg', 'gif'].includes(ext);
-      let ismusic = ["mp3", "ogg"].includes(ext);
+      let ismusic = ['mp3', 'ogg'].includes(ext);
 
       if (ext in Song.ext_map) {
         song = Song.loadFromFile(link, ext);
@@ -732,13 +734,13 @@ function loadFromSMFolder (url) {
       else if (ismusic) {
         metadata.music = fullname;
       }
-      else if (isimage && (filename.includes("banner") || filename.endsWith("bn"))) {
+      else if (isimage && (filename.includes('banner') || filename.endsWith('bn'))) {
         metadata.banner = fullname;
       }
-      else if (isimage && (filename.includes("background") || filename.endsWith("bg"))) {
+      else if (isimage && (filename.includes('background') || filename.endsWith('bg'))) {
         metadata.background = fullname;
       }
-      else if (isimage && filename.includes("cdtitle")) {
+      else if (isimage && filename.includes('cdtitle')) {
         metadata.cstitle = fullname;
       }
     }
@@ -778,11 +780,11 @@ function loadFromFile(url, ext) {
 
   }).then((data) => {
     if (!ext) {
-      ext = url.split(".").slice("-1")[0].toLowerCase();
+      ext = url.split('.').slice('-1')[0].toLowerCase();
     }
 
     let song = Song.ext_map[ext](data);
-    song.path = url.slice(0, url.lastIndexOf("/") + 1);
+    song.path = url.slice(0, url.lastIndexOf('/') + 1);
     return song;
   });
 }
@@ -824,7 +826,7 @@ function loadFromDWIFile(data) {
   // Timing Data
   song.offset = fieldMap.get('GAP')/1000;
 
-  song.bpms = getList("0.000=" + fieldMap.get('BPM')).concat(getList(fieldMap.get('CHANGEBPMS') || ''));
+  song.bpms = getList('0.000=' + fieldMap.get('BPM')).concat(getList(fieldMap.get('CHANGEBPMS') || ''));
   song.stops = getList(fieldMap.get('FREEZE') || '');
 
   createTimingPartition(song);
@@ -842,7 +844,7 @@ function loadFromDWIFile(data) {
 
     for (let rawChart of rawCharts) {
       let difficulty, meter, steps;
-      [difficulty, meter, steps] = rawChart.split(":");
+      [difficulty, meter, steps] = rawChart.split(':');
 
       let chart = new Chart(chartType, undefined, difficulty, meter);
       chart.steps = computeDWISteps(steps);
@@ -852,8 +854,8 @@ function loadFromDWIFile(data) {
 
   // Remove the used elements and store the metadata
   for (let f of ['CDTITLE', 'FILE', 'SAMPLESTART', 'SAMPLELENGTH',
-                 'GAP', 'BPM', 'CHANGEBPMS', 'FREEZE',
-                 'SINGLE', 'DOUBLE', 'COUPLE', 'SOLO']) {
+    'GAP', 'BPM', 'CHANGEBPMS', 'FREEZE',
+    'SINGLE', 'DOUBLE', 'COUPLE', 'SOLO']) {
 
     fieldMap.delete(f);
   }
@@ -915,8 +917,8 @@ function loadFromSMFile (data) {
 
   // Remove the used elements and store the metadata
   for (let f of ['BANNER', 'BACKGROUND', 'CDTITLE', 'MUSIC',
-             'SAMPLESTART', 'SAMPLELENGTH', 'OFFSET',
-             'BPMS', 'STOPS', 'NOTES']) {
+    'SAMPLESTART', 'SAMPLELENGTH', 'OFFSET',
+    'BPMS', 'STOPS', 'NOTES']) {
 
     fieldMap.delete(f);
   }

@@ -572,14 +572,16 @@ class LongNoteDefaultGraphicComponent extends interfaces.LongNoteGraphicComponen
 
 class MenuDefaultGraphicComponent extends interfaces.MenuGraphicComponent {
 
-  constructor(theme, width, height, entries) {
-    super(theme, width, height, entries);
+  constructor(theme, width, height, menu) {
+    super(theme);
 
     // Engine Container
     this.height = height;
     this.width = width;
+    this.menu = menu;
 
     this.createMainSprite();
+    this.createEntries(menu.entries);
 
     this.textHoverOptions = {
       fontFamily : 'bold Arial',
@@ -598,6 +600,26 @@ class MenuDefaultGraphicComponent extends interfaces.MenuGraphicComponent {
     this.theme = theme;
 
     this.placeEntries();
+    this.handleMouse();
+  }
+
+  createEntries(entries) {
+
+    this.spritesMapping = new WeakMap();
+    this.entries = [];
+
+    let i = 0;
+    for (let entry of entries) {
+
+      let sprite = new PIXI.Text(entry.name);
+      this.spritesMapping.set(sprite, i);
+
+      this.entries.push({
+        sprite,
+        entry,
+        index: i++
+      });
+    }
   }
 
   createMainSprite() {
@@ -610,49 +632,63 @@ class MenuDefaultGraphicComponent extends interfaces.MenuGraphicComponent {
     this.sprite.addChild(this.foreground);
   }
 
-  hover(entryIndex, subEntries) {
-    for (let sprite of this.PIXIEntries) {
-      if (sprite.index === entryIndex) {
-        sprite.mainsprite.style = this.textHoverOptions;
+  update() {
+    for (let sprite of this.entries) {
+      if (sprite.index === this.menu.selectedEntry) {
+        sprite.sprite.style = this.textHoverOptions;
       } else {
-        sprite.mainsprite.style = this.textOptions;
-      }
-
-      let i = 0;
-      for (let s of sprite.subsprites) {
-        if (i === subEntries[sprite.index]) {
-          s.style = this.textHoverOptions;
-        } else {
-          s.style = this.textOptions;
-        }
-        i ++;
+        sprite.sprite.style = this.textOptions;
       }
     }
   }
 
   placeEntries() {
     let y = this.yText;
-    let marginX = 20;
-    for (let sprite of this.PIXIEntries) {
-      sprite.mainsprite.y = y;
-      this.foreground.addChild(sprite.mainsprite);
-      let x = sprite.mainsprite.x + sprite.mainsprite.width + marginX;
-      for (let s of sprite.subsprites) {
-        s.x = x;
-        s.y = y;
-        this.foreground.addChild(s);
-        x += s.width + marginX;
-      }
-      y += sprite.mainsprite.height;
+    //let marginX = 20;
+
+    for (let entry of this.entries) {
+
+      entry.sprite.y = y;
+      this.foreground.addChild(entry.sprite);
+      y += entry.sprite.height;
     }
   }
 
   get textSize() {
-    return this.PIXIEntries[0].mainsprite.height * this.PIXIEntries.length;
+    return this.entries[0].sprite.height * this.entries.length;
   }
 
   get yText() {
     return this.height/2 - this.textSize/2;
+  }
+
+  * sprites() {
+    for (let e of this.entries) {
+      yield(e.sprite);
+    }
+  }
+
+  handleMouse() {
+    for (let sprite of this.sprites()) {
+      sprite.interactive = true;
+
+      sprite.mouseup = sprite.tap = (m) => {
+        this.mouseup(this.spritesMapping.get(m.target));
+      };
+
+      sprite.mouseover = (m) => {
+        this.mouseover(this.spritesMapping.get(m.target));
+      };
+    }
+  }
+
+  mouseup(entryIndex) {
+    this.menu.entries[entryIndex].action();
+  }
+
+  mouseover(entryIndex) {
+    this.menu.selectedEntry = entryIndex;
+    this.hover(entryIndex);
   }
 }
 

@@ -62,7 +62,7 @@ class ReceptorGraphicComponent extends GraphicComponent{
  */
 class MenuGraphicComponent extends GraphicComponent{
 
-  hover(entryIndex, subEntries) {}
+  update() {}
 }
 
 /**

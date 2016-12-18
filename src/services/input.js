@@ -9,6 +9,7 @@ let controllerSubject = new Subject();
 export {
   GetDefaultKeyboardController,
   Subscribe,
+  GetControllers,
   GetDefaultKeyboardMapping
 };
 
@@ -104,6 +105,10 @@ function GetDefaultKeyboardController() {
  */
 function Subscribe(observer) {
   controllerSubject.subscribe(observer);
+}
+
+function GetControllers() {
+  return controllers.values();
 }
 
 /**
@@ -319,7 +324,7 @@ export class Mapping {
  */
 function GetDefaultKeyboardMapping() {
   let m = new Mapping();
-  let c = Controller.GetDefaultKeyboardController();
+  let c = GetDefaultKeyboardController();
 
   m.setKey(KEY_UP, 38, c);
   m.setKey(KEY_DOWN, 40, c);

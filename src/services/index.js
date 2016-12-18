@@ -2,19 +2,19 @@
  * @namespace services
  */
 
-import * as theme from './theme';
-import * as judge from './judge';
-import * as input from './input';
-import * as player from './player';
-import * as fileManager from './fileManager';
+import * as Theme from './theme';
+import * as Judge from './judge';
+import * as Input from './input';
+import * as Player from './player';
+import * as FileManager from './fileManager';
 
-export {default as songParser} from './songParser';
+export {default as SongParser} from './songParser';
 
 export {
-  theme,
-  judge,
-  input,
-  player,
-  fileManager
+  Theme,
+  Judge,
+  Input,
+  Player,
+  FileManager
 };
 

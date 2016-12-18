@@ -22,7 +22,7 @@ class Player {
   constructor() {
     this.configuration = new Map();
     this.controller = null;
-    this.name = 'Player ' + (Player.Players.size + 1);
+    this.name = 'Player ' + (players.size + 1);
   }
 
   /**

@@ -5,10 +5,14 @@
 
 //import * as components from './components';
 //import * as views from './views';
-
-import log from 'loglevel';
 //import {theme} from './src/services';
 
+// Internal dependencies
+import {Game} from './src/components';
+import {MenuView} from './src/views';
+
+// External dependencies
+import log from 'loglevel';
 import * as PIXI from 'pixi.js';
 
 window.addEventListener('load', init, false);
@@ -21,6 +25,42 @@ function init() {
 
   log.setLevel('debug');
   log.info('Starting Game Initialization');
+
+  let game = new Game(800, 600, true);
+
+  game.init().then(() => {
+
+    let menu = new MenuView(800, 600, [
+      {
+        name: 'Astro Troopers',
+        action: () => {log.debug('Astro');}
+      },
+      {
+        name: 'Toto',
+        action: () => {}
+      },
+      {
+        name: 'Titi',
+        action: () => {
+          let menuA = new MenuView(800, 600, [
+            {
+              name: 'Toto',
+              action: () => {}
+            },
+            {
+              name: 'Back',
+              action: () => {game.popView();}
+            }
+          ], game);
+          game.pushView(menuA);
+        }
+      }
+    ], game);
+
+    game.pushView(menu);
+    game.main();
+  });
+
 
 }
 

@@ -1,10 +1,11 @@
 /* jshint esnext: true */
-"use strict";
+'use strict';
 
-import {DefaultTheme as Theme } from '../themes'
-import {Controller, Player, Mapping, Judge} from '../services'
+import {Input, Player, Judge} from '../services';
+import {KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_ENTER, KEY_BACK} from '../constants/input';
 
-import {KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_ENTER, KEY_BACK} from '../constants'
+import * as PIXI from 'pixi.js';
+import Stats from 'stats-js';
 
 /**
  * Global Game entity.
@@ -19,46 +20,42 @@ export default class Game {
    * Create a Game object
    * @param {number} width - Game window width
    * @param {number} height - Game window height 
+   * @param {Bool} debug -  Show Debug Stats
    * @param {object} configuration - Configuration of the Game
    */
-  constructor(width, height) {
+  constructor(width, height, debug=false) {
     this.width = width;
     this.height = height;
 
     // Create the PIXI Environment
+    let canvas = document.getElementById('game');
     this.stage = new PIXI.Container();
-    this.renderer = PIXI.autoDetectRenderer(this.width, this.height, {backgroundColor : 0x1099bb});
+    this.renderer = PIXI.autoDetectRenderer(this.width, this.height, {backgroundColor : 0x1099bb, view: canvas});
+
+    if (debug) {
+      this.stats = new Stats();
+      document.body.appendChild(this.stats.domElement);
+    }
 
     this.views = [];
 
     this.createWindow();
-
-    // Create the services
-    this.theme = new Theme();
-
-    this.judge = new Judge();
   }
 
   /**
    * Initialize the services. We don't want promises in the constructor.
    */
   init() {
-    let promises = []
-
-    // Theme
-    promises.push(this.theme.init());
-
-    // Input
-    Controller.Setup();
+    let promises = [];
 
     // Create the first player
     let p = Player.CreatePlayer();
-    p.setMapping(Mapping.GetDefaultKeyboardMapping());
+    p.setMapping(Input.GetDefaultKeyboardMapping());
 
     // Create a second plauer for test purpose
     let q = Player.CreatePlayer();
-    let m = new Mapping();
-    let c = Controller.GetDefaultKeyboardController();
+    let m = new Input.Mapping();
+    let c = Input.GetDefaultKeyboardController();
 
     m.setKey(KEY_UP, 87, c);
     m.setKey(KEY_DOWN, 83, c);
@@ -120,9 +117,19 @@ export default class Game {
    * Main loop of the game
    */
   main() {
-    window.requestAnimationFrame(() => {this.main()});
+
+    if (this.stats) {
+      this.stats.begin();
+    }
+
+    window.requestAnimationFrame(() => {this.main();});
     this.update();
     this.renderer.render(this.stage);
+
+    if (this.stats) {
+      this.stats.end();
+    }
+
   }
 
   /**
@@ -132,7 +139,7 @@ export default class Game {
     if (this.views.length > 0) {
       this.views[0].update();
 
-      for (let c of Controller.Controllers.values()) {
+      for (let c of Input.GetControllers()) {
         let cmds = c.handleInput();
         for (let cmd of cmds) {
           cmd();
