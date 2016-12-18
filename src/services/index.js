@@ -2,15 +2,15 @@
  * @namespace services
  */
 
-//export { default as Judge } from './judge'
-//export {Controller, Mapping} from './input'
 //export { default as Player } from './player'
 
 import * as theme from './theme';
 import * as judge from './judge';
+import * as input from './input';
 
 export {
   theme,
-  judge
+  judge,
+  input
 };
 
