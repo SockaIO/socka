@@ -7,8 +7,10 @@
 //export { default as Player } from './player'
 
 import * as theme from './theme';
+import * as judge from './judge';
 
 export {
   theme,
+  judge
 };
 
