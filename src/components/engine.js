@@ -1,0 +1,514 @@
+'use strict';
+
+import {Judge, Theme} from '../services';
+import {KEY_UP, KEY_LEFT, KEY_DOWN, KEY_RIGHT, TAP, LIFT, EVENT_PAD_CONNECTED} from '../constants/input';
+import {EVENT_STEP_HIT, EVENT_NOTE_MISS, EVENT_NOTE_HIT, EVENT_NOTE_DODGE, EVENT_NOTE_FINISH, MINE_NOTE} from '../constants/chart';
+
+import {CreateNote, NoteStep} from './chart';
+
+import log from 'loglevel';
+
+/**
+ * Game Engine for one player
+ */
+export default class Engine {
+
+  constructor(width, height, fieldView, player) {
+
+    // Player
+    this.player = player;
+
+    // Song related info
+    this.chart = null;
+
+    // Keypressed
+    this.keyPressed = new Set();
+
+    // Window of existing notes
+    this.fieldView = fieldView;
+    this.firstStepIndex = 0;
+    this.lastStepIndex = -1;
+    this.actionIndex = -1;
+    this.actionNotes = new Map();
+    this.time = 0;
+    this.beat = 0;
+
+    // Scheduling
+    this.scheduledEvents = new Set();
+
+    // Missed steps
+    this.missedStepIndex = 0;
+
+    // Collision step
+    this.collisionStepIndex = 0;
+
+    // Timing
+    this.missTiming = 0.250;
+
+    // Graphic Component
+    this.graphicComponent = Theme.GetTheme().createEngineGC(width, height, fieldView);
+
+    // Score
+    this.score = new Score();
+    this.graphicComponent.placeScore(this.score.sprite);
+
+    // Combo
+    this.combo = new Combo();
+    this.graphicComponent.placeCombo(this.combo.sprite);
+
+    // Life
+    this.lifemeter = new Lifemeter();
+    this.graphicComponent.placeLifemeter(this.lifemeter.sprite);
+
+    this.progressionBar = new ProgressionBar();
+    this.graphicComponent.placeProgressionBar(this.progressionBar.sprite);
+  }
+
+  loadSong(song, chartIndex) {
+    //TODO: Load resources
+
+    this.chart = song.charts[chartIndex];
+    this.song = song;
+
+    this.steps = [];
+
+    for (let step of this.chart.steps) {
+
+      let noteStep = new NoteStep(step.beat, step.time, this);
+
+      for (let directionS in step.arrows) {
+        let direction = parseInt(directionS, 10);
+        let arrow = step.arrows[direction];
+
+        let schedule = (time, action, absolute, beat, ev=null) => {
+          return this.schedule(time, action, absolute, beat, ev);
+        };
+
+        let note = CreateNote(arrow, direction, noteStep, schedule);
+
+        noteStep.addNote(note);
+      }
+      this.steps.push(noteStep);
+    }
+
+    // Populate the step scores
+    Judge.populateSteps(this.steps, this.chart);
+
+    this.graphicComponent.createStream(this.steps);
+  }
+
+  setMissTiming(timing) {
+    this.missTiming = timing;
+  }
+
+  setMineTiming(timing) {
+    this.mineTiming = timing;
+  }
+
+  setSongPlayer(sp) {
+    this.progressionBar.setSongPlayer(sp);
+    this.songPlayer = sp;
+  }
+
+  get sprite() {
+    return this.graphicComponent.sprite;
+  }
+
+  update() {
+
+    // Get the time information
+    this.time = this.songPlayer.getTime();
+
+    //TODO: index?
+    let [beat, index] = this.song.getBeat(this.time);
+    this.beat = beat;
+
+
+    // Update the note stream
+    //this.updateWindow(beat);
+    this.updateAction();
+    this.graphicComponent.update(beat);
+
+    this.progressionBar.update();
+
+    // update the missed notes
+    this.updateEvents();
+
+    // Do the scheduled Actions
+    this.handleScheduled();
+
+  }
+
+  /**
+   * Called on dance inputs
+   */
+  danceInput(keycode, action) {
+
+    let convert = {
+      [KEY_UP]:2,
+      [KEY_LEFT]:0,
+      [KEY_DOWN]:1,
+      [KEY_RIGHT]:3
+    };
+
+    let direction = convert[keycode];
+
+
+    // TODO: More accuracy for the time ?
+    let time = this.songPlayer.getTime();
+
+    // Visual Effect
+    if (action === TAP) {
+      this.keyPressed.add(direction);
+      this.graphicComponent.receptor.tap(direction);
+    }
+
+    // Visual Effect
+    if (action === LIFT) {
+      this.keyPressed.delete(direction);
+      this.graphicComponent.receptor.lift(direction);
+    }
+
+    // Action on the step
+    let note = this.getActionNote(direction, time);
+
+    if (note === null) {
+      return;
+    }
+
+    note.process(action, time);
+  }
+
+  updateAction() {
+
+    if (this.actionIndex >= this.steps.length - 2) {
+      return;
+    }
+
+    let step = this.steps[this.actionIndex + 1];
+
+    while (step.time - this.time < this.missTiming) {
+
+      // Add the notes to the action notes
+      for (let note of step.notes) {
+
+        let list;
+        // Initialisation
+        if (!this.actionNotes.has(note.direction)) {
+          this.actionNotes.set(note.direction, []);
+        }
+
+        list = this.actionNotes.get(note.direction);
+
+        // Remove stale notes
+        while (list.length > 0 && list[0].getDistance(this.time) > this.missTiming) {
+          list.shift();
+        }
+
+        list.push(note);
+      }
+
+      this.actionIndex++;
+      if (this.actionIndex >= this.steps.length - 2) {
+        return;
+      }
+
+      step = this.steps[this.actionIndex + 1];
+
+    }
+
+  }
+
+  // TODO: Reduce to just find the actionStep?
+  // The inside and out are not used currently
+  updateWindow(beat) {
+
+    if (this.firstStepIndex >= this.steps.length) {
+      return;
+    }
+
+    let x = this.firstStepIndex;
+    let step = this.steps[x];
+    this.actionStep = null;
+
+    while (step.beat < beat + 2 * this.fieldView){
+
+      // The step enter the existence window
+      if (x > this.lastStepIndex) {
+        step.applyToNotes('inside',this.stream);
+        this.lastStepIndex++;
+      }
+
+      // The step leaves the existence window
+      if (step.beat < beat - this.fieldView) {
+        step.applyToNotes('out');
+        this.firstStepIndex++;
+      }
+
+      if (++x >= this.steps.length) {
+        break;
+      }
+      step = this.steps[x];
+    }
+
+  }
+
+  updateEvents() {
+
+    let startStep = Math.min(this.missedStepIndex, this.collisionStepIndex);
+
+    if (startStep >= this.steps.length) {
+      return;
+    }
+
+    let x = startStep;
+    let step = this.steps[x];
+
+    while (step.time - this.mineTiming <= this.time) {
+
+      // Note passed the miss window
+      if (step.time + this.missTiming <= this.time && x >= this.missedStepIndex) {
+        for (let n of step.notes) {
+          if (n.type === MINE_NOTE) {
+            n.dodge();
+          } else {
+            n.miss();
+          }
+        }
+        this.missedStepIndex++;
+      }
+
+      // Note is in the collision window
+      // TODO: This might fire too many events and slow down the game (maybe?)
+      if (x >= this.collisionStepIndex) {
+        let pressed = [...this.keyPressed];
+
+        if (pressed.length > 0) {
+          step.applyToDirections(pressed, 'collide');
+        }
+
+        if (step.time + this.mineTiming <= this.time) {
+          this.collisionStepIndex++;
+        }
+      }
+
+      if (++x >= this.steps.length) {
+        break;
+      }
+
+      step = this.steps[x];
+    }
+  }
+
+  // Refactor function call instead of switch?
+  onNotify(ev) {
+
+    // Common processing
+    this.graphicComponent.feedback(ev);
+
+    // Type dependent processing
+    switch(ev.type) {
+    case EVENT_NOTE_MISS:
+      log.debug('[Engine] A note is it missed', ev.note);
+      this.combo.reset();
+      this.lifemeter.updateLife(Judge.getPoints(ev.note, ev.timing));
+      break;
+
+    case EVENT_NOTE_DODGE:
+      log.debug('[Engine] A note is it dodged', ev.note);
+      break;
+
+    case EVENT_NOTE_FINISH:
+      log.debug('[Engine] A note is it finished', ev.note, ev.timing);
+      this.lifemeter.updateLife(Judge.getPoints(ev.note, ev.timing));
+      break;
+
+    case EVENT_NOTE_HIT:
+      log.debug('[Engine] A note is it hit', ev.note, ev.timing);
+
+      if (Judge.isGoodTiming(ev.timing)) {
+        this.combo.add();
+      } else {
+        this.combo.reset();
+      }
+      this.lifemeter.updateLife(Judge.getPoints(ev.note, ev.timing));
+
+      break;
+    case EVENT_STEP_HIT:
+      log.debug('[Engine] A step is it hit', ev.step, ev.timing);
+      this.score.add(ev.score);
+      break;
+    case EVENT_PAD_CONNECTED:
+      log.debug('[Engine] Pad Connected');
+      this.controller = ev.pad;
+      this.controller.setSongPlayer(this.songPlayer);
+      break;
+    }
+
+  }
+
+  // Get the target note
+  getActionNote(direction, time) {
+
+    let list = this.actionNotes.get(direction) || [];
+
+    if (list.length === 0) {
+      return null;
+    }
+
+    let best = 9999;
+    let target = null;
+
+
+    for (let note of list) {
+      // Look for the min
+      // TODO: Could be optimized to stop at first increase
+      if (note.getDistance(time) < best) {
+        target = note;
+        best = note.getDistance(time);
+      }
+    }
+
+    return target;
+
+  }
+
+  schedule(at, action, absolute=true, beat=true, base_ev=null) {
+
+    let ev = {action};
+
+    if (base_ev !== null) {
+      ev = base_ev;
+    }
+
+    if (beat) {
+      ev.beat = absolute ? at : at + this.beat;
+    } else {
+      ev.time = absolute ? at : at + this.time;
+    }
+
+    if (base_ev === null) {
+      this.scheduledEvents.add(ev);
+    }
+
+    return ev;
+  }
+
+  handleScheduled() {
+
+    for (let ev of this.scheduledEvents) {
+      if ((ev.beat !== undefined && ev.beat <= this.beat) ||
+          (ev.time !== undefined && ev.time <= this.time)) {
+        ev.action();
+        this.scheduledEvents.delete(ev);
+      }
+    }
+  }
+
+
+}
+
+class Score {
+
+  constructor() {
+    this.score = 0;
+    this.graphicComponent = Theme.GetTheme().createScoreGC();
+  }
+
+  add(amount) {
+    this.score += amount;
+    this.graphicComponent.update(this.score);
+  }
+
+  get sprite() {
+    return this.graphicComponent.sprite;
+  }
+}
+
+class Combo {
+
+  constructor() {
+    this.combo = 0;
+    this.graphicComponent = Theme.GetTheme().createComboGC();
+  }
+
+  add() {
+    this.combo++;
+    this.graphicComponent.update(this.combo);
+  }
+
+  reset() {
+    this.combo = 0;
+    this.graphicComponent.update(this.combo);
+  }
+
+  get sprite() {
+    return this.graphicComponent.sprite;
+  }
+}
+
+class Lifemeter {
+
+  constructor() {
+    this.maximum = 100;
+    this.life = 50;
+
+    this.graphicComponent = Theme.GetTheme().createLifemeterGC();
+    this.updateLife(0);
+  }
+
+  updateLife(amount) {
+
+    this.life += amount;
+    this.life = Math.max(Math.min(this.life, this.maximum), 0);
+
+    this.graphicComponent.update(this.life / this.maximum);
+  }
+
+  get sprite() {
+    return this.graphicComponent.sprite;
+  }
+
+
+}
+
+class ProgressionBar {
+  constructor() {
+    this.songDuration = null;
+    this.secondPassed = 0;
+    this.songPlayer = null;
+    this.percentage = 0;
+
+    this.graphicComponent = Theme.GetTheme().createProgressionBarGC();
+  }
+
+  setSongPlayer(sp) {
+    this.songPlayer = sp;
+  }
+
+  update() {
+    if (!this.songDuration) {
+      if (this.songPlayer.source.buffer) {
+        this.songDuration = this.songPlayer.source.buffer.duration;
+      } else {
+        return;
+      }
+    }
+
+    let time = this.songPlayer.getTime();
+
+    if (time < 0 || time > this.songDuration) {
+      return;
+    }
+
+    this.secondPassed = time;
+    this.percentage = 1 - (this.songDuration - this.secondPassed)/this.songDuration;
+    this.graphicComponent.update(this.percentage);
+  }
+
+  get sprite() {
+    return this.graphicComponent.sprite;
+  }
+}
+
+

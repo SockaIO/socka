@@ -119,6 +119,30 @@ class SongIndex {
    */
   load(type) {
     //TODO: Implement
-    return;
+
+    let url;
+    switch(type) {
+    case RSC_AUDIO:
+      url = 'Astro Troopers/Astro Troopers.ogg';
+      break;
+    case RSC_CHART:
+      url = 'Astro Troopers/Astro Troopers.sm';
+      break;
+    }
+
+    return fetch(url, {credentials: 'same-origin'}).then((resp) => {
+
+      if  (!resp.ok) {
+        throw resp;
+      }
+
+      switch(type) {
+      case RSC_AUDIO:
+        return resp.arrayBuffer();
+      case RSC_CHART:
+        return resp.text();
+      }
+    });
+
   }
 }
