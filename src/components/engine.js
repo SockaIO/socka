@@ -3,6 +3,7 @@
 import {Judge, Theme} from '../services';
 import {KEY_UP, KEY_LEFT, KEY_DOWN, KEY_RIGHT, TAP, LIFT, EVENT_PAD_CONNECTED} from '../constants/input';
 import {EVENT_STEP_HIT, EVENT_NOTE_MISS, EVENT_NOTE_HIT, EVENT_NOTE_DODGE, EVENT_NOTE_FINISH, MINE_NOTE} from '../constants/chart';
+import {TM_W5, TM_MINE} from '../constants/judge';
 
 import {CreateNote, NoteStep} from './chart';
 
@@ -13,7 +14,7 @@ import log from 'loglevel';
  */
 export default class Engine {
 
-  constructor(width, height, fieldView, player) {
+  constructor(width, height, fieldView, player, songPlayer) {
 
     // Player
     this.player = player;
@@ -62,6 +63,13 @@ export default class Engine {
 
     this.progressionBar = new ProgressionBar();
     this.graphicComponent.placeProgressionBar(this.progressionBar.sprite);
+
+    // Timing
+    this.missTiming = Judge.GetTimingValue(TM_W5);
+    this.mineTiming = Judge.GetTimingValue(TM_MINE);
+
+    // Song Player
+    this.setSongPlayer(songPlayer);
   }
 
   loadSong(song, chartIndex) {
@@ -95,14 +103,6 @@ export default class Engine {
     Judge.populateSteps(this.steps, this.chart);
 
     this.graphicComponent.createStream(this.steps);
-  }
-
-  setMissTiming(timing) {
-    this.missTiming = timing;
-  }
-
-  setMineTiming(timing) {
-    this.mineTiming = timing;
   }
 
   setSongPlayer(sp) {
