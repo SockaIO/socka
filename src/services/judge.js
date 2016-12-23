@@ -229,12 +229,12 @@ class Judge {
 
 let judge = new Judge();
 
-let GetTimingValue = judge.getTimingValue;
-let PopulateSteps = judge.populateSteps;
-let JudgeNote = judge.judgeNote;
-let JudgeStep = judge.judgeStep;
-let IsGoodTiming = judge.isGoodTiming;
-let GetPoints = judge.getPoints;
+let GetTimingValue = judge.getTimingValue.bind(judge);
+let PopulateSteps = judge.populateSteps.bind(judge);
+let JudgeNote = judge.judgeNote.bind(judge);
+let JudgeStep = judge.judgeStep.bind(judge);
+let IsGoodTiming = judge.isGoodTiming.bind(judge);
+let GetPoints = judge.getPoints.bind(judge);
 
 export {
   GetTimingValue,
