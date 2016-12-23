@@ -683,12 +683,13 @@ class MenuDefaultGraphicComponent extends interfaces.MenuGraphicComponent {
   }
 
   mouseup(entryIndex) {
-    this.menu.entries[entryIndex].action();
+    if (entryIndex !== undefined) {
+      this.menu.entries[entryIndex].action();
+    }
   }
 
   mouseover(entryIndex) {
     this.menu.selectedEntry = entryIndex;
-    this.hover(entryIndex);
   }
 }
 
