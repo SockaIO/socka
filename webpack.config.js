@@ -20,6 +20,10 @@ module.exports = {
       {
         test: /\.png$/,
         use: ['file-loader?name=[path][name].[ext]']
+      },
+      {
+        test: /astro\/.*\.(ogg|sm)/,
+        use: ['file-loader?name=[path][name].[ext]']
       }
     ]
   },

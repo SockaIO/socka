@@ -120,13 +120,23 @@ class SongIndex {
   load(type) {
     //TODO: Implement
 
+
     let url;
     switch(type) {
+
+    case RSC_BACKGROUND:
+      loader.add(require('../../astro/bg.png'));
+      return new Promise((resolve) => {
+        loader.load(resolve);
+      }).then(() => {
+        return loader.resources[require('../../astro/bg.png')].texture;
+      });
+
     case RSC_AUDIO:
-      url = 'Astro Troopers/Astro Troopers.ogg';
+      url = require('../../astro/astro.ogg');
       break;
     case RSC_CHART:
-      url = 'Astro Troopers/Astro Troopers.sm';
+      url = require('../../astro/astro.sm');
       break;
     }
 
