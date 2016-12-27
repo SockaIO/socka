@@ -9,7 +9,8 @@
 
 // Internal dependencies
 import {Game} from './src/components';
-import {MenuView} from './src/views';
+import {Player, FileManager} from './src/services';
+import {MenuView, EngineView} from './src/views';
 
 // External dependencies
 import log from 'loglevel';
@@ -33,7 +34,12 @@ function init() {
     let menu = new MenuView(800, 600, [
       {
         name: 'Astro Troopers',
-        action: () => {log.debug('Astro');}
+        action: () => {
+          log.debug('Astro');
+          let song = FileManager.ListSongs(null)[0];
+          let gView = new EngineView(800, 600, song, 2, Player.GetPlayers(), game);
+          game.pushView(gView);
+        }
       },
       {
         name: 'Toto',
