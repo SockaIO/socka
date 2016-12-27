@@ -44,6 +44,8 @@ export default class DefaultTheme extends interfaces.Theme {
       lifemeterUnder: require('./img/lifemeterUnder.png'),
       progressBarMiddle: require('./img/progressBarMiddle.png'),
       progressBarUnder: require('./img/progressBarUnder.png'),
+      font: require('./img/font.xml'),
+      fontImg: require('./img/font.png'),
     };
 
   }
@@ -902,7 +904,7 @@ class JudgmentDefaultGraphicComponent {
 class ScoreDefaultGraphicComponent {
 
   constructor() {
-    this.sprite = new PIXI.Text('', {font : '24px Arial', fill : 0xff1010, align : 'center'});
+    this.sprite = new PIXI.extras.BitmapText('',{font : '24px font', align : 'center'});
     this.update(0);
   }
 
@@ -940,7 +942,7 @@ class ScoreDefaultGraphicComponent {
 class ComboDefaultGraphicComponent {
 
   constructor() {
-    this.sprite = new PIXI.Text('', {font : '24px Arial', fill : 0xff1010, align : 'center'});
+    this.sprite = new PIXI.extras.BitmapText('Combo',{font : '24px font', align : 'center'});
     this.update(0);
   }
 

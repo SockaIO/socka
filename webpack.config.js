@@ -22,6 +22,10 @@ module.exports = {
         use: ['file-loader?name=[path][name].[ext]']
       },
       {
+        test: /\.xml$/,
+        use: ['file-loader?name=[path][name].[ext]']
+      },
+      {
         test: /astro\/.*\.(ogg|sm)/,
         use: ['file-loader?name=[path][name].[ext]']
       }
