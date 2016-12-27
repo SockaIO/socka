@@ -1,9 +1,10 @@
 'use strict';
 
-import {Judge, Theme} from '../services';
+import {Judge, Theme, SongParser} from '../services';
 import {KEY_UP, KEY_LEFT, KEY_DOWN, KEY_RIGHT, TAP, LIFT, EVENT_PAD_CONNECTED} from '../constants/input';
 import {EVENT_STEP_HIT, EVENT_NOTE_MISS, EVENT_NOTE_HIT, EVENT_NOTE_DODGE, EVENT_NOTE_FINISH, MINE_NOTE} from '../constants/chart';
 import {TM_W5, TM_MINE} from '../constants/judge';
+import {RSC_CHART} from '../constants/resources';
 
 import {CreateNote, NoteStep} from './chart';
 
@@ -72,11 +73,26 @@ export default class Engine {
     this.setSongPlayer(songPlayer);
   }
 
-  loadSong(song, chartIndex) {
-    //TODO: Load resources
+  /**
+   * Load the chart from the songIndex
+   * @param {SongIndex} songIndex | Song to load
+   * @param {Number} chartIndex | Index of the chart to use (difficulty)
+   */
+  loadSong(songIndex, chartIndex) {
 
-    this.chart = song.charts[chartIndex];
-    this.song = song;
+    songIndex.load(RSC_CHART).then((data) => {
+      let song = SongParser.ParseSong(data, 'sm');
+      this.chart = song.charts[chartIndex];
+      this.song = song;
+
+      this.loadSongInternal();
+    });
+  }
+
+  /**
+   * Finish loading song Data
+   */
+  loadSongInternal() {
 
     this.steps = [];
 
@@ -100,7 +116,7 @@ export default class Engine {
     }
 
     // Populate the step scores
-    Judge.populateSteps(this.steps, this.chart);
+    Judge.PopulateSteps(this.steps, this.chart);
 
     this.graphicComponent.createStream(this.steps);
   }
@@ -311,7 +327,7 @@ export default class Engine {
     case EVENT_NOTE_MISS:
       log.debug('[Engine] A note is it missed', ev.note);
       this.combo.reset();
-      this.lifemeter.updateLife(Judge.getPoints(ev.note, ev.timing));
+      this.lifemeter.updateLife(Judge.GetPoints(ev.note, ev.timing));
       break;
 
     case EVENT_NOTE_DODGE:
@@ -320,18 +336,18 @@ export default class Engine {
 
     case EVENT_NOTE_FINISH:
       log.debug('[Engine] A note is it finished', ev.note, ev.timing);
-      this.lifemeter.updateLife(Judge.getPoints(ev.note, ev.timing));
+      this.lifemeter.updateLife(Judge.GetPoints(ev.note, ev.timing));
       break;
 
     case EVENT_NOTE_HIT:
       log.debug('[Engine] A note is it hit', ev.note, ev.timing);
 
-      if (Judge.isGoodTiming(ev.timing)) {
+      if (Judge.IsGoodTiming(ev.timing)) {
         this.combo.add();
       } else {
         this.combo.reset();
       }
-      this.lifemeter.updateLife(Judge.getPoints(ev.note, ev.timing));
+      this.lifemeter.updateLife(Judge.GetPoints(ev.note, ev.timing));
 
       break;
     case EVENT_STEP_HIT:

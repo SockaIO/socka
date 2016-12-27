@@ -1,7 +1,7 @@
 'use strict';
 
 import {Subject} from '../helpers';
-import {Theme} from '../services';
+import {Theme, Judge} from '../services';
 
 import {S_OK, S_NG, TM_MISS} from '../constants/judge';
 import {TAP} from '../constants/input';
@@ -19,7 +19,7 @@ class Note {
 
   static NoteHit(note, delay) {
 
-    let [timing, score] = note.step.engine.judge.judgeNote(note, delay);
+    let [timing, score] = Judge.JudgeNote(note, delay);
 
     let ev = {
       note,
@@ -521,7 +521,7 @@ class NoteStep {
 
   static StepHit(step, delay) {
 
-    let [timing, score] = step.engine.judge.judgeStep(step, delay);
+    let [timing, score] = Judge.JudgeStep(step, delay);
 
     let ev = {
       step,

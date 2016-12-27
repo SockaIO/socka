@@ -934,8 +934,9 @@ function loadFromSMFile (data) {
  *
  * @param {string} data | Song data
  * @param {string} type | FileType
+ * @TODO Autodetection or symbol for file type
  */
-export default function parseSong(data, type) {
+export function ParseSong(data, type) {
 
   switch(type) {
   case 'dwi':

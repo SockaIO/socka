@@ -122,8 +122,8 @@ class Judge {
 
     for (let s of steps) {
       s.score =  Math.floor(B / S) * index++;
-      s.holdTiming = this.getHoldTiming();
-      s.rollTiming = this.getRollTiming();
+      s.holdTiming = this.getTimingValue(TM_HOLD);
+      s.rollTiming = this.getTimingValue(TM_ROLL);
     }
   }
 
@@ -192,7 +192,7 @@ class Judge {
    * @returns {Number} Score
    */
   getNoteScore(note, timing) {
-    return 0 * timing;
+    return 0;
   }
 
   /**
