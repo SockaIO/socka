@@ -37,8 +37,8 @@ class Song {
     this.timingPartition = [];
   }
 
-  /*
-   * TODO: Maybe provide a functino to just laod elements for a menu
+  /**
+   * Populate the Times for the steps of the charts
    */
   populateStepTimes () {
 
@@ -60,44 +60,14 @@ class Song {
     }
   }
 
-  // TODO: To be moved to other classes, we do not want dependencies on the outside world here
-  getResources() {
 
-    let promises = [];
-
-    // Get the Music
-    if (this.audiodata === undefined) {
-      promises.push(fetch(this.path + this.music, {credentials: 'same-origin'}).then((resp) => {
-        if (!resp.ok) {
-          throw resp;
-        }
-
-        this.audioData = resp.arrayBuffer();
-      }));
-    }
-
-    return Promise.all(promises);
-
-  }
-
-  getAudioData() {
-
-    return new Promise((resolve) => {
-      if (this.audioData !== undefined) {
-        resolve(this.musicBuffer);
-      }
-
-      return this.getResources().then(() => {
-        resolve(this.audioData);
-      });
-    });
-  }
-
-  /*
-   * Helper functions
-   * TODO: Is this their place? Are they even used?
+  /**
+   * Get the beat corresponding to a given time
+   * @param {Number} time | time to covnert to beat
+   * @param {Number} startIndex | index to start looking from
+   * @returns {Number} Beat
+   * @returns {Number} index of the timing partition
    */
-
   getBeat(time, startIndex=0) {
 
     let index = startIndex;
@@ -113,6 +83,13 @@ class Song {
 
   }
 
+  /**
+   * Get the time corresponding to a given beat 
+   * @param {Number} beat | beat to covnert to time 
+   * @param {Number} startIndex | index to start looking from
+   * @returns {Number} Time 
+   * @returns {Number} index of the timing partition
+   */
   getTime(beat, startIndex=0) {
 
     let index = startIndex;
@@ -134,7 +111,7 @@ Song.ext_map = {
   'dwi': Song.loadFromDWIFile
 };
 
-/*
+/**
  * List of steps for a given difficulty
  */
 class Chart {
@@ -153,7 +130,7 @@ class Chart {
 
 }
 
-/*
+/**
  * Step with timing data
  */
 class Step {
@@ -185,7 +162,7 @@ class Step {
   }
 }
 
-/*
+/**
  * Section of constant BPS
  */
 class TimingSection {
@@ -199,7 +176,7 @@ class TimingSection {
   }
 }
 
-/*
+/**
  * Get the type symbol from the number
  */
 function getTypeSymbol(x) {
@@ -224,8 +201,9 @@ getTypeSymbol.map = {
 };
 
 
-/*
+/**
  * Get the informations about the bps, duration and start time of the different sections
+ * @param {Song} song | Song to extract the info for
  */
 function createTimingPartition(song) {
 
@@ -262,9 +240,6 @@ function createTimingPartition(song) {
     sections.splice(sectionIndex + (1 - del), del, stopSection, sectionEnd);
   }
 
-  // TODO Add the warping
-  
-
   //
   // Compute the timing
   //
@@ -292,8 +267,9 @@ function createTimingPartition(song) {
 
 }
 
-/*
+/**
  * Extract the fields from the SM file
+ * @param {String} data | Text data to extract the field from
  */
 function * getFields(data) {
 
@@ -369,8 +345,11 @@ function * getFields(data) {
 }
 
 
-/*
+/**
  * Remove character at the beginning and end of a string
+ * @param {String} string | string to trim
+ * @param {String} character | Character to trim (default is space)
+ * @returns {String} trimmed string
  */
 function trim(string, character=' ') {
 
@@ -388,8 +367,10 @@ function trim(string, character=' ') {
   return string.slice(startIndex, stopIndex);
 }
 
-/*
- * Get the information organized as lsit in the SM file
+/**
+ * Get the information organized as list in the SM file
+ * @param {String} data | Text data to get the info from
+ * @returns {String|Array} List of information
  */
 function getList(data) {
 
@@ -414,8 +395,10 @@ function getList(data) {
 }
 
 
-/*
+/**
  * Get the charts from the data
+ * @param {String} data | Text data to get the info from
+ * @returns {Chart|Array} Charts contained in the data
  */
 function getCharts(data) {
 
@@ -428,6 +411,11 @@ function getCharts(data) {
   return charts;
 }
 
+/**
+ * Iterate of the steps of DWI type data
+ * @param {String} data | Text data to get the info from
+ * @return {Object} Step
+ */
 function * iterDWISteps(data) {
   const grouping = {'<': '>'};
   const speed = {'(': 1/4, '[': 1/8, '{': 1/16, '`': 1/32};
@@ -485,7 +473,11 @@ function * iterDWISteps(data) {
   }
 }
 
-// Combine 0011 + 0030 in 0031
+/** 
+ * Combine 0011 + 0030 in 0031
+ * @param {Object|Array} steps | Steps to Combine
+ * @returns {Object} Combined step
+ */
 function _combine_step (steps) {
   let newStep = steps[0];
 
@@ -501,6 +493,12 @@ function _combine_step (steps) {
   return newStep;
 }
 
+/**
+ * Convert DWI Step to SM Step
+ * @param {Object} step | DWI Step
+ * @param {String} default_note | Default SM note type to use
+ * @returns {Object} SM Step
+ */
 function DWIToSMStep(step, default_note='1') {
   if (step.length === 1 && step in DWIToSMStep.map) {
     return DWIToSMStep.map[step].split('1').join(default_note);
@@ -533,6 +531,11 @@ DWIToSMStep.map = {
   'B': '1001',
 };
 
+/**
+ * Extract the DWI Steps from the text Data
+ * @param {String} data | Text Data
+ * @returns {Object|Array} Array of steps
+ */
 function computeDWISteps(data) {
   let stepData = [];
   let prevStep = null;
@@ -584,8 +587,10 @@ function computeDWISteps(data) {
   return stepData;
 }
 
-/*
+/**
  * Get the steps and notes info from the data
+ * @param {String} data | Text Data
+ * @return {Chart} Chart extracted from the data
  */
 function getChart(data) {
 
@@ -712,88 +717,11 @@ function getChart(data) {
 
 }
 
-//TODO: Move to other modules the function related to the outside world (most likely the file manager);
-
-
-function loadFromSMFolder (url) {
-  return Utils.findLinks(url).then((links) => {
-    let metadata = {};
-
-    let song;
-    for (let link of links) {
-      let fullname = decodeURIComponent(link.split('/').slice('-1')[0]);
-      let ext = fullname.split('.').slice('-1')[0].toLowerCase();
-      let filename = fullname.split('.')[0];
-
-      let isimage = ['png', 'jpeg', 'gif'].includes(ext);
-      let ismusic = ['mp3', 'ogg'].includes(ext);
-
-      if (ext in Song.ext_map) {
-        song = Song.loadFromFile(link, ext);
-      }
-      else if (ismusic) {
-        metadata.music = fullname;
-      }
-      else if (isimage && (filename.includes('banner') || filename.endsWith('bn'))) {
-        metadata.banner = fullname;
-      }
-      else if (isimage && (filename.includes('background') || filename.endsWith('bg'))) {
-        metadata.background = fullname;
-      }
-      else if (isimage && filename.includes('cdtitle')) {
-        metadata.cstitle = fullname;
-      }
-    }
-
-    return Promise.all([song, metadata]);
-
-  }).then((data) => {
-    let song = data[0];
-    let metadata = data[1];
-
-    if (!song.banner) {
-      song.banner = metadata.banner;
-    }
-    if (!song.background) {
-      song.background = metadata.background;
-    }
-    if (!song.cdtitle) {
-      song.cdtitle = metadata.cdtitle;
-    }
-    if (!song.music) {
-      song.music = metadata.music;
-    }
-
-    return song;
-
-  });
-}
-
-function loadFromFile(url, ext) {
-  return fetch(url, {credentials: 'same-origin'}).then((resp) => {
-
-    if (!resp.ok) {
-      throw resp;
-    }
-
-    return resp.text();
-
-  }).then((data) => {
-    if (!ext) {
-      ext = url.split('.').slice('-1')[0].toLowerCase();
-    }
-
-    let song = Song.ext_map[ext](data);
-    song.path = url.slice(0, url.lastIndexOf('/') + 1);
-    return song;
-  });
-}
-
 function loadFromDWIFile(data) {
   const fields = getFields(data);
   const fieldMap = new Map();
 
-  while (true) {
+  for (;;) {
     let v = fields.next().value;
 
     if (v === undefined) {
@@ -870,7 +798,7 @@ function loadFromSMFile (data) {
   const fields = getFields(data);
   const fieldMap = new Map();
 
-  while (true) {
+  for (;;) {
     let v = fields.next().value;
 
     if (v === undefined) {

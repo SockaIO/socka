@@ -1,3 +1,4 @@
+/* global require */
 'use strict';
 import {loaders} from 'pixi.js';
 
