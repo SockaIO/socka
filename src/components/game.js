@@ -35,6 +35,7 @@ export default class Game {
     if (debug) {
       this.stats = new Stats();
       document.body.appendChild(this.stats.domElement);
+      console.log('test')
     }
 
     this.views = [];

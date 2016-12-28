@@ -62,15 +62,15 @@ export default class Engine {
     this.lifemeter = new Lifemeter();
     this.graphicComponent.placeLifemeter(this.lifemeter.sprite);
 
-    this.progressionBar = new ProgressionBar();
-    this.graphicComponent.placeProgressionBar(this.progressionBar.sprite);
-
     // Timing
     this.missTiming = Judge.GetTimingValue(TM_W5);
     this.mineTiming = Judge.GetTimingValue(TM_MINE);
 
     // Song Player
-    this.setSongPlayer(songPlayer);
+    this.songPlayer = songPlayer;
+
+    this.progressionBar = new ProgressionBar(songPlayer);
+    this.graphicComponent.placeProgressionBar(this.progressionBar.sprite);
   }
 
   /**
@@ -121,22 +121,24 @@ export default class Engine {
     this.graphicComponent.createStream(this.steps);
   }
 
-  setSongPlayer(sp) {
-    this.progressionBar.setSongPlayer(sp);
-    this.songPlayer = sp;
-  }
-
+  /*
+   * Get the GC Sprite
+   * @returns {PIXI.Container} Sprite
+   */
   get sprite() {
     return this.graphicComponent.sprite;
   }
 
+  /**
+   * Update the engine for next tick
+   */
   update() {
 
     // Get the time information
     this.time = this.songPlayer.getTime();
 
     //TODO: index?
-    let [beat, index] = this.song.getBeat(this.time);
+    let [beat, ] = this.song.getBeat(this.time);
     this.beat = beat;
 
 
@@ -152,11 +154,12 @@ export default class Engine {
 
     // Do the scheduled Actions
     this.handleScheduled();
-
   }
 
   /**
    * Called on dance inputs
+   * @param {Symbol} keycode | Code of the key for the action
+   * @param {Symbol} action | Action performed
    */
   danceInput(keycode, action) {
 
@@ -195,6 +198,9 @@ export default class Engine {
     note.process(action, time);
   }
 
+  /**
+   * Update the action window
+   */
   updateAction() {
 
     if (this.actionIndex >= this.steps.length - 2) {
@@ -237,6 +243,9 @@ export default class Engine {
 
   // TODO: Reduce to just find the actionStep?
   // The inside and out are not used currently
+  /**
+   * Update the Existance Window
+   */
   updateWindow(beat) {
 
     if (this.firstStepIndex >= this.steps.length) {
@@ -269,6 +278,9 @@ export default class Engine {
 
   }
 
+  /**
+   * Compute the events for the steps inside the action window
+   */
   updateEvents() {
 
     let startStep = Math.min(this.missedStepIndex, this.collisionStepIndex);
@@ -316,7 +328,11 @@ export default class Engine {
     }
   }
 
-  // Refactor function call instead of switch?
+  /**
+   * Notify function for the observer pattern
+   * @param {Object} ev | Event
+   *  TODO: Refactor function call instead of switch?
+   */
   onNotify(ev) {
 
     // Common processing
@@ -347,6 +363,7 @@ export default class Engine {
       } else {
         this.combo.reset();
       }
+
       this.lifemeter.updateLife(Judge.GetPoints(ev.note, ev.timing));
 
       break;
@@ -363,7 +380,12 @@ export default class Engine {
 
   }
 
-  // Get the target note
+  /**
+   * Get the note that is affected by the user input for the given time and direction
+   * @param {Number} direction | Direction to look for
+   * @param {Number} time | Timecode of the input
+   * @returns {Note} Target Note
+   */
   getActionNote(direction, time) {
 
     let list = this.actionNotes.get(direction) || [];
@@ -389,6 +411,15 @@ export default class Engine {
 
   }
 
+  /**
+   * Schedule an action to be executed
+   * @param {Number} at | Timecode
+   * @param {Function} action | Action to execute
+   * @param {Boolean} absolute | Use absolute time (default is true)
+   * @param {Boolean} beat | If true count in beat otherwise in seconds (default is true)
+   * @param {Object} base_ev | If provided modify this event
+   * @retuns {Object} Scheduled event
+   */
   schedule(at, action, absolute=true, beat=true, base_ev=null) {
 
     let ev = {action};
@@ -410,6 +441,9 @@ export default class Engine {
     return ev;
   }
 
+  /**
+   * Execute the scheduled actions
+   */
   handleScheduled() {
 
     for (let ev of this.scheduledEvents) {
@@ -424,6 +458,9 @@ export default class Engine {
 
 }
 
+/**
+ * Class keeping track of the Score
+ */
 class Score {
 
   constructor() {
@@ -431,16 +468,27 @@ class Score {
     this.graphicComponent = Theme.GetTheme().createScoreGC();
   }
 
+  /**
+   * Increase the score
+   * @param {Number} amount | Amount of points to add
+   */
   add(amount) {
     this.score += amount;
     this.graphicComponent.update(this.score);
   }
 
+  /**
+   * Get the GC Sprite
+   * @returns {PIXI.Container} GC Sprite
+   */
   get sprite() {
     return this.graphicComponent.sprite;
   }
 }
 
+/**
+ * Class keeping track of the Combo
+ */
 class Combo {
 
   constructor() {
@@ -448,21 +496,34 @@ class Combo {
     this.graphicComponent = Theme.GetTheme().createComboGC();
   }
 
+  /**
+   * Increase the combo
+   */
   add() {
     this.combo++;
     this.graphicComponent.update(this.combo);
   }
 
+  /**
+   * Reset the combo
+   */
   reset() {
     this.combo = 0;
     this.graphicComponent.update(this.combo);
   }
 
+  /**
+   * Get the GC Sprite
+   * @returns {PIXI.Container} GC Sprite
+   */
   get sprite() {
     return this.graphicComponent.sprite;
   }
 }
 
+/**
+ * Class keeping track of the player lifr
+ */
 class Lifemeter {
 
   constructor() {
@@ -473,6 +534,10 @@ class Lifemeter {
     this.updateLife(0);
   }
 
+  /**
+   * Modify the player life of a certain amount
+   * @param {Number} amount | Amount of points to add/remove
+   */
   updateLife(amount) {
 
     this.life += amount;
@@ -481,27 +546,32 @@ class Lifemeter {
     this.graphicComponent.update(this.life / this.maximum);
   }
 
+  /**
+   * Get the GC Sprite
+   * @returns {PIXI.Container} GC Sprite
+   */
   get sprite() {
     return this.graphicComponent.sprite;
   }
-
-
 }
 
+/**
+ * Class keeping track of the progression in the song
+ */
 class ProgressionBar {
-  constructor() {
+  constructor(songPlayer) {
     this.songDuration = null;
     this.secondPassed = 0;
     this.songPlayer = null;
     this.percentage = 0;
+    this.songPlayer = songPlayer;
 
     this.graphicComponent = Theme.GetTheme().createProgressionBarGC();
   }
 
-  setSongPlayer(sp) {
-    this.songPlayer = sp;
-  }
-
+  /**
+   * Update the current progression
+   */
   update() {
     if (!this.songDuration) {
       if (this.songPlayer.source.buffer) {
@@ -522,6 +592,10 @@ class ProgressionBar {
     this.graphicComponent.update(this.percentage);
   }
 
+  /**
+   * Get the GC Sprite
+   * @returns {PIXI.Container} GC Sprite
+   */
   get sprite() {
     return this.graphicComponent.sprite;
   }

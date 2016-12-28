@@ -8,15 +8,24 @@ import {TAP} from '../constants/input';
 import {TAP_NOTE, LIFT_NOTE, FAKE_NOTE, ROLL_NOTE, HOLD_NOTE} from '../constants/chart';
 import {EVENT_STEP_HIT, EVENT_NOTE_MISS, EVENT_NOTE_HIT, EVENT_NOTE_DODGE, EVENT_NOTE_FINISH, MINE_NOTE} from '../constants/chart';
 
-
 //Timer types
 const RELEASE_TIMER = Symbol.for('RELEASE_TIMER');
 const ROLL_TIMER = Symbol.for('ROLL_TIMER');
 const END_TIMER = Symbol.for('END_TIMER');
 
-// Virtual Base Note Class
+/**
+ * Class representing one note in a Chart
+ *
+ */
 class Note {
 
+  /**
+   * Register a note hit and fire the event
+   * @param {Note} note | Note that was hit
+   * @param {Number} delay | duration between the tap event and the note position
+   * @return {Symbol} timing symbol associated with the hit
+   * @static
+   */
   static NoteHit(note, delay) {
 
     let [timing, score] = Judge.JudgeNote(note, delay);
@@ -38,6 +47,11 @@ class Note {
     return timing;
   }
 
+  /**
+   * Register a note miss and fire the event
+   * @param {Note} note | Note that was missed 
+   * @static
+   */
   static NoteMiss(note) {
 
     let ev = {
@@ -53,6 +67,12 @@ class Note {
     Note.subject.notify(ev, [note.step]);
   }
 
+  /**
+   * Register a long note finish and fire the event
+   * @param {Note} note | Note that was finished 
+   * @param {Boolean} success | Was the note held to the end
+   * @static
+   */
   static NoteFinish(note, success) {
 
     let timing = success ? S_OK : S_NG;
@@ -70,6 +90,11 @@ class Note {
     Note.subject.notify(ev, [note.step]);
   }
 
+  /**
+   * Register a mine dodged and fire the event
+   * @param {Note} note | Note that was dodged
+   * @static
+   */
   static NoteDodge(note) {
 
     let ev = {
@@ -85,7 +110,14 @@ class Note {
     Note.subject.notify(ev, [note.step]);
   }
 
-
+  /**
+   * Create a Note Object (long or simple)
+   * @param {Object} arrow | Arrow of the Note
+   * @param {Direction} direction | Direction of the Note
+   * @param {NoteStep} step | Step which the note belongs to
+   * @param {Function} schedule | Function to use to schedule actions
+   * @static
+   */
   static CreateNote(arrow, direction, step, schedule) {
 
     let note;
@@ -105,7 +137,6 @@ class Note {
     }
 
     return note;
-
   }
 
   constructor(type, direction, graphicComponent, step) {
@@ -121,6 +152,10 @@ class Note {
     this.state = null;
   }
 
+  /**
+   * Get the division of the Note
+   * @return {Number} Division 
+   */
   get division () {
     let div = Math.round(this.step.beat*10000)/10000 - Math.floor(this.step.beat);
 
@@ -138,19 +173,37 @@ class Note {
     return 0;
   }
 
+  /**
+   * Set the state of the Note and execute the enter transition
+   * @param {State} state | State to transition to
+   */
   setState(state) {
     this.state = state;
     this.state.enter();
   }
 
+  /**
+   * Get the duration between the Note and a given time
+   * @param {Number} time | Time to get the distance from
+   * @returns {Number} Duration
+   */
   getDistance(time) {
     return Math.abs(time - this.step.time);
   }
 
+  /**
+   * Get the duration between the Note and a given time
+   * @param {Number} time | Time to get the distance from
+   * @returns {Number} Duration
+   */
   getDelay(time) {
     return this.getDistance(time);
   }
 
+  /**
+   * Execute a user input on the Note
+   * @param {Symbol} action | Type of the user input
+   */
   process(action, time) {
     let delay = this.getDelay(time);
 
@@ -161,6 +214,10 @@ class Note {
     }
   }
 
+  /**
+   * Execute a tap event
+   * @param {Number} delay | time offset
+   */
   tap(delay) {
     const state = this.state.tap(delay);
     if (state !== null) {
@@ -168,6 +225,10 @@ class Note {
     }
   }
 
+  /**
+   * Execute a lift event
+   * @param {Number} delay | time offset
+   */
   lift(delay) {
     const state = this.state.lift(delay);
     if (state !== null) {
@@ -175,7 +236,9 @@ class Note {
     }
   }
 
-  // Note out of existence wiexistence window
+  /**
+   * Execute event when the note goes out of the exitence window
+   */
   out() {
     const state = this.state.out();
     if (state !== null) {
@@ -183,7 +246,9 @@ class Note {
     }
   }
 
-  // Note passed the action window
+  /**
+   * Execute when the note out of the action window
+   */
   miss() {
     const state = this.state.miss();
     if (state !== null) {
@@ -191,6 +256,10 @@ class Note {
     }
   }
 
+
+  /**
+   * Execute when the mine is dodged
+   */
   dodge() {
     const state = this.state.dodge();
     if (state !== null) {
@@ -198,7 +267,9 @@ class Note {
     }
   }
 
-  // Note in existence window
+  /**
+   * Execute event when the note enters the exitence window
+   */
   inside(stream) {
     const state = this.state.inside(stream);
     if (state !== null) {
@@ -206,6 +277,9 @@ class Note {
     }
   }
 
+  /**
+   * Execute when the user collides with a mine
+   * */
   collide() {
     const state = this.state.collide();
     if (state !== null) {
@@ -213,11 +287,12 @@ class Note {
     }
   }
 
+  /**
+   * Get the Graphic Component sprite
+   */
   get sprite() {
     return this.graphicComponent.sprite;
   }
-
-
 }
 
 // Observer Pattern for the Note hit event
@@ -227,7 +302,10 @@ Note.subject = new Subject();
 //-------------------------------------------------------------------
 
 
-// Note that have no duration (tap, lift...)
+/**
+ * Child Class for the Note that have no duration (tap, lift, mine)
+ * @extends Note
+ */
 class SimpleNote extends Note {
   constructor(type, direction, graphicComponent, step) {
     super(type, direction, graphicComponent, step);
@@ -235,22 +313,65 @@ class SimpleNote extends Note {
   }
 }
 
-// Interface for the Note States
-// TODO: Logging?
+/**
+ * Interface for the note State Class
+ * @TODO: Logging Subclass?
+ */
 class SimpleNoteState {
-  enter() {}
+
+  /**
+   * Enter the action window
+   * @returns {NoteState} State to transition to
+   */
+  enter() {return null;}
+
+  /**
+   * Tapped
+   * @param {Number} delay | Time offset
+   * @returns {NoteState} State to transition to
+   */
   tap(delay) {return null;}
+
+  /**
+   * Lifted
+   * @param {Number} delay | Time offset
+   * @returns {NoteState} State to transition to
+   */
   lift(delay) {return null;}
+
+  /**
+   * Exit the action window 
+   * @returns {NoteState} State to transition to
+   */
   miss() {return null;}
+
+  /**
+   * Collided with Mine
+   * @returns {NoteState} State to transition to
+   */
   collide() {return null;}
+
+  /**
+   * Dodged Mine
+   * @returns {NoteState} State to transition to
+   */
   dodge() {return null;}
 
+  /**
+   * Exit the existence window
+   * @returns {NoteState} State to transition to
+   */
   out() {
     // Anti Optimization
     //this.note.graphicComponent.remove();
     return null;
   }
 
+  /**
+   * Enter the existence window
+   * @param {PIXI.Container} container | Note sprite container
+   * @returns {NoteState} State to transition to
+   */
   inside(container) {
     // Anti Optimization
     //container.addChild(this.note.sprite);
@@ -263,6 +384,10 @@ class SimpleNoteState {
 }
 
 
+/**
+ * Simple Note State when just created
+ * @extends SimpleNoteState
+ */
 class SimpleNoteFreshState extends SimpleNoteState {
 
   enter() {
@@ -300,10 +425,14 @@ class SimpleNoteFreshState extends SimpleNoteState {
   }
 }
 
+/**
+ * Simple Note State when hit
+ * @extends SimpleNoteState
+ */
 class SimpleNoteHitState extends SimpleNoteState {
 
   enter() {
-
+    
     let timing;
 
     // Get the timing
@@ -319,6 +448,10 @@ class SimpleNoteHitState extends SimpleNoteState {
   }
 }
 
+/**
+ * Simple Note State when missed
+ * @extends SimpleNoteState
+ */
 class SimpleNoteMissState extends SimpleNoteState {
 
   enter() {
@@ -327,6 +460,10 @@ class SimpleNoteMissState extends SimpleNoteState {
   }
 }
 
+/**
+ * Simple Note State when dodged
+ * @extends SimpleNoteState
+ */
 class SimpleNoteDodgeState extends SimpleNoteState {
 
   enter() {
@@ -337,7 +474,10 @@ class SimpleNoteDodgeState extends SimpleNoteState {
 
 //-------------------------------------------------------------------
 
-// Note that have a duration (hold, roll)
+/**
+ * Note Child class for note with a duration (hold, roll)
+ * @extends Note
+ */
 class LongNote extends Note {
 
   constructor(type, direction, graphicComponent, step, duration, durationS, schedule) {
@@ -348,10 +488,19 @@ class LongNote extends Note {
     this.schedule = schedule;
   }
 
+  /**
+   * Get the end timecode for the Note
+   * @returns {Number} End timecode
+   */
   getEnd() {
     return this.step.beat + this.duration;
   }
 
+  /**
+   * Expire a Note timer and change state if required
+   * @param {Symbol} type | Timer Type
+   * @param {Number} id | Timer id
+   */
   expire(type, id) {
     const state = this.state.expire(type, id);
     if (state !== null) {
@@ -359,6 +508,11 @@ class LongNote extends Note {
     }
   }
 
+  /**
+   * Get the minimum distance from the Note
+   * @param {Number} Time to get the distance from
+   * @returns {Number} distance
+   */
   getDistance(time) {
     if (time > this.step.time && time < this.step.time + this.durationS) {
       return 0;
@@ -366,15 +520,35 @@ class LongNote extends Note {
     return this.getDelay(time);
   }
 
+  /**
+   * Get the distance from the beginning of the Note
+   * @param {Number} Time to get the distance from
+   * @returns {Number} distance
+   */
   getDelay(time) {
     return Math.min(Math.abs(time - this.step.time), Math.abs(time - this.step.time - this.durationS));
   }
 }
 
+/**
+ * Long Note State
+ * @extends SimpleNoteState
+ */
 class LongNoteState extends SimpleNoteState {
+
+  /**
+   * Expire a timer
+   * @param {Symbol} type | Timer Type
+   * @param {Number} id | Timer id
+   * @returns {State} State to transition to
+   */
   expire(type, tid=null) {return null;}
 }
 
+/**
+ * Long Note state when just created
+ * @extends LongNoteState
+ */
 class LongNoteFreshState extends LongNoteState {
 
   enter() {
@@ -390,6 +564,10 @@ class LongNoteFreshState extends LongNoteState {
   }
 }
 
+/**
+ * Long Note state when tapped and thus activated
+ * @extends LongNoteState
+ */
 class LongNoteActivatedState extends LongNoteState {
 
   enter() {
@@ -439,6 +617,10 @@ class LongNoteActivatedState extends LongNoteState {
 
 }
 
+/**
+ * Long Note state when released from activated state
+ * @extends LongNoteState
+ */
 class LongNoteReleasedState extends LongNoteState {
 
   static GetTid() {
@@ -473,6 +655,10 @@ class LongNoteReleasedState extends LongNoteState {
 
 LongNoteReleasedState.tid = 0;
 
+/**
+ * Long Note state when deactivated
+ * @extends LongNoteState
+ */
 class LongNoteDeactivatedState extends LongNoteState {
   enter() {
 
@@ -494,6 +680,10 @@ class LongNoteDeactivatedState extends LongNoteState {
   }
 }
 
+/**
+ * Long Note state when activated to the end and thus finished
+ * @extends LongNoteState
+ */
 class LongNoteFinishedState extends LongNoteState {
 
   enter() {
@@ -506,6 +696,9 @@ class LongNoteFinishedState extends LongNoteState {
 //-------------------------------------------------------------------
 
 
+/**
+ * Class for a Step in the Chart
+ */
 class NoteStep {
 
   constructor(beat, time, engine) {
@@ -519,6 +712,12 @@ class NoteStep {
     this.toHit = 0;
   }
 
+  /**
+   * Register a step hit and fire the event
+   * @param {NoteStep} step | Step that was hit
+   * @param {Number} delay | duration between the tap event and the step position
+   * @static
+   */
   static StepHit(step, delay) {
 
     let [timing, score] = Judge.JudgeStep(step, delay);
@@ -537,14 +736,23 @@ class NoteStep {
     NoteStep.subject.notify(ev, [step.engine]);
   }
 
-  // TODO: Replace by something more aptomized?
+  /**
+   * Call a method of all the notes in the step
+   * @param {String} methodName | name of the Note method to call
+   * @param {Any} ...args | Arguments
+   */
   applyToNotes(methodName, ...args) {
     for (let n of this.notes) {
       n[methodName](...args);
     }
   }
 
-  // TODO: Replace by something more aptomized?
+  /**
+   * Call a method of all the notes in the step with given directions
+   * @param {Number|Array} directions | directions to select
+   * @param {String} methodName | name of the Note method to call
+   * @param {Any} ...args | Arguments
+   */
   applyToDirections(directions, methodName, ...args) {
     for (let n of this.notes) {
       if (directions.includes(n.direction)) {
@@ -553,6 +761,10 @@ class NoteStep {
     }
   }
 
+  /**
+   * Add a Note to the Step
+   * @param {Note} note | Note to add
+   */
   addNote(note) {
     this.notes.push(note);
 
@@ -561,9 +773,11 @@ class NoteStep {
     }
   }
 
+  /*
+   * Called when the note is hit
+   * @param {Object} ev | Note hit event
+   */
   noteHit(ev) {
-
-
     if (ev.note.type === MINE_NOTE) {
       return;
     }
@@ -579,6 +793,10 @@ class NoteStep {
     }
   }
 
+  /*
+   * Notify method for the observer pattern
+   * @param {Object} ev | Event
+   */
   onNotify(ev) {
 
     switch(ev.type) {
