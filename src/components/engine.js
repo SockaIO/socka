@@ -12,8 +12,10 @@ import log from 'loglevel';
 
 /**
  * Game Engine for one player
+ * @class
+ * @memberof components
  */
-export default class Engine {
+class Engine {
 
   constructor(width, height, fieldView, player, songPlayer) {
 
@@ -454,12 +456,12 @@ export default class Engine {
       }
     }
   }
-
-
 }
+export default Engine;
 
 /**
  * Class keeping track of the Score
+ * @memberof components
  */
 class Score {
 
@@ -488,6 +490,7 @@ class Score {
 
 /**
  * Class keeping track of the Combo
+ * @memberof components
  */
 class Combo {
 
@@ -523,6 +526,7 @@ class Combo {
 
 /**
  * Class keeping track of the player lifr
+ * @memberof components
  */
 class Lifemeter {
 
@@ -557,6 +561,7 @@ class Lifemeter {
 
 /**
  * Class keeping track of the progression in the song
+ * @memberof components
  */
 class ProgressionBar {
   constructor(songPlayer) {

@@ -1,4 +1,9 @@
 /* global require */
+
+/**
+ * @namespace services.FileManager
+ */
+
 'use strict';
 import {loaders} from 'pixi.js';
 
@@ -12,10 +17,12 @@ import {RSC_AUDIO, RSC_CHART, RSC_BANNER, RSC_BACKGROUND} from '../constants/res
 
 
 // Create the loader that will be used to get the data
+/** @memberof services.FileManager **/
 let loader = new loaders.Loader();
 
 /**
  * Redirect the loader to the right resource depending on the endpoint
+ * @memberof services.FileManager
  */
 function endpointMiddleware(resource, next) {
 
@@ -31,6 +38,7 @@ let endpoints = [];
 
 /**
  * List all the packs available
+ * @memberof services.FileManager
  */
 export function ListPacks() {
   
@@ -40,6 +48,7 @@ export function ListPacks() {
 
 /**
  * List the songs in a pack
+ * @memberof services.FileManager
  */
 export function ListSongs(pack) {
 
@@ -53,6 +62,8 @@ export function ListSongs(pack) {
  *
  * @param {String} Address | Address of the endpoint
  * @param {Constant} Type | Type of endpoint
+ *
+ * @memberof services.FileManager
  */
 export function AddEndpoint(address, type) {
 
@@ -62,6 +73,7 @@ export function AddEndpoint(address, type) {
 
 /**
  * A Pack is a collection of Songs
+ * @memberof services.FileManager
  */
 class Pack {
   constructor(name, songs=null) {
@@ -97,6 +109,7 @@ class Pack {
 
 /**
  * Index of the content of a Song
+ * @memberof services.FileManager
  */
 class SongIndex {
 

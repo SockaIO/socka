@@ -9,8 +9,9 @@ import {KEY_UP, KEY_DOWN, TAP, KEY_BACK, KEY_ENTER} from '../constants/input';
  * View Class for a simple menu
  *
  * @extends View
+ * @memberof views
  */
-export default class MenuView extends View {
+class MenuView extends View {
   constructor(width, height, entries, game) {
     super(game);
 
@@ -120,4 +121,4 @@ export default class MenuView extends View {
     return res;
   }
 }
-
+export default MenuView;

@@ -7,8 +7,9 @@
  * other methods that are callbacks for special events.
  *
  * @interface
+ * @memberof views
  */
-export default class View {
+class View {
 
   constructor(game) {
     this.game = game;
@@ -48,3 +49,5 @@ export default class View {
    */
   getView() {}
 }
+
+export default View;

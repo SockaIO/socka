@@ -1,5 +1,8 @@
 'use strict';
 
+/**
+ * @namespace services.Player
+ */
 
 let players = new Set();
 
@@ -11,6 +14,7 @@ export {
 /**
  * Player entity.
  * Store the configuration and controller
+ * @memberof services.Player
  */
 class Player {
 
@@ -37,6 +41,7 @@ class Player {
 /**
  * Create a new Player
  * @return {Player} New Player
+ * @memberof servicse.Player
  */
 function CreatePlayer() {
   const p = new Player();
@@ -47,6 +52,7 @@ function CreatePlayer() {
 /**
  * Get the Players
  * @returns {Player|Iterator} Iterator over the players
+ * @memberof servicse.Player
  */
 function GetPlayers() {
   return players.values();

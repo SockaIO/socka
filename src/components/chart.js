@@ -16,6 +16,8 @@ const END_TIMER = Symbol.for('END_TIMER');
 /**
  * Class representing one note in a Chart
  *
+ * @memberof components
+ *
  */
 class Note {
 
@@ -305,6 +307,7 @@ Note.subject = new Subject();
 /**
  * Child Class for the Note that have no duration (tap, lift, mine)
  * @extends Note
+ * @memberof components
  */
 class SimpleNote extends Note {
   constructor(type, direction, graphicComponent, step) {
@@ -315,6 +318,7 @@ class SimpleNote extends Note {
 
 /**
  * Interface for the note State Class
+ * @memberof components
  * @TODO: Logging Subclass?
  */
 class SimpleNoteState {
@@ -387,6 +391,7 @@ class SimpleNoteState {
 /**
  * Simple Note State when just created
  * @extends SimpleNoteState
+ * @memberof components
  */
 class SimpleNoteFreshState extends SimpleNoteState {
 
@@ -428,6 +433,7 @@ class SimpleNoteFreshState extends SimpleNoteState {
 /**
  * Simple Note State when hit
  * @extends SimpleNoteState
+ * @memberof components
  */
 class SimpleNoteHitState extends SimpleNoteState {
 
@@ -451,6 +457,7 @@ class SimpleNoteHitState extends SimpleNoteState {
 /**
  * Simple Note State when missed
  * @extends SimpleNoteState
+ * @memberof components
  */
 class SimpleNoteMissState extends SimpleNoteState {
 
@@ -463,6 +470,7 @@ class SimpleNoteMissState extends SimpleNoteState {
 /**
  * Simple Note State when dodged
  * @extends SimpleNoteState
+ * @memberof components
  */
 class SimpleNoteDodgeState extends SimpleNoteState {
 
@@ -477,6 +485,7 @@ class SimpleNoteDodgeState extends SimpleNoteState {
 /**
  * Note Child class for note with a duration (hold, roll)
  * @extends Note
+ * @memberof components
  */
 class LongNote extends Note {
 
@@ -533,6 +542,7 @@ class LongNote extends Note {
 /**
  * Long Note State
  * @extends SimpleNoteState
+ * @memberof components
  */
 class LongNoteState extends SimpleNoteState {
 
@@ -548,6 +558,7 @@ class LongNoteState extends SimpleNoteState {
 /**
  * Long Note state when just created
  * @extends LongNoteState
+ * @memberof components
  */
 class LongNoteFreshState extends LongNoteState {
 
@@ -567,6 +578,7 @@ class LongNoteFreshState extends LongNoteState {
 /**
  * Long Note state when tapped and thus activated
  * @extends LongNoteState
+ * @memberof components
  */
 class LongNoteActivatedState extends LongNoteState {
 
@@ -620,6 +632,7 @@ class LongNoteActivatedState extends LongNoteState {
 /**
  * Long Note state when released from activated state
  * @extends LongNoteState
+ * @memberof components
  */
 class LongNoteReleasedState extends LongNoteState {
 
@@ -658,6 +671,7 @@ LongNoteReleasedState.tid = 0;
 /**
  * Long Note state when deactivated
  * @extends LongNoteState
+ * @memberof components
  */
 class LongNoteDeactivatedState extends LongNoteState {
   enter() {
@@ -683,6 +697,7 @@ class LongNoteDeactivatedState extends LongNoteState {
 /**
  * Long Note state when activated to the end and thus finished
  * @extends LongNoteState
+ * @memberof components
  */
 class LongNoteFinishedState extends LongNoteState {
 
@@ -698,6 +713,7 @@ class LongNoteFinishedState extends LongNoteState {
 
 /**
  * Class for a Step in the Chart
+ * @memberof components
  */
 class NoteStep {
 

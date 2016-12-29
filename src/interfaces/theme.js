@@ -5,6 +5,7 @@ import * as PIXI from 'pixi.js';
 
 /**
  * Mother class for the Graphic Components
+ * @memberof interfaces
  */
 class GraphicComponent {
 
@@ -26,6 +27,8 @@ class GraphicComponent {
 /**
  * Simple Note GC
  *
+ * @memberof interfaces
+ * @interface
  * @extends GraphicComponent
  */
 class SimpleNoteGraphicComponent extends GraphicComponent{
@@ -38,6 +41,8 @@ class SimpleNoteGraphicComponent extends GraphicComponent{
 /**
  * Long Note GC
  *
+ * @memberof interfaces
+ * @interface
  * @extends GraphicComponent
  */
 class LongNoteGraphicComponent extends GraphicComponent{
@@ -52,6 +57,8 @@ class LongNoteGraphicComponent extends GraphicComponent{
 /**
  * Receptor GC
  *
+ * @memberof interfaces
+ * @interface
  * @extends GraphicComponent
  */
 class ReceptorGraphicComponent extends GraphicComponent{
@@ -59,6 +66,9 @@ class ReceptorGraphicComponent extends GraphicComponent{
 
 /**
  * Menu GC
+ * @memberof interfaces
+ * @interface
+ * @extends GraphicComponent
  */
 class MenuGraphicComponent extends GraphicComponent{
 
@@ -67,6 +77,8 @@ class MenuGraphicComponent extends GraphicComponent{
 
 /**
  * Base Theme class
+ *
+ * @memberof interfaces
  */
 class Theme {
 
@@ -74,34 +86,6 @@ class Theme {
 
     // Will be filled after loading
     this.textures = {};
-  }
-
-  /**
-   * Load the textures associated with a song
-   */
-  loadSongTextures(song) {
-
-    // Remove the old Textures
-
-    if (this.textures['songBanner']) {
-      this.textures['songBanner'].destroy(true);
-    }
-
-    if (this.textures['songBackground']) {
-      this.textures['songBackground'].destroy(true);
-    }
-
-    // Download the new textures
-
-    return new Promise((resolve) => {
-      PIXI.loader
-          .add(song.path + song.banner)
-          .add(song.path + song.background)
-          .load(resolve);
-    }).then(() => {
-      this.textures['songBanner'] = PIXI.loader.resources[this.path + this.banner].texture;
-      this.textures['songBackground'] = PIXI.loader.resources[this.path + this.background].texture;
-    });
   }
 }
 

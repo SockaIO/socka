@@ -1,5 +1,9 @@
 'use strict';
 
+/**
+ * @namespace services.Judge
+ */
+
 import {
   TM_W1,
   TM_W2,
@@ -31,6 +35,7 @@ import {MINE_NOTE} from '../constants/chart';
 
 /**
  * Evaluation of the timing and score when the player tap a note/step
+ * @memberof services.Judge
  */
 class Judge {
 

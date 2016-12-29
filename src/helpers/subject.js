@@ -2,8 +2,9 @@
 
 /**
  * Subject class for the observer pattern
+ * @memberof helpers
  */
-export default class Subject {
+class Subject {
 
   constructor() {
     this.observers = new Set();
@@ -37,3 +38,5 @@ export default class Subject {
   }
 
 }
+
+export default Subject

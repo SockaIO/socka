@@ -1,9 +1,14 @@
 'use strict';
 
+/**
+ * @namespace services.SongParser
+ */
+
 import { TAP_NOTE, HOLD_NOTE, ROLL_NOTE, MINE_NOTE, LIFT_NOTE, FAKE_NOTE} from '../constants/chart';
 
 /*
  * Song (with multiple charts)
+ * @memberof services.SongParser
  */
 class Song {
   constructor() {
@@ -113,6 +118,7 @@ Song.ext_map = {
 
 /**
  * List of steps for a given difficulty
+ * @memberof services.SongParser
  */
 class Chart {
 
@@ -132,6 +138,7 @@ class Chart {
 
 /**
  * Step with timing data
+ * @memberof services.SongParser
  */
 class Step {
 
@@ -164,6 +171,7 @@ class Step {
 
 /**
  * Section of constant BPS
+ * @memberof services.SongParser
  */
 class TimingSection {
 
@@ -178,6 +186,7 @@ class TimingSection {
 
 /**
  * Get the type symbol from the number
+ * @memberof services.SongParser
  */
 function getTypeSymbol(x) {
   const s = getTypeSymbol.map[x];
@@ -204,6 +213,7 @@ getTypeSymbol.map = {
 /**
  * Get the informations about the bps, duration and start time of the different sections
  * @param {Song} song | Song to extract the info for
+ * @memberof services.SongParser
  */
 function createTimingPartition(song) {
 
@@ -270,6 +280,7 @@ function createTimingPartition(song) {
 /**
  * Extract the fields from the SM file
  * @param {String} data | Text data to extract the field from
+ * @memberof services.SongParser
  */
 function * getFields(data) {
 
@@ -350,6 +361,7 @@ function * getFields(data) {
  * @param {String} string | string to trim
  * @param {String} character | Character to trim (default is space)
  * @returns {String} trimmed string
+ * @memberof services.SongParser
  */
 function trim(string, character=' ') {
 
@@ -371,6 +383,7 @@ function trim(string, character=' ') {
  * Get the information organized as list in the SM file
  * @param {String} data | Text data to get the info from
  * @returns {String|Array} List of information
+ * @memberof services.SongParser
  */
 function getList(data) {
 
@@ -399,6 +412,7 @@ function getList(data) {
  * Get the charts from the data
  * @param {String} data | Text data to get the info from
  * @returns {Chart|Array} Charts contained in the data
+ * @memberof services.SongParser
  */
 function getCharts(data) {
 
@@ -415,6 +429,7 @@ function getCharts(data) {
  * Iterate of the steps of DWI type data
  * @param {String} data | Text data to get the info from
  * @return {Object} Step
+ * @memberof services.SongParser
  */
 function * iterDWISteps(data) {
   const grouping = {'<': '>'};
@@ -477,6 +492,7 @@ function * iterDWISteps(data) {
  * Combine 0011 + 0030 in 0031
  * @param {Object|Array} steps | Steps to Combine
  * @returns {Object} Combined step
+ * @memberof services.SongParser
  */
 function _combine_step (steps) {
   let newStep = steps[0];
@@ -498,6 +514,7 @@ function _combine_step (steps) {
  * @param {Object} step | DWI Step
  * @param {String} default_note | Default SM note type to use
  * @returns {Object} SM Step
+ * @memberof services.SongParser
  */
 function DWIToSMStep(step, default_note='1') {
   if (step.length === 1 && step in DWIToSMStep.map) {
@@ -535,6 +552,7 @@ DWIToSMStep.map = {
  * Extract the DWI Steps from the text Data
  * @param {String} data | Text Data
  * @returns {Object|Array} Array of steps
+ * @memberof services.SongParser
  */
 function computeDWISteps(data) {
   let stepData = [];
@@ -591,6 +609,7 @@ function computeDWISteps(data) {
  * Get the steps and notes info from the data
  * @param {String} data | Text Data
  * @return {Chart} Chart extracted from the data
+ * @memberof services.SongParser
  */
 function getChart(data) {
 
@@ -717,6 +736,13 @@ function getChart(data) {
 
 }
 
+/**
+ * Load song from DWI type data
+ *
+ * @param {string} data | Song data in DWI
+ * @returns {Song} | Parsed Song
+ * @memberof services.SongParser
+ */
 function loadFromDWIFile(data) {
   const fields = getFields(data);
   const fieldMap = new Map();
@@ -794,6 +820,13 @@ function loadFromDWIFile(data) {
   return song;
 }
 
+/**
+ * Load song from SM type data
+ *
+ * @param {string} data | Song data in SM format
+ * @returns {Song} | Parsed Song
+ * @memberof services.SongParser
+ */
 function loadFromSMFile (data) {
   const fields = getFields(data);
   const fieldMap = new Map();
@@ -863,6 +896,7 @@ function loadFromSMFile (data) {
  * @param {string} data | Song data
  * @param {string} type | FileType
  * @TODO Autodetection or symbol for file type
+ * @memberof services.SongParser
  */
 export function ParseSong(data, type) {
 

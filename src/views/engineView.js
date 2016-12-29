@@ -12,8 +12,9 @@ import {RSC_BACKGROUND} from '../constants/resources';
  * Can contain one or more engines
  *
  * @extends View
+ * @memberof views
  */
-export default class EngineView extends View {
+class EngineView extends View {
 
   /**
    * Create an engine view
@@ -124,5 +125,6 @@ export default class EngineView extends View {
   }
 
 }
+export default EngineView;
 
 

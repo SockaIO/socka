@@ -1,5 +1,9 @@
 'use strict';
 
+/**
+ * @namespace services.Theme
+ */
+
 import {DefaultTheme} from '../../themes/DefaultTheme';
 import log from 'loglevel';
 
@@ -9,8 +13,9 @@ theme.init();
 
 /**
  * Set the theme to be used
+ * @memberof services.Theme
  */
-export function SetTheme(newTheme) {
+function SetTheme(newTheme) {
   log.info(`Changing theme to ${newTheme.constructor.name}`);
   theme = newTheme;
   theme.init();
@@ -18,7 +23,13 @@ export function SetTheme(newTheme) {
 
 /*
  * Get the theme
+ * @memberof servicse.Theme
  */
-export function GetTheme() {
+function GetTheme() {
   return theme;
 }
+
+export {
+  SetTheme,
+  GetTheme
+};

@@ -13,8 +13,10 @@ import Stats from 'stats-js';
  * It is repsonsible for the instanciation and management
  * of all the other components.
  *
+ * @memberof components
+ *
  */
-export default class Game {
+class Game {
 
   /**
    * Create a Game object
@@ -149,3 +151,4 @@ export default class Game {
     }
   }
 }
+export default Game;

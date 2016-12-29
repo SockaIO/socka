@@ -1,32 +1,31 @@
-/** @global */
+/**
+ * @namespace constants.input
+ */
+
+/** @memberof constants.input */
 export const TAP = Symbol.for('TAP');
-/** @global */
+/** @memberof constants.input */
 export const LIFT = Symbol.for('LIFT');
 
-/** @global */
+/** @memberof constants.input */
 export const EVENT_PAD_CONNECTED = Symbol.for('EVENT_PAD_CONNECTED');
-/** @global */
+/** @memberof constants.input */
 export const EVENT_PAD_DISCONNECTED = Symbol.for('EVENT_PAD_DISCONNECTED');
 
-/** @global */
+/** @memberof constants.input */
 export const KEY_LEFT = Symbol.for('KEY_LEFT');
-
-/** @global */
+/** @memberof constants.input */
 export const KEY_UP = Symbol.for('KEY_UP');
-
-/** @global */
+/** @memberof constants.input */
 export const KEY_RIGHT = Symbol.for('KEY_RIGHT');
-
-/** @global */
+/** @memberof constants.input */
 export const KEY_DOWN = Symbol.for('KEY_DOWN');
-
-/** @global */
+/** @memberof constants.input */
 export const KEY_ENTER = Symbol.for('KEY_ENTER');
-
-/** @global */
+/** @memberof constants.input */
 export const KEY_BACK = Symbol.for('KEY_BACK');
 
-/** @global */
+/** @memberof constants.input */
 export const KEYS = [
   KEY_LEFT,
   KEY_RIGHT,
@@ -34,6 +33,4 @@ export const KEYS = [
   KEY_UP,
   KEY_ENTER,
   KEY_BACK
-]
-
-
+];

@@ -5,8 +5,10 @@ import {RSC_AUDIO} from '../constants/resources';
 /**
  * Song Player, plays the audio from a song
  * and allow for retrieval of the current song timestamp
+ *
+ * @memberof components
  */
-export default class SongPlayer {
+class SongPlayer {
 
   constructor() {
     this.song = null;
@@ -45,3 +47,4 @@ export default class SongPlayer {
   }
 
 }
+export default SongPlayer;

@@ -1,5 +1,9 @@
 'use strict';
 
+/**
+ * @namespace services.Input
+ */
+
 import {Subject} from '../helpers';
 import {TAP, LIFT, KEYS, KEY_UP, KEY_LEFT, KEY_RIGHT, KEY_DOWN, KEY_ENTER, KEY_BACK, EVENT_PAD_CONNECTED, EVENT_PAD_DISCONNECTED} from '../constants/input';
 
@@ -10,15 +14,17 @@ export {
   GetDefaultKeyboardController,
   Subscribe,
   GetControllers,
-  GetDefaultKeyboardMapping
+  GetDefaultKeyboardMapping,
+  Mapping
 };
 
 /**
  * Interface for the controllers
  *
  * @interface
+ * @memberof services.Input
  */
-export class Controller {
+class Controller {
 
   constructor() {
     this.commands = new Map();
@@ -81,10 +87,11 @@ export class Controller {
 }
 
 /**
-* Setup the listener for the gamepad connection/disconnection
-* and create the keyboard controller.
-*
-*/
+ * Setup the listener for the gamepad connection/disconnection
+ * and create the keyboard controller.
+ *
+ * @memberof services.Input
+ */
 function Setup() {
   window.addEventListener('gamepadconnected', (e) => Connect(e), false);
   window.addEventListener('gamepaddisconnected', (e) => Disconnect(e), false);
@@ -94,6 +101,7 @@ function Setup() {
 
 /**
  * Get the default keyboard Controller
+ * @memberof services.Input
  */
 function GetDefaultKeyboardController() {
   return controllers.get(-1);
@@ -102,6 +110,7 @@ function GetDefaultKeyboardController() {
 /**
  * Subscribe to the Controller Events
  * @param {Observer} observer | Observer to subsribe to the subject
+ * @memberof services.Input
  */
 function Subscribe(observer) {
   controllerSubject.subscribe(observer);
@@ -115,6 +124,7 @@ function GetControllers() {
  * Setup a gamepad upon connection
  *
  * @listens gamepadconnected
+ * @memberof services.Input
  */
 function Connect(e) {
 
@@ -135,6 +145,7 @@ function Connect(e) {
  * Remove a gamepad upon disconnection
  *
  * @listens gamepaddisconnected
+ * @memberof services.Input
  */
 function Disconnect(e) {
   let gamepad = e.gamepad;
@@ -154,6 +165,7 @@ function Disconnect(e) {
  * Keyboard Controller.
  *
  * @extends Controller
+ * @memberof services.Input
  */
 class KeyboardController extends Controller{
 
@@ -207,6 +219,7 @@ class KeyboardController extends Controller{
  * Gamepad Controller.
  *
  * @extends Controller
+ * @memberof services.Input
  */
 class PadController extends Controller {
 
@@ -249,8 +262,9 @@ class PadController extends Controller {
 
 /**
  * Key mapping for a player
+ * @memberof services.Input
  */
-export class Mapping {
+class Mapping {
 
   constructor() {
     this.mapping = new Map();
@@ -316,10 +330,10 @@ export class Mapping {
 
 }
 
-
 /**
  * Return the default keyboard mapping
  * @returns {Mapping} Default Mapping for the keyboard (arrow keys)
+ * @memberof services.Input
  *
  */
 function GetDefaultKeyboardMapping() {
