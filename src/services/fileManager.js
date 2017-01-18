@@ -9,6 +9,8 @@ import {loaders} from 'pixi.js';
 
 import {RSC_AUDIO, RSC_CHART, RSC_BANNER, RSC_BACKGROUND} from '../constants/resources';
 
+let endpoints = new Set();
+
 /**
  * The file manager handkles all the I/O operations.
  *
@@ -32,18 +34,21 @@ function endpointMiddleware(resource, next) {
 }
 loader.pre(endpointMiddleware);
 
-
-// Endpoints for the data
-let endpoints = [];
-
 /**
  * List all the packs available
  * @memberof services.FileManager
  */
 export function ListPacks() {
-  
-  // TODO: Implement
-  return [new Pack('Vocaloid')];
+
+  let packs = new Set();
+
+  for (let e of endpoints) {
+    packs.add(e.ListPacks());
+  }
+
+   return packs;
+
+  //return [new Pack('Vocaloid')];
 }
 
 /**
@@ -52,58 +57,50 @@ export function ListPacks() {
  */
 export function ListSongs(pack) {
 
-  // TODO: Implement
-  return [new SongIndex('Astro Trooper')];
+  return pack.ListSongs();
+
+  //return [new SongIndex('Astro Trooper')];
 }
 
 
 /**
  * Add an endpoint
  *
- * @param {String} Address | Address of the endpoint
- * @param {Constant} Type | Type of endpoint
+ * @param {Endpoint} endpoint | Endpoint
  *
  * @memberof services.FileManager
  */
-export function AddEndpoint(address, type) {
-
-  //TODO: Implement;
+export function AddEndpoint(endpoint) {
+  endpoints.add(endpoint);
 }
 
+/**
+ * An endpoint is the reprensetation of a storage
+ * @memberof services.FileManager
+ * @interface
+ */
+export class Endpoint {
+  
+  /**
+   * List the packs present in the endpoint
+   * @returns {Pack|Set} Set of packs
+   */
+  getPacks() {}
+
+}
 
 /**
- * A Pack is a collection of Songs
+ * A Pack is a collection of songs
  * @memberof services.FileManager
+ * @interface
  */
-class Pack {
-  constructor(name, songs=null) {
-    this.name = name;
-    this.songs = songs;
-  }
+export class Pack {
 
   /**
-   * Get the Songs in the pack
-   *
-   * @return {Song|Array|Promise} Promise of a list of Songs
+   * List the Songs in the Pack
+   * @returns {SongIndex|Set} Set of SongIndex
    */
-  getSongs() {
-    if (this.songs === null) {
-      return this.loadSongs();
-    }
-
-    return new Promise(this.songs);
-  }
-
-  /**
-   * Load the songs from the pack
-   *
-   * @return {Song|Array|Promise} Promise of a list of Songs
-   */
-  loadSongs() {
-    // TODO: Implement
-    return new Promise([new SongIndex('Vocaloid')]);
-  }
-
+  getSongs() {}
 }
 
 
@@ -111,7 +108,7 @@ class Pack {
  * Index of the content of a Song
  * @memberof services.FileManager
  */
-class SongIndex {
+export class SongIndex {
 
   constructor(name) {
     this.name = name;
