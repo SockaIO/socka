@@ -20,7 +20,7 @@ let endpoints = new Set();
 
 // Create the loader that will be used to get the data
 /** @memberof services.FileManager **/
-let loader = new loaders.Loader();
+export let loader = new loaders.Loader();
 
 /**
  * Redirect the loader to the right resource depending on the endpoint
@@ -46,9 +46,7 @@ export function ListPacks() {
     packs.add(e.ListPacks());
   }
 
-   return packs;
-
-  //return [new Pack('Vocaloid')];
+  return packs;
 }
 
 /**
@@ -58,8 +56,6 @@ export function ListPacks() {
 export function ListSongs(pack) {
 
   return pack.ListSongs();
-
-  //return [new SongIndex('Astro Trooper')];
 }
 
 
@@ -116,11 +112,9 @@ export class SongIndex {
 
   /**
    * List the Resources available for that Song
+   * @returns {Symbol|Set} Set of Resource symbols
    */
-  listResources() {
-    // TODO: Implement
-    return [RSC_AUDIO, RSC_BANNER, RSC_BACKGROUND, RSC_CHART];
-  }
+  listResources() {}
 
   /**
    * Load the resource

@@ -4,7 +4,8 @@
 
 'use strict';
 
-import {Endpoint, Pack, SongIndex} from './fileManager';
+import {Endpoint, Pack, SongIndex, loader} from './fileManager';
+import {RSC_AUDIO, RSC_CHART, RSC_BANNER, RSC_BACKGROUND} from '../constants/resources';
 
 
 /**
@@ -154,5 +155,94 @@ class HttpSongIndex extends SongIndex{
     super();
     this.name = name;
     this.url = url;
+
+    this.rsc = new Promise((resolve, reject) => {
+      this.resolveRsc = resolve;
+      this.rejectRsc = reject;
+    });
   }
+
+  /**
+   * Liste the resources available for that song
+   * TODO: Update this with the parsing of the SM file which should contain the bg name
+   * @returns {Symbol|Set} Set of Resource symbols
+   */
+  loadResources() {
+
+    listLinks(this.url).then((links) => {
+
+      let rsc = new Map();
+
+      for (let link of links) {
+
+        let nameCanon = link.name.toLowerCase();
+        let ext = nameCanon.split('.').slice(-1)[0];
+
+        const IMG_EXTS = ['jpg', 'png'];
+        const AUDIO_EXTS = ['mp3', 'ogg'];
+        const CHART_EXTS = ['dwi', 'sm'];
+
+        if (IMG_EXTS.includes(ext) && nameCanon.includes('bg')) {
+          rsc.set(RSC_BACKGROUND, link.href);
+        }
+
+        if (IMG_EXTS.includes(ext) && nameCanon.includes('bn')) {
+          rsc.set(RSC_BANNER, link.href);
+        }
+
+        if (AUDIO_EXTS.includes(ext)) {
+          rsc.set(RSC_AUDIO, link.href);
+        }
+
+        if (CHART_EXTS.includes(ext)) {
+          rsc.set(RSC_CHART, link.href);
+        }
+      }
+
+      this.resolveRsc(rsc);
+
+    });
+  }
+
+
+  /**
+   * Load the resource
+   *
+   * @param {Constant|Array} type | Resources to load
+   * @return {Object} resource | The requested resource
+   */
+  load(type) {
+
+    return this.rsc.then((rscs) => {
+
+      if (!rscs.has(type)) {
+        return new Promise((resolve, reject) => reject(new Error('Resoure not found')));
+      }
+
+      let rsc = rscs.get(type);
+
+      if (type === RSC_BACKGROUND) {
+        loader.add(rsc);
+        return new Promise((resolve) => {
+          loader.load(resolve);
+        }).then(() => {
+          return loader.resources[rsc].texture;
+        });
+      }
+
+      return fetch(rsc).then((resp) => {
+        if (!resp.ok) {
+          throw {message: resp.statusText, status: resp.status};
+        }
+
+        switch(type){
+        case RSC_AUDIO:
+          return resp.arrayBuffer();
+        case RSC_CHART:
+          return resp.text();
+        }
+      });
+    });
+  }
+
 }

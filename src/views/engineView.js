@@ -46,7 +46,7 @@ class EngineView extends View {
       this.engines.push(e);
       this.graphicComponent.addEngine(e.sprite);
     }
-    
+
     // Feed the song to the different components
     this.promises = [];
 

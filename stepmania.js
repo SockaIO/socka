@@ -9,133 +9,93 @@
 
 // Internal dependencies
 import {Game} from './src/components';
-import {Player, FileManager} from './src/services';
+import {Player} from './src/services';
 import {MenuView, EngineView} from './src/views';
+
+import {HttpEndpoint} from './src/services/endpoint';
 
 // External dependencies
 import log from 'loglevel';
-import * as PIXI from 'pixi.js';
 
 window.addEventListener('load', init, false);
 
 /**
+ * Create a menu entry for a Song
+ * @param {Song} song song to consider
+ * @returns {Object} Menu Entry
+ */
+function songMenuEntry(song, game) {
+
+  let name = song.name;
+
+  let action = () => {
+
+    // Start Loading the Song data
+    song.loadResources();
+
+    let gView = new EngineView(800, 600, song, 2, Player.GetPlayers(), game);
+    game.pushView(gView);
+  };
+
+  return {name, action};
+}
+
+/**
+ * Create a menu entry for a Pack
+ * @param {Pack} pack pack to consider
+ * @returns {Object} Menu Entry
+ */
+function packMenuEntry(pack, game) {
+
+  let name = pack.name;
+  let action = () => {
+
+    let entries = [];
+    pack.getSongs().then((songs) => {
+
+      for (let s of songs) {
+        entries.push(songMenuEntry(s, game));
+      }
+
+      let menu = new MenuView(800, 600, entries, game);
+      game.pushView(menu);
+
+    });
+  };
+
+  return {name, action};
+}
+
+/**
  * Initialize the game.
  */
-
 function init() {
 
   log.setLevel('debug');
   log.info('Starting Game Initialization');
 
+  let packs = HttpEndpoint.CreateHttpEndpoint('http://localhost:8000')
+    .then((endpoint) => {
+      return endpoint.getPacks();
+    })
+    .catch((error) => log.debug(error));
+
+
   let game = new Game(800, 600, true);
 
   game.init().then(() => {
 
-    let menu = new MenuView(800, 600, [
-      {
-        name: 'Astro Troopers',
-        action: () => {
-          log.debug('Astro');
-          let song = FileManager.ListSongs(null)[0];
-          let gView = new EngineView(800, 600, song, 2, Player.GetPlayers(), game);
-          game.pushView(gView);
-        }
-      },
-      {
-        name: 'Toto',
-        action: () => {}
-      },
-      {
-        name: 'Titi',
-        action: () => {
-          let menuA = new MenuView(800, 600, [
-            {
-              name: 'Toto',
-              action: () => {}
-            },
-            {
-              name: 'Back',
-              action: () => {game.popView();}
-            }
-          ], game);
-          game.pushView(menuA);
-        }
+    let entries = [];
+
+    packs.then((packsGen) => {
+      for (let p of packsGen) {
+        entries.push(packMenuEntry(p, game));
       }
-    ], game);
 
-    game.pushView(menu);
-    game.main();
+      let menu = new MenuView(800, 600, entries, game);
+      game.pushView(menu);
+      game.main();
+
+    });
   });
-
-
 }
-
-/*function init() {*/
-
-  //let game = new components.Game(800, 600);
-  //game.init().then(() => {
-
-    //let menu = new views.menu(800, 600, [
-      //{
-        //name: "Astro Troopers",
-        //action: function() {
-          //let gView = new views.engine(800, 600, 'Astro Troopers/Astro Troopers.sm', 2, Player.Players.values());
-          //game.pushView(gView);
-        //}
-      //},
-      //{
-        //name: "entry2",
-        //action: function() {
-          //console.log("entry2");
-        //}
-      //},
-      //{
-        //name: "Back",
-        //action: function() {
-          //let menuA = new views.menu(800, 600, [
-            //{
-              //name: "Toto",
-              //action: function () {}
-            //},
-            //{
-              //name: "Tata",
-              //action: function () {}
-            //}
-          //]);
-          //game.pushView(menuA);
-        //}
-      //},
-    //]);
-
-    //game.pushView(menu);
-    //game.main();
-  //});
-
-      //mainview.addMenu([
-        //{
-          //name: "Astro Troopers",
-          //action: function() {
-            //mainview.startSong(
-              //Song.loadFromFile('Astro Troopers/Astro Troopers.sm')
-            //);
-            //mainview.removeView(mainview.menu);
-          //}
-        //},
-        //{
-          //name: "entry2",
-          //action: function() {
-            //console.log("entry2");
-          //}
-        //},
-        //{
-          //name: "Options",
-          //action: function() {
-            //mainview.addOptionMenu([
-              //{name: 'theme', options: ['theme1', 'theme2']},
-              //{name: 'options', options: ['opt1', 'opt2']},
-              //{name: 'coucou', options: ['bidule', 'chose', 'machin']},
-            //]);
-          //}
-        //},
-      /*]);*/
-//}
