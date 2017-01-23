@@ -4,8 +4,9 @@
 
 'use strict';
 
-import {Endpoint, Pack, SongIndex, loader} from './fileManager';
+import {Endpoint, Pack, SongIndex} from './fileManager';
 import {RSC_AUDIO, RSC_CHART, RSC_BANNER, RSC_BACKGROUND} from '../constants/resources';
+import * as PIXI from 'pixi.js';
 
 
 /**
@@ -23,8 +24,22 @@ export class HttpEndpoint extends Endpoint {
    * @param {String} url Base URL of the endpoint
    * @returns {HttpEndpoint|promise} Promise for a HTTP endpoint
    */
-  static CreateHttpEndpoint(url) {
-    return fetch(url).then((response) => {
+  static CreateHttpEndpoint(url, basicAuth=null) {
+
+
+    let opts = {
+      //credentials: 'include',
+      cache: 'default'
+    };
+
+    if (basicAuth !== null) {
+      let password = window.btoa('' + basicAuth.username + ':' + basicAuth.password);
+      let headers = new Headers();
+      headers.append('Authorization', 'Basic ' + password);
+      opts.headers = headers;
+    }
+
+    return fetch(url, opts).then((response) => {
 
       // Catch HTTP Errors
       if (!response.ok) {
@@ -32,7 +47,7 @@ export class HttpEndpoint extends Endpoint {
       }
 
       // The URL is reachable, create the endpoint
-      return new HttpEndpoint(url);
+      return new HttpEndpoint(url, opts);
     })
     .catch((error) => {
       throw error;
@@ -42,17 +57,19 @@ export class HttpEndpoint extends Endpoint {
   /**
    * Create a HTTP Endpoint
    * @param {String} url Base URL of the endpoint
+   * @param {Object} opts Options for fetch
    */
-  constructor(url) {
+  constructor(url, opts) {
     super();
     this.url = url;
+    this.opts = opts;
   }
 
   /**
    * Get the top level links and consider the folder as packs
    */
   getPacks() {
-    return listLinks(this.url).then((links) => {
+    return listLinks(this.url, this.opts).then((links) => {
 
       return function* () {
         for (let link of links) {
@@ -61,10 +78,10 @@ export class HttpEndpoint extends Endpoint {
           }
 
           // Create the Pack Object based on the link
-          yield new HttpPack(link.name, link.href);
+          yield new HttpPack(link.name, link.href, this.opts);
 
         }
-      }();
+      }.bind(this)();
     });
   }
 }
@@ -75,9 +92,9 @@ export class HttpEndpoint extends Endpoint {
  * @params {String} url URL of the page
  * @returns {Object|Set|Promise} Set of link objects (name, href)
  */
-function listLinks(url) {
+function listLinks(url, opts) {
 
-  return fetch(url).then((resp) => {
+  return fetch(url, opts).then((resp) => {
 
     if (!resp.ok) {
       throw {message: resp.statusText, status: resp.status};
@@ -119,14 +136,15 @@ function listLinks(url) {
  */
 class HttpPack extends Pack{
 
-  constructor(name, url) {
+  constructor(name, url, opts) {
     super();
     this.name = name;
     this.url = url;
+    this.opts = opts;
   }
 
   getSongs() {
-    return listLinks(this.url).then((links) => {
+    return listLinks(this.url, this.opts).then((links) => {
 
       return function* () {
         for (let link of links) {
@@ -135,10 +153,10 @@ class HttpPack extends Pack{
           }
 
           // Create the SongIndex Object based on the link
-          yield new HttpSongIndex(link.name, link.href);
+          yield new HttpSongIndex(link.name, link.href, this.opts);
 
         }
-      }();
+      }.bind(this)();
     });
   }
 }
@@ -151,10 +169,11 @@ class HttpPack extends Pack{
  */
 class HttpSongIndex extends SongIndex{
 
-  constructor(name, url) {
+  constructor(name, url, opts) {
     super();
     this.name = name;
     this.url = url;
+    this.opts = opts;
 
     this.rsc = new Promise((resolve, reject) => {
       this.resolveRsc = resolve;
@@ -169,7 +188,7 @@ class HttpSongIndex extends SongIndex{
    */
   loadResources() {
 
-    listLinks(this.url).then((links) => {
+    listLinks(this.url, this.opts).then((links) => {
 
       let rsc = new Map();
 
@@ -204,7 +223,6 @@ class HttpSongIndex extends SongIndex{
     });
   }
 
-
   /**
    * Load the resource
    *
@@ -221,16 +239,7 @@ class HttpSongIndex extends SongIndex{
 
       let rsc = rscs.get(type);
 
-      if (type === RSC_BACKGROUND) {
-        loader.add(rsc);
-        return new Promise((resolve) => {
-          loader.load(resolve);
-        }).then(() => {
-          return loader.resources[rsc].texture;
-        });
-      }
-
-      return fetch(rsc).then((resp) => {
+      return fetch(rsc, this.opts).then((resp) => {
         if (!resp.ok) {
           throw {message: resp.statusText, status: resp.status};
         }
@@ -240,9 +249,42 @@ class HttpSongIndex extends SongIndex{
           return resp.arrayBuffer();
         case RSC_CHART:
           return resp.text();
+        case RSC_BACKGROUND:
+          return resp.blob().then((data) => createTexture(data));
         }
       });
     });
   }
 
+}
+
+/**
+ * Load a texture from a Blob of Data
+ * @param {Blob} data  Data of the image
+ * @return {PIXI.Texture|Promise} Texture
+ */
+function createTexture(data) {
+
+  return new Promise((resolve) => {
+
+    let reader = new FileReader();
+
+    reader.addEventListener('load', function () {
+      let img = new Image();
+      img.src = reader.result;
+
+      img.onload = () => {
+        let canvas = document.createElement('canvas');
+        let ctx = canvas.getContext('2d');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0, img.width, img.height);
+
+        let texture = PIXI.Texture.fromCanvas(canvas);
+        resolve(texture);
+      };
+    });
+
+    reader.readAsDataURL(data);
+  });
 }
