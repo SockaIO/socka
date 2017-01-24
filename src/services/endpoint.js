@@ -6,7 +6,6 @@
 
 import {Endpoint, Pack, SongIndex} from './fileManager';
 import {RSC_AUDIO, RSC_CHART, RSC_BANNER, RSC_BACKGROUND} from '../constants/resources';
-import * as PIXI from 'pixi.js';
 
 
 /**
@@ -28,7 +27,7 @@ export class HttpEndpoint extends Endpoint {
 
 
     let opts = {
-      //credentials: 'include',
+      credentials: 'include',
       cache: 'default'
     };
 
@@ -68,21 +67,27 @@ export class HttpEndpoint extends Endpoint {
   /**
    * Get the top level links and consider the folder as packs
    */
-  getPacks() {
+  doGetPacks() {
     return listLinks(this.url, this.opts).then((links) => {
 
-      return function* () {
-        for (let link of links) {
-          if (!link.folder) {
-            continue;
-          }
+      let packs = new Set();
 
-          // Create the Pack Object based on the link
-          yield new HttpPack(link.name, link.href, this.opts);
-
+      for (let link of links) {
+        if (!link.folder) {
+          continue;
         }
-      }.bind(this)();
+        packs.add(new HttpPack(link.name, link.href, this.opts));
+      }
+      return packs;
     });
+  }
+
+  /**
+   * Return the unique ID of the endpoint
+   * @returns {String} ID
+   */
+  getId() {
+    return this.url;
   }
 }
 
@@ -143,21 +148,30 @@ class HttpPack extends Pack{
     this.opts = opts;
   }
 
-  getSongs() {
+  doGetSongs() {
     return listLinks(this.url, this.opts).then((links) => {
 
-      return function* () {
-        for (let link of links) {
-          if (!link.folder) {
-            continue;
-          }
+      let songs = new Set();
 
-          // Create the SongIndex Object based on the link
-          yield new HttpSongIndex(link.name, link.href, this.opts);
-
+      for (let link of links) {
+        if (!link.folder) {
+          continue;
         }
-      }.bind(this)();
+
+        // Create the SongIndex Object based on the link
+        songs.add(new HttpSongIndex(link.name, link.href, this.opts));
+      }
+
+      return songs;
     });
+  }
+
+  /**
+   * Return the unique ID of the endpoint
+   * @returns {String} ID
+   */
+  getId() {
+    return this.url;
   }
 }
 
@@ -229,7 +243,7 @@ class HttpSongIndex extends SongIndex{
    * @param {Constant|Array} type | Resources to load
    * @return {Object} resource | The requested resource
    */
-  load(type) {
+  doLoad(type) {
 
     return this.rsc.then((rscs) => {
 
@@ -250,41 +264,20 @@ class HttpSongIndex extends SongIndex{
         case RSC_CHART:
           return resp.text();
         case RSC_BACKGROUND:
-          return resp.blob().then((data) => createTexture(data));
+        case RSC_BANNER:
+          return resp.blob();
         }
       });
     });
   }
 
+  /**
+   * Return the unique ID of the endpoint
+   * @returns {String} ID
+   */
+  getId() {
+    return this.url;
+  }
 }
 
-/**
- * Load a texture from a Blob of Data
- * @param {Blob} data  Data of the image
- * @return {PIXI.Texture|Promise} Texture
- */
-function createTexture(data) {
 
-  return new Promise((resolve) => {
-
-    let reader = new FileReader();
-
-    reader.addEventListener('load', function () {
-      let img = new Image();
-      img.src = reader.result;
-
-      img.onload = () => {
-        let canvas = document.createElement('canvas');
-        let ctx = canvas.getContext('2d');
-        canvas.width = img.width;
-        canvas.height = img.height;
-        ctx.drawImage(img, 0, 0, img.width, img.height);
-
-        let texture = PIXI.Texture.fromCanvas(canvas);
-        resolve(texture);
-      };
-    });
-
-    reader.readAsDataURL(data);
-  });
-}

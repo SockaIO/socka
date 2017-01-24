@@ -9,7 +9,7 @@
 
 // Internal dependencies
 import {Game} from './src/components';
-import {Player} from './src/services';
+import {FileManager, Player} from './src/services';
 import {MenuView, EngineView} from './src/views';
 
 import {HttpEndpoint} from './src/services/endpoint';
@@ -74,12 +74,8 @@ function init() {
   log.setLevel('debug');
   log.info('Starting Game Initialization');
 
-  let packs = HttpEndpoint.CreateHttpEndpoint('http://localhost:8000')
-    .then((endpoint) => {
-      return endpoint.getPacks();
-    })
-    .catch((error) => log.debug(error));
-
+  FileManager.AddEndpoint(HttpEndpoint.CreateHttpEndpoint('http://localhost:8000'));
+  let packs = FileManager.ListPacks();
 
   let game = new Game(800, 600, true);
 
