@@ -190,7 +190,7 @@ export default class DefaultTheme extends interfaces.Theme {
    * Create Menu Graphic Component
    */
   createMenuGC(...args) {
-    return new MenuDefaultGraphicComponent(this, ...args);
+    return new MenuFancyGraphicComponent(this, ...args);
   }
 
   /**
@@ -1069,5 +1069,87 @@ class EngineViewGraphicComponent {
    */
   addEngine(engine) {
     this.sprite.addChild(engine);
+  }
+}
+
+
+/**
+ * Fancy Menu
+ */
+
+class MenuFancyGraphicComponent extends interfaces.MenuGraphicComponent {
+
+  constructor(theme, width, height, menu) {
+    super(theme);
+
+    // Engine Container
+    this.height = height;
+    this.width = width;
+    this.menu = menu;
+
+    this.createMainSprite();
+
+    // Usefull constants
+    this.lineHeight = 30;
+    this.margin = 5;
+    this.numLines = (this.height / 2) / (this.lineHeight + this.margin) - 1;
+    this.origin = this.height / 2;
+
+    this.createEntries(menu.entries);
+    this.theme = theme;
+
+  }
+
+  createEntries(entries) {
+
+    this.entries = [];
+
+    for (let entry of entries) {
+      let sprite = new PIXI.extras.BitmapText(entry.name, {font: this.lineHeight + 'px font', align: 'center'});
+      sprite.x = this.width/2 - sprite.width / 2;
+      //sprite.anchor.x = 0.5;
+      sprite.anchor.y = 0.5;
+      this.foreground.addChild(sprite);
+      this.entries.push(sprite);
+    }
+  }
+
+  createMainSprite() {
+    this.sprite = new PIXI.Container();
+
+    this.background = new PIXI.Container();
+    this.foreground = new PIXI.Container();
+
+    this.sprite.addChild(this.background);
+    this.sprite.addChild(this.foreground);
+  }
+
+  /**
+   * Barbarian Update
+   */
+  update() {
+
+    for (let x = 0; x < this.entries.length; x++) {
+
+      let sprite = this.entries[x];
+      let distance = x - this.menu.selectedEntry;
+
+      // Not displayed
+      if (Math.abs(distance) > this.numLines) {
+        sprite.visible = false;
+      } else {
+        sprite.visible = true;
+      }
+
+      sprite.y = this.origin + distance * (this.lineHeight + this.margin) + Math.sign(distance) * this.lineHeight / 2;
+      sprite.scale = {x:1, y:1};
+      sprite.x = this.width/2 - sprite.width / 2;
+    }
+
+    let selected = this.entries[this.menu.selectedEntry];
+    selected.scale = {x:2, y:2};
+    selected.x = this.width/2 - selected.width / 2;
+    selected.y = this.origin;
+
   }
 }
