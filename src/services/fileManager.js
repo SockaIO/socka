@@ -4,8 +4,9 @@
 
 'use strict';
 
-import {RSC_BANNER, RSC_BACKGROUND} from '../constants/resources';
+import {RSC_BANNER, RSC_BACKGROUND, RSC_SONG, RSC_CHART} from '../constants/resources';
 import * as PIXI from 'pixi.js';
+import {ParseSong} from './songParser';
 
 let endpoints = new Set();
 
@@ -147,6 +148,7 @@ export class SongIndex {
   constructor(name) {
     this.name = name;
     this.rscMap = new Map();
+    this.chartExt = '';
   }
 
   /**
@@ -176,7 +178,12 @@ export class SongIndex {
           this.rscMap.set(type, texture);
           return texture;
         });
-
+      } else if (type === RSC_SONG) {
+        return this.load(RSC_CHART).then ((data) => {
+          let song = ParseSong(data, this.chartExt);
+          this.rscMap.set(type, song);
+          return song;
+        });
       } else {
         return this.doLoad(type).then((data) => {
           this.rscMap.set(type, data);

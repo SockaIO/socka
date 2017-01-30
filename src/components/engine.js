@@ -1,10 +1,10 @@
 'use strict';
 
-import {Judge, Theme, SongParser} from '../services';
+import {Judge, Theme} from '../services';
 import {KEY_UP, KEY_LEFT, KEY_DOWN, KEY_RIGHT, TAP, LIFT, EVENT_PAD_CONNECTED} from '../constants/input';
 import {EVENT_STEP_HIT, EVENT_NOTE_MISS, EVENT_NOTE_HIT, EVENT_NOTE_DODGE, EVENT_NOTE_FINISH, MINE_NOTE} from '../constants/chart';
 import {TM_W5, TM_MINE} from '../constants/judge';
-import {RSC_CHART} from '../constants/resources';
+import {RSC_SONG} from '../constants/resources';
 
 import {CreateNote, NoteStep} from './chart';
 
@@ -82,8 +82,7 @@ class Engine {
    */
   loadSong(songIndex, chartIndex) {
 
-    songIndex.load(RSC_CHART).then((data) => {
-      let song = SongParser.ParseSong(data, 'sm');
+    songIndex.load(RSC_SONG).then((song) => {
       this.chart = song.charts[chartIndex];
       this.song = song;
 

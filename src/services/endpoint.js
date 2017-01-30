@@ -151,18 +151,67 @@ class HttpPack extends Pack{
   doGetSongs() {
     return listLinks(this.url, this.opts).then((links) => {
 
-      let songs = new Set();
+      let subPack = [];
 
-      for (let link of links) {
-        if (!link.folder) {
-          continue;
-        }
+      links = Array.from(links);
 
-        // Create the SongIndex Object based on the link
-        songs.add(new HttpSongIndex(link.name, link.href, this.opts));
+      if (links.length === 0) {
+        return [];
       }
 
-      return songs;
+      // Check if we have 2 levels of folders
+      return listLinks(links[0].href, this.opts).then((linksA) => {
+
+        let songs = new Set();
+        let songLevel = true;
+
+        for (let l of linksA) {
+          if (l.folder) {
+            songLevel = false;
+          }
+        }
+
+        // The next level if the songs
+        if (songLevel === true) {
+          for (let link of links) {
+            // Create the SongIndex Object based on the link
+            songs.add(new HttpSongIndex(link.name, link.href, this.opts));
+          }
+          return songs;
+        }
+
+        // We have another level of folders
+        // TODO: Maybe suppor n levels ?
+        for (let link of links) {
+          if (!link.folder) {
+            continue;
+          }
+          subPack.push(listLinks(link.href, this.opts).then((linksA) => {
+            let ss = [];
+            for (let p of linksA) {
+
+              if (!p.folder) {
+                continue;
+              }
+
+              let songIndex = (new HttpSongIndex(p.name, p.href, this.opts));
+              ss.push(songIndex);
+            }
+            return ss;
+          }));
+        }
+
+        return Promise.all(subPack).then((songsA) => {
+          for (let ss of songsA) {
+            for (let s of ss) {
+              songs.add(s);
+            }
+          }
+          return songs;
+        });
+
+      });
+
     });
   }
 
@@ -188,6 +237,7 @@ class HttpSongIndex extends SongIndex{
     this.name = name;
     this.url = url;
     this.opts = opts;
+    this.loading = false;
 
     this.rsc = new Promise((resolve, reject) => {
       this.resolveRsc = resolve;
@@ -201,6 +251,8 @@ class HttpSongIndex extends SongIndex{
    * @returns {Symbol|Set} Set of Resource symbols
    */
   loadResources() {
+
+    this.loading = true;
 
     listLinks(this.url, this.opts).then((links) => {
 
@@ -229,11 +281,11 @@ class HttpSongIndex extends SongIndex{
 
         if (CHART_EXTS.includes(ext)) {
           rsc.set(RSC_CHART, link.href);
+          this.chartExt = ext;
         }
       }
 
       this.resolveRsc(rsc);
-
     });
   }
 
@@ -244,6 +296,10 @@ class HttpSongIndex extends SongIndex{
    * @return {Object} resource | The requested resource
    */
   doLoad(type) {
+
+    if (!this.loading) {
+      this.loadResources();
+    }
 
     return this.rsc.then((rscs) => {
 
