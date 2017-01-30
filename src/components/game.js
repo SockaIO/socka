@@ -1,7 +1,7 @@
 /* jshint esnext: true */
 'use strict';
 
-import {Input, Player, Judge} from '../services';
+import {Input, Player} from '../services';
 import {KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_ENTER, KEY_BACK} from '../constants/input';
 
 import * as PIXI from 'pixi.js';
@@ -32,12 +32,11 @@ class Game {
     // Create the PIXI Environment
     let canvas = document.getElementById('game');
     this.stage = new PIXI.Container();
-    this.renderer = PIXI.autoDetectRenderer(this.width, this.height, {backgroundColor : 0x1099bb, view: canvas});
+    this.renderer = PIXI.autoDetectRenderer(this.width, this.height, {backgroundColor : 0x1099bb, view: canvas}, true);
 
-    if (debug) {
+    if (debug === true) {
       this.stats = new Stats();
       document.body.appendChild(this.stats.domElement);
-      console.log('test')
     }
 
     this.views = [];
