@@ -55,14 +55,12 @@ export default class DefaultTheme extends interfaces.Theme {
    * Initialization of the theme
    * - Loas textures
    */
-  init() {
+  doInit() {
     return this.loadTextures();
   }
 
   /**
    * Load the textures using PIXI
-   *
-   * @TODO: use the file manager to get the texture
    *
    */
   loadTextures() {

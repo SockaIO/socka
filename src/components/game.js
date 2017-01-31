@@ -69,6 +69,9 @@ class Game {
 
     q.setMapping(m);
 
+    // We need to wait for the theme to load all its resources
+    promises.push(Theme.GetTheme().loaded);
+
     return Promise.all(promises);
   }
 

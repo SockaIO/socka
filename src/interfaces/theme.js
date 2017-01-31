@@ -101,7 +101,19 @@ class Theme {
 
     // Will be filled after loading
     this.textures = {};
+
+    this.loaded = new Promise((resolve) => {
+      this.resolveLoaded = resolve;
+    });
   }
+
+  init() {
+    this.doInit().then(() => {
+      this.resolveLoaded();
+    });
+  }
+
+  doInit() {}
 }
 
 
