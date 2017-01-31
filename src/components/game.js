@@ -1,7 +1,7 @@
 /* jshint esnext: true */
 'use strict';
 
-import {Input, Player} from '../services';
+import {Input, Player, Theme} from '../services';
 import {KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_ENTER, KEY_BACK} from '../constants/input';
 
 import * as PIXI from 'pixi.js';
@@ -155,6 +155,15 @@ class Game {
         }
       }
     }
+  }
+
+  /**
+   * Get the size of the game screen
+   * @returns {Number} Screen width
+   * @return {Number} Screen height
+   */
+  getScreenSize() {
+    return [this.width, this.height];
   }
 }
 export default Game;

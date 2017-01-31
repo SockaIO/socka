@@ -26,7 +26,7 @@ function songMenuEntry(song, game) {
     // Start Loading the Song data
     song.loadResources();
 
-    let gView = new EngineView(800, 600, song, 2, Player.GetPlayers(), game);
+    let gView = new EngineView(song, 2, Player.GetPlayers(), game);
     game.pushView(gView);
   };
 
@@ -50,7 +50,7 @@ function packMenuEntry(pack, game) {
         entries.push(songMenuEntry(s, game));
       }
 
-      let menu = new MenuView(800, 600, entries, game);
+      let menu = new MenuView(entries, game);
       game.pushView(menu);
 
     });
@@ -70,7 +70,7 @@ function init() {
   FileManager.AddEndpoint(HttpEndpoint.CreateHttpEndpoint('http://localhost:8000'));
   let packs = FileManager.ListPacks();
 
-  let game = new Game(800, 600, true);
+  let game = new Game(1280, 720, true);
 
   game.init().then(() => {
 
@@ -81,7 +81,7 @@ function init() {
         entries.push(packMenuEntry(p, game));
       }
 
-      let menu = new MenuView(800, 600, entries, game);
+      let menu = new MenuView(entries, game);
       game.pushView(menu);
       game.main();
 

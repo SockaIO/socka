@@ -12,8 +12,11 @@ import {KEY_UP, KEY_DOWN, TAP, KEY_BACK, KEY_ENTER} from '../constants/input';
  * @memberof views
  */
 class MenuView extends View {
-  constructor(width, height, entries, game) {
+  constructor(entries, game) {
     super(game);
+
+    let width, height;
+    [width, height] = game.getScreenSize();
 
     this.selectedEntry = 0; 
     this.entries = entries;

@@ -97,6 +97,16 @@ function Setup() {
   window.addEventListener('gamepaddisconnected', (e) => Disconnect(e), false);
 
   controllers.set(-1, new KeyboardController());
+
+  // We have to hardcode the fullscreen for ease of use
+  document.addEventListener('keyup', (e) => {
+    if (e.keyCode === 120) {
+      let c = document.getElementById('game');
+      e.preventDefault();
+      let requestFullScreen = c.mozRequestFullScreen || c.webkitRequestFullScreen;
+      requestFullScreen.bind(c)();
+    }
+  });
 }
 
 /**

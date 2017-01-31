@@ -26,8 +26,11 @@ class EngineView extends View {
    * @param {Player|Iterable} players - Players
    *
    */
-  constructor(width, height, song, difficulty, players, game) {
+  constructor(song, difficulty, players, game) {
     super(game);
+
+    let width, height;
+    [width, height] = game.getScreenSize();
 
     this.songPlayer = new SongPlayer();
     this.graphicComponent = Theme.GetTheme().createEngineViewGC(width, height);
@@ -38,13 +41,14 @@ class EngineView extends View {
     // Create the loading View
     this.loading = new LoadingView(width, height, game); 
 
-    const engineWidth = width / 2;
+    const engineWidth = Math.min(500, width / 2);
     const engineHeight = height;
+    const offset = width / 2 - engineWidth;
 
     let i = 0;
     for (let player of players) {
       let e = new Engine(engineWidth, engineHeight, 6, player, this.songPlayer);
-      e.sprite.x = i++ * engineWidth;
+      e.sprite.x = i++ * engineWidth + offset;
       e.sprite.y = 0;
 
       this.engines.push(e);
