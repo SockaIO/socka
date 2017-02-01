@@ -5,7 +5,7 @@
  */
 
 import {Subject} from '../helpers';
-import {TAP, LIFT, KEYS, KEY_UP, KEY_LEFT, KEY_RIGHT, KEY_DOWN, KEY_ENTER, KEY_BACK, EVENT_PAD_CONNECTED, EVENT_PAD_DISCONNECTED} from '../constants/input';
+import {TAP, LIFT, KEYS, KEY_UP, KEY_LEFT, KEY_RIGHT, KEY_DOWN, KEY_ENTER, KEY_BACK, EVENT_PAD_CONNECTED, EVENT_PAD_DISCONNECTED, RAPID_FIRE} from '../constants/input';
 
 let controllers = new Map();
 let controllerSubject = new Subject();
@@ -30,6 +30,38 @@ class Controller {
     this.commands = new Map();
     this.commands.set(TAP, new Map());
     this.commands.set(LIFT, new Map());
+    this.commands.set(RAPID_FIRE, new Map());
+
+    this.rapidFire = {
+      id: null,
+      speed: 200,
+      action: null
+    };
+
+  }
+
+  /**
+   * Called when a button with rapid fire is tapped
+   * @param {Function} action The action to perform
+   */
+  rapidFireTap(action) {
+
+    this.rapidFire.action = action;
+
+    // Set the repetition of the command
+    this.rapidFire.id = setInterval(() => {
+      this.rapidFire.action();
+    }, this.rapidFire.speed);
+
+    // Do the action once in any cases
+    action();
+  }
+
+  /**
+   * Called when a button with rapid fire is released
+   */
+  rapidFireLift() {
+    clearTimeout(this.rapidFire.id);
   }
 
   /**
@@ -62,8 +94,22 @@ class Controller {
    *
    */
   getCommand(action, button) {
+
     if (!this.commands.has(action)) { // Should not happen
       throw new Error('Action not present in Controller');
+    }
+
+    // if the action is RAPID_FIRE we need to return different commands
+    // for TAP and LIFT
+    if ([TAP, LIFT].includes(action) && this.commands.get(RAPID_FIRE).has(button)) {
+
+      const cmd = this.commands.get(RAPID_FIRE).get(button);
+
+      if (action == TAP) {
+        return () => {this.rapidFireTap(cmd);};
+      } else {
+        return () => {this.rapidFireLift();};
+      }
     }
 
     return this.commands.get(action).get(button) || null;
@@ -80,7 +126,6 @@ class Controller {
     if (!this.commands.has(action)) { // Should not happen
       throw new Error('Action not present in Controller');
     }
-
     this.commands.get(action).delete(button);
   }
 

@@ -6,6 +6,8 @@
 export const TAP = Symbol.for('TAP');
 /** @memberof constants.input */
 export const LIFT = Symbol.for('LIFT');
+/** @memberof constants.input */
+export const RAPID_FIRE = Symbol.for('RAPID_FIRE');
 
 /** @memberof constants.input */
 export const EVENT_PAD_CONNECTED = Symbol.for('EVENT_PAD_CONNECTED');

@@ -3,7 +3,7 @@
 import View from './view';
 import {Theme, Player} from '../services';
 
-import {KEY_UP, KEY_DOWN, TAP, KEY_BACK, KEY_ENTER} from '../constants/input';
+import {KEY_UP, KEY_DOWN, TAP, RAPID_FIRE, KEY_BACK, KEY_ENTER} from '../constants/input';
 
 /**
  * View Class for a simple menu
@@ -30,6 +30,7 @@ class MenuView extends View {
   }
 
   up() {
+
     if (this.selectedEntry === 0) {
       this.selectedEntry = this.entries.length - 1;
     } else {
@@ -79,8 +80,9 @@ class MenuView extends View {
 
     let factories = new Map();
 
-    factories.set([KEY_UP, TAP], () => {this.up ();});
-    factories.set([KEY_DOWN, TAP], () => {this.down ();});
+    factories.set([KEY_UP, RAPID_FIRE], () => {this.up ();});
+    factories.set([KEY_DOWN, RAPID_FIRE], () => {this.down ();});
+
     factories.set([KEY_BACK, TAP], () => {this.back ();});
     factories.set([KEY_ENTER, TAP], () => {this.start ();});
 
