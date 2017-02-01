@@ -3,7 +3,7 @@
 // Internal dependencies
 import {Game} from './src/components';
 import {FileManager, Player} from './src/services';
-import {MenuView, EngineView} from './src/views';
+import {MenuView, EngineView, SongMenuView} from './src/views';
 
 import {HttpEndpoint} from './src/services/endpoint';
 
@@ -21,16 +21,16 @@ function songMenuEntry(song, game) {
 
   let name = song.name;
 
-  let action = () => {
+  let action = (chartIndex) => {
 
     // Start Loading the Song data
     song.loadResources();
 
-    let gView = new EngineView(song, 2, Player.GetPlayers(), game);
+    let gView = new EngineView(song, chartIndex, Player.GetPlayers(), game);
     game.pushView(gView);
   };
 
-  return {name, action};
+  return {name, action, song};
 }
 
 /**
@@ -50,7 +50,7 @@ function packMenuEntry(pack, game) {
         entries.push(songMenuEntry(s, game));
       }
 
-      let menu = new MenuView(entries, game);
+      let menu = new SongMenuView(entries, game);
       game.pushView(menu);
 
     });

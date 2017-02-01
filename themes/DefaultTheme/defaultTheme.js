@@ -193,6 +193,13 @@ export default class DefaultTheme extends interfaces.Theme {
   }
 
   /**
+   * Create Song Menu Graphic Component
+   */
+  createSongMenuGC(...args) {
+    return new SongMenuDefaultGraphicComponent(this, ...args);
+  }
+
+  /**
    * Create Engine Graphic Component
    */
   createEngineGC(...args) {
@@ -1223,3 +1230,150 @@ class LoadingViewDefaultGraphicComponent extends interfaces.LoadingViewGraphicCo
   }
 }
 
+
+/**
+ * Song Menu
+ */
+
+class SongMenuDefaultGraphicComponent extends interfaces.MenuGraphicComponent {
+
+  constructor(theme, width, height, menu) {
+    super(theme);
+
+    // Engine Container
+    this.height = height;
+    this.width = width;
+    this.menu = menu;
+
+    this.createMainSprite();
+    this.createSongSprites();
+
+    // Usefull constants
+    this.lineHeight = 30;
+    this.margin = 5;
+    this.numLines = (this.height / 2) / (this.lineHeight + this.margin) - 1;
+    this.origin = this.height / 2;
+
+    this.createEntries(menu.entries);
+    this.theme = theme;
+
+  }
+
+  createEntries(entries) {
+
+    this.entries = [];
+
+    for (let entry of entries) {
+      let sprite = new PIXI.extras.BitmapText(entry.name, {font: this.lineHeight + 'px font', align: 'center'});
+      sprite.x = 50;
+      //sprite.anchor.x = 0.5;
+      sprite.anchor.y = 0.5;
+      this.foreground.addChild(sprite);
+      this.entries.push(sprite);
+    }
+  }
+
+  createSongSprites() {
+
+    this.songInfo = new PIXI.Container();
+    this.songInfo.x = this.width / 1.75;
+    this.songInfo.y = 20;
+
+    this.banner = new PIXI.Sprite();
+    this.banner.anchor.x = 0;
+
+    this.banner.width = this.width * 0.75 / 1.75;
+
+    this.chartMenu = new PIXI.Container();
+    this.chartEntries = [];
+
+    this.songInfo.addChild(this.banner);
+    this.songInfo.addChild(this.chartMenu);
+    this.foreground.addChild(this.songInfo);
+  }
+
+  createMainSprite() {
+    this.sprite = new PIXI.Container();
+
+    this.background = new PIXI.Container();
+    this.foreground = new PIXI.Container();
+
+    this.sprite.addChild(this.background);
+    this.sprite.addChild(this.foreground);
+  }
+
+  /**
+   * Barbarian Update
+   */
+  update() {
+
+    for (let x = 0; x < this.entries.length; x++) {
+
+      let sprite = this.entries[x];
+      let distance = x - this.menu.selectedEntry;
+
+      // Not displayed
+      if (Math.abs(distance) > this.numLines) {
+        sprite.visible = false;
+      } else {
+        sprite.visible = true;
+      }
+
+      sprite.y = this.origin + distance * (this.lineHeight + this.margin) + Math.sign(distance) * this.lineHeight / 2;
+      sprite.scale = {x:1, y:1};
+      sprite.x = 50;
+    }
+
+    let selected = this.entries[this.menu.selectedEntry];
+    selected.scale = {x:2, y:2};
+    selected.x = 50;
+    selected.y = this.origin;
+
+    // Update the chart menu
+    for (let x = 0; x < this.chartEntries.length; x++) {
+
+      let c = this.chartEntries[x];
+
+      if (x === this.menu.selectedChart) {
+        c.tint = 0xaa2200;
+      } else {
+        c.tint = 0xffffff;
+      }
+    }
+  }
+
+  updateSongDisplay() {
+    if (!this.menu.selectedSong) {
+      return;
+    }
+
+    if (this.menu.selectedSong.banner !== undefined) {
+      if (this.menu.selectedSong.banner === null) {
+        this.banner.visible = false ;
+      } else {
+        this.banner.visible = true;
+        this.banner.texture = this.menu.selectedSong.banner;
+      }
+    }
+
+    this.chartMenu.removeChildren();
+    this.chartEntries = [];
+    if (this.menu.selectedSong.charts !== undefined && this.menu.selectedSong.charts !== null) {
+
+      let index = 0;
+
+      for (let c of this.menu.selectedSong.charts) {
+        let sprite = new PIXI.extras.BitmapText(c.difficulty, {font: 30 + 'px font', align: 'center'});
+        sprite.y = this.banner.height + index++ * 30;
+        sprite.x = this.banner.width / 2 - sprite.width / 2;
+
+        this.chartEntries.push(sprite);
+        this.chartMenu.addChild(sprite);
+      }
+    } else {
+      this.charts = [];
+      this.chartEntries = [];
+    }
+  }
+
+}
