@@ -186,6 +186,13 @@ export default class DefaultTheme extends interfaces.Theme {
   }
 
   /**
+   * Create Pause Graphic Component
+   */
+  createPauseGC(...args) {
+    return new PauseDefaultGraphicComponent(this, ...args);
+  }
+
+  /**
    * Create Menu Graphic Component
    */
   createMenuGC(...args) {
@@ -1227,6 +1234,28 @@ class LoadingViewDefaultGraphicComponent extends interfaces.LoadingViewGraphicCo
   set percentage (percentage) {
     this._percentage = percentage;
     TweenLite.to(this.bar, 0.5, {width: (this.receptor.width - 2) * percentage, ease: 'bounce'});
+  }
+}
+
+/**
+ * Pause
+ */
+class PauseDefaultGraphicComponent extends interfaces.PauseGraphicComponent {
+
+  constructor(theme, width, height) {
+    super(theme);
+    this.width = width;
+    this.height = height;
+
+    this.sprite = new PIXI.Container();
+
+    this.overlay = new PIXI.Graphics();
+    this.overlay.beginFill(0xff0000, 0.5);
+    this.overlay.drawRect(0, 0, width, height);
+    this.overlay.endFill();
+
+    this.sprite.addChild(this.overlay);
+    console.log('Pause');
   }
 }
 

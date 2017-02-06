@@ -4,7 +4,7 @@
 
 'use strict';
 
-import {RSC_BANNER, RSC_BACKGROUND, RSC_SONG, RSC_CHART} from '../constants/resources';
+import {RSC_AUDIO, RSC_BANNER, RSC_BACKGROUND, RSC_SONG, RSC_CHART} from '../constants/resources';
 import * as PIXI from 'pixi.js';
 import {ParseSong} from './songParser';
 
@@ -183,6 +183,11 @@ export class SongIndex {
           let song = ParseSong(data, this.chartExt);
           this.rscMap.set(type, song);
           return song;
+        });
+      } else if (type === RSC_AUDIO) {
+        return this.doLoad(RSC_AUDIO).then((data) => {
+          this.rscMap.set(type, data);
+          return data.slice(0);
         });
       } else {
         return this.doLoad(type).then((data) => {

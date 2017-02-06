@@ -75,6 +75,18 @@ class MenuGraphicComponent extends GraphicComponent{
   update() {}
 }
 
+
+/**
+ * Pause GC
+ * @memberof interfaces
+ * @interface
+ * @extends GraphicComponent
+ */
+class PauseGraphicComponent extends GraphicComponent{
+
+  update() {}
+}
+
 /**
  * Loading GC
  * @memberof interfaces
@@ -122,6 +134,7 @@ export {
   LongNoteGraphicComponent,
   ReceptorGraphicComponent,
   MenuGraphicComponent,
+  PauseGraphicComponent,
   LoadingViewGraphicComponent,
   Theme 
 };

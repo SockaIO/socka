@@ -15,6 +15,8 @@ class SongPlayer {
     this.ctx = new AudioContext();
     this.source = this.ctx.createBufferSource();
     this.source.connect(this.ctx.destination);
+
+    this.startPauseTime = 0;
   }
 
   /**
@@ -26,6 +28,7 @@ class SongPlayer {
       .then((data) => {
         return this.ctx.decodeAudioData(data);
       }).then((buf) => {
+        this.buf = buf;
         this.source.buffer = buf;
       });
   }
@@ -36,6 +39,27 @@ class SongPlayer {
   play() {
     this.audioStart = this.ctx.currentTime + 1;
     this.source.start(this.audioStart);
+  }
+
+  /**
+   * Pause the playback of the song
+   */
+  pause() {
+    this.startPauseTime = this.ctx.currentTime - this.audioStart;
+    this.source.stop();
+  }
+
+  /**
+   * Resume the playback of the song
+   */
+  resume() {
+    this.source = this.ctx.createBufferSource();
+    this.source.connect(this.ctx.destination);
+    this.source.buffer = this.buf;
+
+    const startDelay = 0;
+    this.audioStart = this.ctx.currentTime - this.startPauseTime + startDelay;
+    this.source.start(this.ctx.currentTime + startDelay, this.startPauseTime);
   }
 
   /**

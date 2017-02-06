@@ -4,8 +4,9 @@ import View from './view';
 import {SongPlayer, Engine} from '../components';
 import {Theme} from '../services';
 import LoadingView from './loadingView';
+import PauseView from './pauseView';
 
-import {KEY_UP, KEY_LEFT, KEY_DOWN, KEY_RIGHT, TAP, LIFT} from '../constants/input';
+import {KEY_UP, KEY_LEFT, KEY_DOWN, KEY_RIGHT, TAP, LIFT, KEY_BACK} from '../constants/input';
 
 import {RSC_BACKGROUND} from '../constants/resources';
 /**
@@ -118,10 +119,32 @@ class EngineView extends View {
         }
       }
 
+      mapping.set([KEY_BACK, TAP], () => {this.pause();});
+
       player.mapping.setCommands(mapping);
+    }
+
+    if (this.started) {
+      this.songPlayer.resume();
     }
   }
 
+  /**
+   * Pause the game
+   */
+  pause() {
+    let pause = new PauseView(this.game);
+    this.game.pushView(pause);
+  }
+
+  /**
+   * Blur Event
+   */
+  onBlur() {
+    if (this.started) {
+      this.songPlayer.pause();
+    }
+  }
 
   /**
    * Get the view sprite
