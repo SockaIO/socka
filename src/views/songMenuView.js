@@ -97,27 +97,31 @@ class SongMenuView extends View {
         this.selectedSong.charts = song.charts;
         this.selectedChart = 0;
         this.graphicComponent.updateSongDisplay();
+
+        // Chain not to load the chart 2 times in parallel in the worst case
+        selectedEntry.song.load(RSC_BANNER).then((banner) => {
+
+          // Check if we are still on the same song
+          // TODO: Check if it works
+          if (!this.selectedSong.name === selectedEntry.name) {
+            return;
+          }
+
+          this.selectedSong.banner = banner;
+          this.graphicComponent.updateSongDisplay();
+        })
+        .catch(() => {
+          this.selectedSong.banner = null;
+          this.graphicComponent.updateSongDisplay();
+        });
+
+
       })
       .catch(() => {
         this.selectedSong.charts = undefined;
         this.graphicComponent.updateSongDisplay();
       });
 
-      selectedEntry.song.load(RSC_BANNER).then((banner) => {
-
-        // Check if we are still on the same song
-        // TODO: Check if it works
-        if (!this.selectedSong.name === selectedEntry.name) {
-          return;
-        }
-
-        this.selectedSong.banner = banner;
-        this.graphicComponent.updateSongDisplay();
-      })
-      .catch(() => {
-        this.selectedSong.banner = null;
-        this.graphicComponent.updateSongDisplay();
-      });
     }
 
     this.graphicComponent.update();

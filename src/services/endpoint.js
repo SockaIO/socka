@@ -5,7 +5,7 @@
 'use strict';
 
 import {Endpoint, Pack, SongIndex} from './fileManager';
-import {RSC_AUDIO, RSC_CHART, RSC_BANNER, RSC_BACKGROUND} from '../constants/resources';
+import {RSC_AUDIO, RSC_CHART, RSC_BANNER, RSC_BACKGROUND, RSC_SONG} from '../constants/resources';
 
 
 /**
@@ -239,6 +239,8 @@ class HttpSongIndex extends SongIndex{
     this.opts = opts;
     this.loading = false;
 
+    this.fallbackRscs = new Map();
+
     this.rsc = new Promise((resolve, reject) => {
       this.resolveRsc = resolve;
       this.rejectRsc = reject;
@@ -303,11 +305,25 @@ class HttpSongIndex extends SongIndex{
 
     return this.rsc.then((rscs) => {
 
-      if (!rscs.has(type)) {
+      let fallback = this.fallbackRscs.get(type);
+      if ((!rscs.has(type) && fallback === undefined) || (fallback !== undefined && fallback === this.url + '/')) {
+
+        // Theses resources can be located thanks to the SM file
+        if ([RSC_BANNER, RSC_BACKGROUND].includes(type) && !this.fallbackRscs.has(type)) {
+          return this.load(RSC_SONG).then((song) => {
+            this.fallbackRscs.set(RSC_BANNER, this.url + '/' + song.banner);
+            this.fallbackRscs.set(RSC_BACKGROUND, this.url + '/' + song.background);
+            return this.doLoad(type);
+          });
+        }
+
         return new Promise((resolve, reject) => reject(new Error('Resoure not found')));
       }
 
       let rsc = rscs.get(type);
+      if (this.fallbackRscs.get(type) !== undefined) {
+        rsc = this.fallbackRscs.get(type);
+      }
 
       return fetch(rsc, this.opts).then((resp) => {
         if (!resp.ok) {
