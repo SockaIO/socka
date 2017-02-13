@@ -14,6 +14,8 @@ export const TM_W4 = Symbol.for('TM_W4');
 export const TM_W5 = Symbol.for('TM_W5');
 /** @memberof constants.judge */
 export const TM_MISS = Symbol.for('TM_MISS');
+/** @memberof constants.judge */
+export const TIMINGS = [TM_W1, TM_W2, TM_W3, TM_W4, TM_W5, TM_MISS];
 
 /** @memberof constants.judge */
 export const TM_HOLD = Symbol.for('TM_HOLD');

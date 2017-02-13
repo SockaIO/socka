@@ -3,7 +3,7 @@
 import {Judge, Theme} from '../services';
 import {KEY_UP, KEY_LEFT, KEY_DOWN, KEY_RIGHT, TAP, LIFT, EVENT_PAD_CONNECTED} from '../constants/input';
 import {EVENT_STEP_HIT, EVENT_NOTE_MISS, EVENT_NOTE_HIT, EVENT_NOTE_DODGE, EVENT_NOTE_FINISH, MINE_NOTE} from '../constants/chart';
-import {TM_W5, TM_MINE} from '../constants/judge';
+import {TM_W5, TM_MINE, TIMINGS, S_OK} from '../constants/judge';
 import {RSC_SONG} from '../constants/resources';
 
 import {CreateNote, NoteStep} from './chart';
@@ -59,6 +59,9 @@ class Engine {
     // Combo
     this.combo = new Combo();
     this.graphicComponent.placeCombo(this.combo.sprite);
+
+    // Stats Tracker
+    this.statsTracker = new StatsTracker();
 
     // Life
     this.lifemeter = new Lifemeter();
@@ -339,6 +342,9 @@ class Engine {
     // Common processing
     this.graphicComponent.feedback(ev);
 
+    // Track the stats
+    this.statsTracker.process(ev);
+
     // Type dependent processing
     switch(ev.type) {
     case EVENT_NOTE_MISS:
@@ -496,6 +502,7 @@ class Combo {
   constructor() {
     this.combo = 0;
     this.graphicComponent = Theme.GetTheme().createComboGC();
+    this.maxi = 0;
   }
 
   /**
@@ -503,6 +510,7 @@ class Combo {
    */
   add() {
     this.combo++;
+    this.maxi = this.maxi > this.combo ? this.maxi : this.combo;
     this.graphicComponent.update(this.combo);
   }
 
@@ -605,4 +613,55 @@ class ProgressionBar {
   }
 }
 
+/**
+ * Class keeping track on various statistics
+ * @memberof components
+ */
+class StatsTracker {
+
+  constructor() {
+
+    this.timingTracker = new Map();
+
+    // Initialize the Map with the possible timings
+    for (let timing of TIMINGS) {
+      this.timingTracker.set(timing, 0);
+    }
+
+    // Counter for succesfully held notes
+    this.held = 0;
+  }
+
+  /**
+   * Get the results
+   * @returns {Object} Result summary
+   */
+  getResults() {
+    return {
+      held: this.held,
+      timings: this.timingTracker
+    };
+  }
+
+  /**
+   * Process an event
+   * @param {Object} ev Event to process
+   */
+  process(ev) {
+
+    switch (ev.type) {
+
+    case EVENT_NOTE_HIT:
+    case EVENT_NOTE_MISS:
+      this.timingTracker.set(ev.timing, this.timingTracker.get(ev.timing) + 1);
+      break;
+
+    case EVENT_NOTE_FINISH:
+      if (ev.timing == S_OK) {
+        this.held++;
+      }
+      break;
+    }
+  }
+}
 
