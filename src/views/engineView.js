@@ -5,6 +5,7 @@ import {SongPlayer, Engine} from '../components';
 import {Theme} from '../services';
 import LoadingView from './loadingView';
 import PauseView from './pauseView';
+import ResultsView from './resultsView';
 
 import {KEY_UP, KEY_LEFT, KEY_DOWN, KEY_RIGHT, TAP, LIFT, KEY_BACK} from '../constants/input';
 
@@ -38,6 +39,8 @@ class EngineView extends View {
 
     this.engines = [];
     this.started = false;
+
+    this.song = song;
 
     // Create the loading View
     this.loading = new LoadingView(width, height, game); 
@@ -95,6 +98,17 @@ class EngineView extends View {
       this.game.popView();
       this.songPlayer.play();
       this.started = true;
+
+      // Promise resolved when song finished or cancelled
+      this.songPlayer.getEndPromise().then(() => {
+
+        // Remove the engine View
+        this.game.popView();
+
+        //Create the Results View
+        let results = new ResultsView(this.game, this.song, this.engines);
+        this.game.pushView(results);
+      });
     });
   }
 

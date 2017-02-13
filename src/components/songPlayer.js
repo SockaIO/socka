@@ -17,6 +17,11 @@ class SongPlayer {
     this.source.connect(this.ctx.destination);
 
     this.startPauseTime = 0;
+
+    this.endPromise = new Promise((resolve, reject) => {
+      this.endPlayback = resolve;
+      this.cancelPlayback = reject;
+    });
   }
 
   /**
@@ -39,6 +44,7 @@ class SongPlayer {
   play() {
     this.audioStart = this.ctx.currentTime + 1;
     this.source.start(this.audioStart);
+    this.source.onended = () => this.endPlayback();
   }
 
   /**
@@ -60,7 +66,17 @@ class SongPlayer {
     const startDelay = 0;
     this.audioStart = this.ctx.currentTime - this.startPauseTime + startDelay;
     this.source.start(this.ctx.currentTime + startDelay, this.startPauseTime);
+    this.source.onended = () => this.endPlayback();
   }
+
+  /**
+   * Get the End Promise
+   * @returns {Promise} Promise resolved when playback finished or cancelled
+   */
+  getEndPromise() {
+    return this.endPromise;
+  }
+
 
   /**
    * Returns the current timestamp within the song

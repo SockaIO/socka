@@ -87,6 +87,18 @@ class PauseGraphicComponent extends GraphicComponent{
   update() {}
 }
 
+
+/**
+ * Results GC
+ * @memberof interfaces
+ * @interface
+ * @extends GraphicComponent
+ */
+class ResultsGraphicComponent extends GraphicComponent{
+
+  update() {}
+}
+
 /**
  * Loading GC
  * @memberof interfaces
@@ -136,6 +148,7 @@ export {
   MenuGraphicComponent,
   PauseGraphicComponent,
   LoadingViewGraphicComponent,
+  ResultsGraphicComponent,
   Theme 
 };
 

@@ -6,7 +6,7 @@ import { TweenLite } from 'gsap';
 import log from 'loglevel';
 
 import {theme as interfaces} from '../../src/interfaces';
-import {TM_W1, TM_W2, TM_W3, TM_W4, TM_W5, TM_MISS, TM_MINE, S_OK, S_NG} from '../../src/constants/judge';
+import {TM_W1, TM_W2, TM_W3, TM_W4, TM_W5, TM_MISS, TM_MINE, S_OK, S_NG, TIMING_TEXTS} from '../../src/constants/judge';
 import {TAP_NOTE, FAKE_NOTE, ROLL_NOTE, MINE_NOTE, HOLD_NOTE, LIFT_NOTE, EVENT_NOTE_HIT, EVENT_NOTE_MISS, EVENT_NOTE_FINISH} from '../../src/constants/chart';
 
 /*
@@ -190,6 +190,13 @@ export default class DefaultTheme extends interfaces.Theme {
    */
   createPauseGC(...args) {
     return new PauseDefaultGraphicComponent(this, ...args);
+  }
+
+  /**
+   * Create Results Graphic Component
+   */
+  createResultsGC(...args) {
+    return new ResultsDefaultGraphicComponent(this, ...args);
   }
 
   /**
@@ -1255,7 +1262,6 @@ class PauseDefaultGraphicComponent extends interfaces.PauseGraphicComponent {
     this.overlay.endFill();
 
     this.sprite.addChild(this.overlay);
-    console.log('Pause');
   }
 }
 
@@ -1406,3 +1412,148 @@ class SongMenuDefaultGraphicComponent extends interfaces.MenuGraphicComponent {
   }
 
 }
+
+/**
+ * Results
+ */
+class ResultsDefaultGraphicComponent extends interfaces.ResultsGraphicComponent {
+
+  constructor(theme, width, height, background, banner, results) {
+    super(theme);
+    this.width = width;
+    this.height = height;
+
+    this.results = results;
+
+    this.sprite = new PIXI.Container();
+
+    // Decoration
+    this.sprite.addChild(this.drawBackground(background));
+    this.sprite.addChild(this.drawTitleBar());
+    this.sprite.addChild(this.drawBanner(banner));
+
+
+    // Data
+    this.sprite.addChild(this.drawStats());
+
+  }
+
+  drawStats() {
+
+    let container = new PIXI.Container();
+
+    let count = 0;
+
+    for (let r of this.results) {
+
+      let playerResults = this.getPlayerResults(r);
+
+      playerResults.x = this.width / ( 2 * this.results.length) - playerResults.width / 2 + count++ * this.width / (this.results.length);
+      playerResults.y = 300;
+
+      container.addChild(playerResults);
+    }
+
+    return container;
+
+  }
+
+  getPlayerResults(result) {
+
+    let container = new PIXI.Container();
+
+    let text = this.getText(result);
+    let textSprite = new PIXI.extras.BitmapText(text, {font: 30 + 'px font', align: 'left'});
+
+    container.addChild(textSprite);
+
+    let score = new PIXI.extras.BitmapText('Score: ' + result.score, {font: 40 + 'px font', align: 'left'});
+    container.addChild(score);
+
+    score.y = 350;
+
+
+    return container;
+
+  }
+
+  getText(result) {
+
+    let output = '';
+
+    for (let [t, count] of result.stats.timings) {
+      output += TIMING_TEXTS[t] + ': ' + count + '\n';
+    }
+
+    output += 'Held: ' + result.stats.held + '\n';
+    output += 'Max Combo:' + result.combo;
+
+    return output;
+
+  }
+
+  drawBanner(texture) {
+
+    let container = new PIXI.Container();
+
+    this.banner = new PIXI.Sprite();
+    container.addChild(this.banner);
+
+    texture.then((texture) => {
+      this.banner.texture = texture;
+
+      this.banner.x = this.width / 2 - this.banner.width / 2;
+      this.banner.y = 100;
+    });
+
+    return container;
+  }
+
+
+
+  drawBackground(texture) {
+
+    let container = new PIXI.Container();
+
+    this.background = new PIXI.Sprite();
+    this.background.height = this.height;
+    this.background.width = this.width;
+
+    container.addChild(this.background);
+
+    texture.then((texture) => {
+      this.background.texture = texture;
+    });
+
+    this.overlay = new PIXI.Graphics();
+    this.overlay.beginFill(0x000000, 0.5);
+    this.overlay.drawRect(0, 0, this.width, this.height);
+    this.overlay.endFill();
+
+    container.addChild(this.overlay);
+
+    return container;
+  }
+
+  drawTitleBar() {
+
+    let container = new PIXI.Container();
+
+    this.overlay = new PIXI.Graphics();
+    this.overlay.beginFill(0x000000, 0.5);
+    this.overlay.drawRect(0, 0, this.width, 70);
+    this.overlay.endFill();
+
+    container.addChild(this.overlay);
+
+    let text = new PIXI.extras.BitmapText('Your Results', {font: 40 + 'px font', align: 'center'});
+    text.x = 20;
+    text.y = 20;
+    container.addChild(text);
+
+    return container;
+
+  }
+}
+
+
