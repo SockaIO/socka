@@ -6,7 +6,7 @@ import { TweenLite } from 'gsap';
 import log from 'loglevel';
 
 import {theme as interfaces} from '../../src/interfaces';
-import {TM_W1, TM_W2, TM_W3, TM_W4, TM_W5, TM_MISS, TM_MINE, S_OK, S_NG, TIMING_TEXTS} from '../../src/constants/judge';
+import {TM_W1, TM_W2, TM_W3, TM_W4, TM_W5, TM_MISS, TM_MINE, S_OK, S_NG, TIMING_TEXTS, RANK_TEXTS} from '../../src/constants/judge';
 import {TAP_NOTE, FAKE_NOTE, ROLL_NOTE, MINE_NOTE, HOLD_NOTE, LIFT_NOTE, EVENT_NOTE_HIT, EVENT_NOTE_MISS, EVENT_NOTE_FINISH} from '../../src/constants/chart';
 
 /*
@@ -1462,8 +1462,17 @@ class ResultsDefaultGraphicComponent extends interfaces.ResultsGraphicComponent 
 
     let container = new PIXI.Container();
 
+    let nameSprite = new PIXI.extras.BitmapText(result.player.name, {font: 40 + 'px font', align: 'left'});
+    container.addChild(nameSprite);
+
+    let rankSprite = new PIXI.extras.BitmapText(RANK_TEXTS[result.rank], {font: 40 + 'px font', align: 'left'});
+    rankSprite.y = 50;
+    rankSprite.x = 20;
+    container.addChild(rankSprite);
+
     let text = this.getText(result);
-    let textSprite = new PIXI.extras.BitmapText(text, {font: 30 + 'px font', align: 'left'});
+    let textSprite = new PIXI.extras.BitmapText(text, {font: 25 + 'px font', align: 'left'});
+    textSprite.y = 100;
 
     container.addChild(textSprite);
 
@@ -1471,7 +1480,6 @@ class ResultsDefaultGraphicComponent extends interfaces.ResultsGraphicComponent 
     container.addChild(score);
 
     score.y = 350;
-
 
     return container;
 
@@ -1486,7 +1494,7 @@ class ResultsDefaultGraphicComponent extends interfaces.ResultsGraphicComponent 
     }
 
     output += 'Held: ' + result.stats.held + '\n';
-    output += 'Max Combo:' + result.combo;
+    output += 'Max Combo: ' + result.combo;
 
     return output;
 

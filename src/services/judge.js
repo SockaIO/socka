@@ -31,7 +31,7 @@ import {
   E
 } from '../constants/judge';
 
-import {MINE_NOTE} from '../constants/chart';
+import {MINE_NOTE, TAP_NOTE, HOLD_NOTE} from '../constants/chart';
 
 /**
  * Evaluation of the timing and score when the player tap a note/step
@@ -89,15 +89,15 @@ class Judge {
       [S_OK]: 6 // catch the end of a hold
     };
 
-    this.gradeScale = {
-      [AAA]: 1,
-      [AA]: 0.93,
-      [A]: 0.8,
-      [B]: 0.65,
-      [C]: 0.45,
-      [D]: 0,
-      [E]: -1
-    };
+    this.gradeScale = new Map([
+      [AAA, 1],
+      [AA, 0.93],
+      [A, 0.8],
+      [B, 0.65],
+      [C, 0.45],
+      [D, 0],
+      [E, -1]
+    ]);
 
     this.multiplier = {
       [TM_W1]: 10,
@@ -112,7 +112,7 @@ class Judge {
   }
 
   /**
-   * Compute timing and scopre informations for a chart
+   * Compute timing and score informations for a chart
    *
    * @param {Step|Array} steps | list of steps
    * @param {Chart} chart | Chart for the steps
@@ -124,12 +124,25 @@ class Judge {
     let B = 100000 * chart.meter;
 
     let index = 1;
+    let maxPoints = 0;
 
     for (let s of steps) {
+
+      for (let n of s.notes) {
+        if (n.type == TAP_NOTE) {
+          maxPoints += 2;
+
+        } else if (n.type == HOLD_NOTE) {
+          maxPoints += 6;
+        }
+      }
+
       s.score =  Math.floor(B / S) * index++;
       s.holdTiming = this.getTimingValue(TM_HOLD);
       s.rollTiming = this.getTimingValue(TM_ROLL);
     }
+
+    chart.maxPoints = maxPoints;
   }
 
   /**
@@ -230,6 +243,25 @@ class Judge {
   getPoints(note, timing) {
     return this.timingPoints[timing];
   }
+
+  /**
+   * Get the Rank for a Chart
+   * @param {Number} points Numbrer of points won
+   * @param {Chart} chart Chart played
+   * @return {Symbol} Rank
+   */
+  getRank(points, chart) {
+
+    let percent = points / chart.maxPoints;
+
+    for (let [grade, threshold] of this.gradeScale.entries()) {
+      if (percent >= threshold) {
+        return grade;
+      }
+    }
+
+    return E;
+  }
 }
 
 let judge = new Judge();
@@ -240,6 +272,7 @@ let JudgeNote = judge.judgeNote.bind(judge);
 let JudgeStep = judge.judgeStep.bind(judge);
 let IsGoodTiming = judge.isGoodTiming.bind(judge);
 let GetPoints = judge.getPoints.bind(judge);
+let GetRank = judge.getRank.bind(judge);
 
 export {
   GetTimingValue,
@@ -247,5 +280,6 @@ export {
   JudgeNote,
   JudgeStep,
   IsGoodTiming,
-  GetPoints
+  GetPoints,
+  GetRank
 };

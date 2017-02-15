@@ -106,8 +106,9 @@ class EngineView extends View {
         this.game.popView();
 
         //Create the Results View
-        let results = new ResultsView(this.game, this.song, this.engines);
-        this.game.pushView(results);
+        let results = this.engines.map((e) => {return e.getResults();});
+        let resultsView = new ResultsView(this.game, this.song, results);
+        this.game.pushView(resultsView);
       });
     });
   }

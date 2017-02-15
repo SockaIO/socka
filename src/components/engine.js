@@ -461,6 +461,27 @@ class Engine {
       }
     }
   }
+
+
+  /**
+   * Gather and present the results for this Engine
+   * @returns {Object} Result summary
+   */
+  getResults() {
+
+    let r = {
+      stats: this.statsTracker.getResults(),
+      combo: this.combo.getMaxi(),
+      score: this.score.getScore(),
+      chart: this.chart,
+      player: this.player,
+      rank: Judge.GetRank (this.lifemeter.getTotalPoints(), this.chart)
+    };
+
+    return r;
+
+  }
+
 }
 export default Engine;
 
@@ -490,6 +511,14 @@ class Score {
    */
   get sprite() {
     return this.graphicComponent.sprite;
+  }
+
+  /**
+   * Get the score
+   * @returns {Number} Current Score
+   */
+  getScore() {
+    return this.score;
   }
 }
 
@@ -523,6 +552,14 @@ class Combo {
   }
 
   /**
+   * Get the maximum Combo
+   * @returns {Number} Maximum Combo
+   */
+  getMaxi() {
+    return this.maxi;
+  }
+
+  /**
    * Get the GC Sprite
    * @returns {PIXI.Container} GC Sprite
    */
@@ -540,6 +577,7 @@ class Lifemeter {
   constructor() {
     this.maximum = 100;
     this.life = 50;
+    this.totalPoints = 0;
 
     this.graphicComponent = Theme.GetTheme().createLifemeterGC();
     this.updateLife(0);
@@ -552,9 +590,18 @@ class Lifemeter {
   updateLife(amount) {
 
     this.life += amount;
+    this.totalPoints += amount;
     this.life = Math.max(Math.min(this.life, this.maximum), 0);
 
     this.graphicComponent.update(this.life / this.maximum);
+  }
+
+  /**
+   * Get the total number of points won by the player
+   * @returns {Number} Point count
+   */
+  getTotalPoints() {
+    return this.totalPoints;
   }
 
   /**

@@ -69,3 +69,13 @@ export const C = Symbol.for('C');
 export const D = Symbol.for('D');
 /** @memberof constants.judge */
 export const E = Symbol.for('E');
+/** @memberof constants.judge */
+export const RANK_TEXTS = {
+  [AAA]: 'AAA',
+  [AA]: 'AA',
+  [A]: 'A',
+  [B]: 'B',
+  [C]: 'C',
+  [D]: 'D',
+  [E]: 'E'
+};
