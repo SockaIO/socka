@@ -99,8 +99,8 @@ class Game {
     // We call the callbacks after adding the view
     // because otherwise they do not stack properly 
     // if a view is inserted during the callback
-    view.onPushed();
     view.onFocus();
+    view.onPushed();
   }
 
   /**

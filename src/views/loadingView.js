@@ -1,7 +1,7 @@
 'use strict';
 
 import View from './view';
-import {Theme} from '../services';
+import {Theme, Player} from '../services';
 
 class LoadingView extends View {
   constructor(width, height, game, percentage=0, text='Loading...') {
@@ -20,6 +20,20 @@ class LoadingView extends View {
     this.graphicComponent.percentage = this.graphicComponent.percentage + 1/this.parts;
     this.graphicComponent.text = text;
   }
+
+  // No input on loading screen
+  onFocus() {
+
+    let factories = new Map();
+
+    for (let p of Player.GetPlayers()) {
+      p.mapping.setCommands(factories);
+    }
+
+    this.graphicComponent.sprite.visible = true;
+  }
+
+
 
   getView() {
     return this.graphicComponent.sprite;
