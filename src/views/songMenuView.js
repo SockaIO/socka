@@ -77,7 +77,9 @@ class SongMenuView extends View {
   }
 
   start() {
-    this.entries[this.selectedEntry].action(this.selectedChart);
+    // TODO: Improve different chart type handling
+    let selectedChart = this.selectedSong.allCharts.indexOf(this.selectedSong.charts[this.selectedChart]);
+    this.entries[this.selectedEntry].action(selectedChart);
   }
 
   update() {
@@ -94,7 +96,8 @@ class SongMenuView extends View {
           return;
         }
 
-        this.selectedSong.charts = song.charts;
+        this.selectedSong.charts = song.charts.filter((c) => {return c.type === 'dance-single';});
+        this.selectedSong.allCharts = song.charts;
         this.selectedChart = 0;
         this.graphicComponent.updateSongDisplay();
 

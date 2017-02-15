@@ -1398,7 +1398,8 @@ class SongMenuDefaultGraphicComponent extends interfaces.MenuGraphicComponent {
       let index = 0;
 
       for (let c of this.menu.selectedSong.charts) {
-        let sprite = new PIXI.extras.BitmapText(c.difficulty, {font: 30 + 'px font', align: 'center'});
+
+        let sprite = new PIXI.extras.BitmapText(` ${c.difficulty} [${c.meter}]`  , {font: 30 + 'px font', align: 'center'});
         sprite.y = this.banner.height + index++ * 30;
         sprite.x = this.banner.width / 2 - sprite.width / 2;
 
