@@ -15,7 +15,9 @@ export {
   Subscribe,
   GetControllers,
   GetDefaultKeyboardMapping,
-  Mapping
+  Mapping,
+  SetRawListener,
+  RemoveRawListener
 };
 
 /**
@@ -31,6 +33,8 @@ class Controller {
     this.commands.set(TAP, new Map());
     this.commands.set(LIFT, new Map());
     this.commands.set(RAPID_FIRE, new Map());
+
+    this.rawListener = null;
 
     this.rapidFire = {
       id: null,
@@ -64,6 +68,21 @@ class Controller {
    */
   rapidFireLift() {
     clearTimeout(this.rapidFire.id);
+  }
+
+  /**
+   * Add a callback listening on the raw events
+   * @param {Function} callback Function to call
+   */
+  setRawListener(callback) {
+    this.rawListener = callback;
+  }
+
+  /**
+   * Remove Raw Listing callback
+   */
+  removeRawListener() {
+    this.rawListener = null;
   }
 
   /**
@@ -195,6 +214,8 @@ function Connect(e) {
     pad
   };
 
+  console.log('Pad Connected');
+
   controllerSubject.notify(ev);
 }
 
@@ -265,6 +286,11 @@ class KeyboardController extends Controller{
       this.pushed.delete(key);
     }
 
+    if (this.rawListener !== null) {
+      this.rawListener({key, controller: this});
+      return;
+    }
+
     let cmd = this.getCommand(action, key);
     if (cmd !== null) {
       this.cmdQueue.push(cmd);
@@ -302,6 +328,10 @@ class PadController extends Controller {
           this.pushed.add(b);
         } else {
           this.pushed.delete(b);
+        }
+
+        if (this.rawListener !== null) {
+          this.rawListener({controller: this, key: i});
         }
 
         let cmd = this.getCommand(action, i);
@@ -406,6 +436,18 @@ function GetDefaultKeyboardMapping() {
   m.setKey(KEY_BACK, 8, c);
 
   return m;
+}
+
+function SetRawListener(callback) {
+  for (let c of GetControllers()) {
+    c.setRawListener(callback);
+  }
+}
+
+function RemoveRawListener(callback) {
+  for (let c of GetControllers()) {
+    c.removeRawListener();
+  }
 }
 
 Setup();
