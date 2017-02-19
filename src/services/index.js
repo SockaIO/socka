@@ -8,6 +8,7 @@ import * as Input from './input';
 import * as Player from './player';
 import * as FileManager from './fileManager';
 import * as SongParser from './songParser';
+import * as Options from './options';
 
 export {
   Theme,
@@ -15,5 +16,6 @@ export {
   Input,
   Player,
   FileManager,
-  SongParser
+  SongParser,
+  Options
 };

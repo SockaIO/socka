@@ -1,0 +1,58 @@
+'use stric';
+
+import {Options} from '../services';
+
+/**
+ * @namespace components.OptionStore
+ */
+
+/**
+ * Store keeping value for the options
+ */
+export default class OptionStore {
+
+  /**
+   * The constructor fetches the default from the options service
+   * and override them with the values passed as aprameter
+   * @param {Map} overrideValues Values to override the defaults
+   */
+  constructor (overrideValues=null) {
+
+    // Get the defaults
+    this.options = Options.GetOptionDefaults ();
+
+    if (overrideValues === null) {
+      return;
+    }
+
+    // Override
+    for (let [key, value] of overrideValues.entries()) {
+      this.set (key, value);
+    }
+  }
+
+  /**
+   * Set an option
+   * @param {String} id ID of the Option
+   * @param {*} value Value of the option
+   * @returns {Boolean} True if success
+   */
+  set(id, value) {
+
+    if (Options.GetOption(id).check(value)) {
+      this.options.set (id, value);
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Get an Option
+   * @param {String} id ID of the Option
+   * @returns {*} value Value of the option
+   */
+  get(id) {
+    return this.options.get(id);
+  }
+}
