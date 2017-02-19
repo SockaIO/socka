@@ -1123,7 +1123,7 @@ class MenuFancyGraphicComponent extends interfaces.MenuGraphicComponent {
     this.numLines = (this.height / 2) / (this.lineHeight + this.margin) - 1;
     this.origin = this.height / 2;
 
-    this.createEntries(menu.entries);
+    this.createEntries(menu.getEntries());
     this.theme = theme;
 
   }
@@ -1160,7 +1160,7 @@ class MenuFancyGraphicComponent extends interfaces.MenuGraphicComponent {
     for (let x = 0; x < this.entries.length; x++) {
 
       let sprite = this.entries[x];
-      let distance = x - this.menu.selectedEntry;
+      let distance = x - this.menu.getSelectedIndex();
 
       // Not displayed
       if (Math.abs(distance) > this.numLines) {
@@ -1174,7 +1174,7 @@ class MenuFancyGraphicComponent extends interfaces.MenuGraphicComponent {
       sprite.x = this.width/2 - sprite.width / 2;
     }
 
-    let selected = this.entries[this.menu.selectedEntry];
+    let selected = this.entries[this.menu.getSelectedIndex()];
     selected.scale = {x:2, y:2};
     selected.x = this.width/2 - selected.width / 2;
     selected.y = this.origin;
