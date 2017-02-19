@@ -115,6 +115,19 @@ class LoadingViewGraphicComponent extends GraphicComponent{
 }
 
 /**
+ * Text Menu Item GC
+ * @memberof interfaces
+ * @interface
+ * @extends GraphicComponent
+ */
+class MenuItemGraphicComponent extends GraphicComponent {
+
+  update() {}
+  onSelected() {}
+  onDeselected() {}
+}
+
+/**
  * Base Theme class
  *
  * @memberof interfaces
@@ -146,6 +159,7 @@ export {
   LongNoteGraphicComponent,
   ReceptorGraphicComponent,
   MenuGraphicComponent,
+  MenuItemGraphicComponent,
   PauseGraphicComponent,
   LoadingViewGraphicComponent,
   ResultsGraphicComponent,

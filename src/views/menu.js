@@ -2,7 +2,7 @@
 
 import View from './view';
 import {Theme, Player} from '../services';
-import {Menu} from '../components';
+import {Menu, TextMenuItem} from '../components';
 
 import {KEY_UP, KEY_DOWN, TAP, RAPID_FIRE, KEY_BACK, KEY_ENTER} from '../constants/input';
 
@@ -19,7 +19,13 @@ class MenuView extends View {
     let width, height;
     [width, height] = game.getScreenSize();
 
-    this.menu = new Menu(entries, width, height, Theme.GetTheme().createMenuGC, true);
+    let items = [];
+
+    for (let e of entries) {
+      items.push(new TextMenuItem(e.name, e.action));
+    }
+
+    this.menu = new Menu(items, width, height, Theme.GetTheme().createMenuGC, true);
     this.sprite = this.menu.sprite;
     this.update();
   }

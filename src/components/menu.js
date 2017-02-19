@@ -1,5 +1,7 @@
 'use strict';
 
+import {Theme} from '../services';
+
 /**
  * Class representing a menu. Each entry has a name attribute that get displayed
  * and can have other attributes used to implement custom logic.
@@ -9,7 +11,7 @@
  * @memberof components
  *
  */
-class Menu {
+export class Menu {
 
   /**
    * Constructor of the Menu
@@ -30,8 +32,9 @@ class Menu {
       this.entries.sort(this.compareFunction);
     }
 
-    this.selected = 0;
     this.graphicComponent = graphicComponentFactory (width, height, this);
+    this.selected = 0;
+    this.setSelected(0);
   }
 
   /**
@@ -67,11 +70,21 @@ class Menu {
   }
 
   /**
+   * Set the Seleted Entry
+   * @param {Number} index Entry index
+   */
+  setSelected(index) {
+    this.getSelected().onDeselected();
+    this.selected = index;
+    this.getSelected().onSelected();
+  }
+
+  /**
    * Move the selector
    * @param {Number} change Change in the selected entry
    */
   move(change) {
-    this.selected = (this.entries.length + this.selected + change) % this.entries.length;
+    this.setSelected((this.entries.length + this.selected + change) % this.entries.length);
   }
 
   /**
@@ -85,7 +98,7 @@ class Menu {
       let e = this.entries[i];
 
       if (this.getKey(e) > value) {
-        this.selected = i;
+        this.setSelected(i);
         break;
       }
     }
@@ -93,6 +106,9 @@ class Menu {
 
   update () {
     this.graphicComponent.update ();
+    for (let e of this.entries) {
+      e.update();
+    }
   }
 
   /**
@@ -102,10 +118,82 @@ class Menu {
   get sprite() {
     return this.graphicComponent.sprite;
   }
-
-
-
-
 }
 
-export default Menu;
+
+/**
+ * Menu Item Interface
+ * @interface
+ */
+export class MenuItem {
+
+  /**
+   * Left Action
+   */
+  left() {}
+
+  /**
+   * Right Action
+   */
+  right() {}
+
+  /**
+   * Enter Action
+   */
+  enter() {}
+
+  /**
+   * Action when selected
+   */
+  onSelected() {}
+
+  /**
+   * Action when  deselected
+   */
+  onDeselected() {}
+
+  /**
+   * Get the GC Sprite
+   * @returns {PIXI.Container} GC Sprite
+   */
+  get sprite() {
+    return this.graphicComponent.sprite;
+  }
+
+  update() {}
+}
+
+
+/**
+ * Simple Text Menu Item
+ * @extends MenuItem
+ */
+export class TextMenuItem extends MenuItem {
+
+  constructor(text, action) {
+    super();
+    this.text = text;
+    this.action = action;
+  }
+
+  createGraphicComponent (width, height) {
+    this.graphicComponent = Theme.GetTheme().createTextMenuItemGC(width, height, this.text);
+    return this.graphicComponent.sprite;
+  }
+
+  onSelected() {
+    if (this.graphicComponent) {
+      this.graphicComponent.onSelected();
+    }
+  }
+
+  onDeselected() {
+    if (this.graphicComponent) {
+      this.graphicComponent.onDeselected();
+    }
+  }
+
+  enter() {
+    this.action();
+  }
+}

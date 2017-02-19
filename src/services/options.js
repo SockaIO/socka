@@ -41,6 +41,14 @@ export function GetOption(id) {
 }
 
 /**
+ * Get the Root OptionFolder
+ * @returns {OptionFolder} The Root Option Folder
+ */
+export function GetRoot() {
+  return options;
+}
+
+/**
 * Option Folder. Contains OptionGroup objects
  */
 export class OptionFolder {
@@ -49,15 +57,15 @@ export class OptionFolder {
    * Constructor.
    * @param {String} name Folder name
    * @param {String} id Folder ID
-   * @param {OptionGroup|Array} groups OptionGroups contained in the folder
+   * @param {(OptionGroup|OptionFolder)|Array} children Children contained in the folder
    */
-  constructor(name, id,  groups) {
+  constructor(name, id,  children) {
     this.name = name;
     this.id = id;
-    this.groups = new Map();
+    this.children = new Map();
 
-    for (let g of groups) {
-      this.groups.set (g.getName (), g);
+    for (let c of children) {
+      this.children.set (c.getName (), c);
     }
   }
 
@@ -73,8 +81,8 @@ export class OptionFolder {
    * Get the groups
    * @returns {OptionGroup|Array} Options groups
    */
-  getGroups() {
-    return this.groups.values ();
+  getChildren() {
+    return this.children.values ();
   }
 
 
@@ -86,7 +94,7 @@ export class OptionFolder {
 
     let maps = [];
 
-    for (let g of this.getGroups()) {
+    for (let g of this.getChildren()) {
       maps = maps.concat(Array.from(g.getStoreEntry(`${prefix}.${this.id}`).entries ()));
     }
 
@@ -153,6 +161,12 @@ export class OptionGroup {
  */
 class Option {
 
+  constructor(name, id, def) {
+    this.name = name;
+    this.id = id;
+    this.default = def;
+  }
+
   /**
    * Get the name
    * @returns {String} Option Name
@@ -200,12 +214,9 @@ export class NumericOption extends Option {
    * @param {Number} def Default value
    */
   constructor(name, id,  min, max, def) {
-    super ();
-    this.name = name;
-    this.id = id;
+    super (name, id, def);
     this.min = min;
     this.max = max;
-    this.default = def;
   }
 
   check(value) {
@@ -230,12 +241,9 @@ export class TextOption extends Option {
    * @param {Object} checkRegex A Regex that must be matched
    */
   constructor(name, id, minLen, maxLen, def, checkRegex=null) {
-    super();
-    this.name = name;
-    this.id = id;
+    super(name, id, def);
     this.minLen = minLen;
     this.maxLen = maxLen;
-    this.default = def;
     this.checkRegex = checkRegex;
   }
 
@@ -261,7 +269,7 @@ export class EnumOption extends Option {
    * @param {*} def Default Value
    */
   constructor(name, id, values, def) {
-    super();
+    super(name, id, def);
     this.name = name;
     this.id = id;
     this.acceptedValues = values;
@@ -270,5 +278,29 @@ export class EnumOption extends Option {
 
   check(value) {
     return this.acceptedValues.includes(value);
+  }
+}
+
+/**
+ * Mapping Option.
+ * @extends Option
+ */
+export class MappingOption extends Option {
+
+  /**
+   * Constructor. Just specifies the Default Value
+   * @param {String} name Option name
+   * @param {String} id Option ID
+   * @param {*} def Default Value
+   */
+  constructor(name, id, def) {
+    super(name, id, def);
+  }
+
+  /**
+   * We do not check for now
+   */
+  check (value) {
+    return true;
   }
 }

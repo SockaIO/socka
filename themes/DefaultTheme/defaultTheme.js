@@ -207,6 +207,20 @@ export default class DefaultTheme extends interfaces.Theme {
   }
 
   /**
+   * Create Text Menu Item Graphic Component
+   */
+  createTextMenuItemGC(...args) {
+    return new TextMenuItemDefaultGraphicComponent(this, ...args);
+  }
+
+  /**
+   * Create Mapping Menu Item Graphic Component
+   */
+  createMappingMenuItemGC(...args) {
+    return new MappingMenuItemDefaultGraphicComponent(this, ...args);
+  }
+
+  /**
    * Create Song Menu Graphic Component
    */
   createSongMenuGC(...args) {
@@ -1133,10 +1147,8 @@ class MenuFancyGraphicComponent extends interfaces.MenuGraphicComponent {
     this.entries = [];
 
     for (let entry of entries) {
-      let sprite = new PIXI.extras.BitmapText(entry.name, {font: this.lineHeight + 'px font', align: 'center'});
+      let sprite = entry.createGraphicComponent(this.width, this.lineHeight);
       sprite.x = this.width/2 - sprite.width / 2;
-      //sprite.anchor.x = 0.5;
-      sprite.anchor.y = 0.5;
       this.foreground.addChild(sprite);
       this.entries.push(sprite);
     }
@@ -1169,7 +1181,7 @@ class MenuFancyGraphicComponent extends interfaces.MenuGraphicComponent {
         sprite.visible = true;
       }
 
-      sprite.y = this.origin + distance * (this.lineHeight + this.margin) + Math.sign(distance) * this.lineHeight / 2;
+      sprite.y = this.origin + distance * (this.lineHeight + this.margin) + Math.sign(distance) * this.lineHeight / 2 + (sprite.height / 2);
       sprite.scale = {x:1, y:1};
       sprite.x = this.width/2 - sprite.width / 2;
     }
@@ -1181,6 +1193,53 @@ class MenuFancyGraphicComponent extends interfaces.MenuGraphicComponent {
 
   }
 }
+
+class TextMenuItemDefaultGraphicComponent extends interfaces.MenuItemGraphicComponent {
+
+  constructor(theme, width, height, text) {
+    super(theme);
+
+    this.width = width;
+    this.height = height;
+    this.sprite = new PIXI.extras.BitmapText(text, {font: this.height + 'px font', align: 'center'});
+  }
+
+  onSelected() {}
+
+  onDeselected() {}
+}
+
+class MappingMenuItemDefaultGraphicComponent extends interfaces.MenuItemGraphicComponent {
+
+  constructor(theme, width, height, menuItem) {
+    super(theme);
+    
+    this.menuItem = menuItem;
+
+    this.width = width;
+    this.height = height;
+
+    this.sprite = new PIXI.Container();
+
+    this.name = new PIXI.extras.BitmapText(`${menuItem.option.getName()}: `, {font: this.height + 'px font', align: 'center'});
+    this.offset = this.name.width + 10;
+    this.sprite.addChild(this.name);
+
+    this.value = new PIXI.extras.BitmapText('' + menuItem.value, {font: this.height + 'px font', align: 'center'});
+    this.value.x = this.offset;
+    this.sprite.addChild(this.value);
+  }
+
+  onSelected() {}
+
+  onDeselected() {}
+
+  update() {
+    this.value.text = '' + this.menuItem.value;
+  }
+}
+
+
 
 class LoadingViewDefaultGraphicComponent extends interfaces.LoadingViewGraphicComponent{
 
