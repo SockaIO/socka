@@ -48,6 +48,8 @@ class Controller {
 
     this.rapidFire.action = action;
 
+    this.rapidFireLift ();
+
     // Set the repetition of the command
     this.rapidFire.id = setInterval(() => {
       this.rapidFire.action();
