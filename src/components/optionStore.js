@@ -55,4 +55,29 @@ export default class OptionStore {
   get(id) {
     return this.options.get(id);
   }
+
+
+  /**
+   * Serialize to JSON
+   * @returns {String} JSON Representation
+   */
+  toJson() {
+    let output = {
+      options: Array.from(this.options)
+    };
+
+    return JSON.stringify(output);
+  }
+
+  /**
+   * JSON Deserialize
+   * @param {String} data JSON Serialization of an OptionStore
+   *
+   */
+  static CreateFromJson(data) {
+    let plainData = JSON.parse(data);
+    let store = new OptionStore(new Map(plainData.options));
+
+    return store;
+  }
 }

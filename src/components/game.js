@@ -1,8 +1,7 @@
 /* jshint esnext: true */
 'use strict';
 
-import {Input, Player, Theme} from '../services';
-import {KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_ENTER, KEY_BACK} from '../constants/input';
+import {Input, Player, Theme, OptionTree, Options} from '../services';
 
 import * as PIXI from 'pixi.js';
 import Stats from 'stats-js';
@@ -50,27 +49,14 @@ class Game {
   init() {
     let promises = [];
 
-    // Create the first player
-    let p = Player.CreatePlayer();
-    p.setMapping(Input.GetDefaultKeyboardMapping());
-
-    // Create a second plauer for test purpose
-    let q = Player.CreatePlayer();
-    let m = new Input.Mapping();
-    let c = Input.GetDefaultKeyboardController();
-
-    m.setKey(KEY_UP, 87, c);
-    m.setKey(KEY_DOWN, 83, c);
-    m.setKey(KEY_LEFT, 65, c);
-    m.setKey(KEY_RIGHT, 68, c);
-
-    m.setKey(KEY_ENTER, 32, c);
-    m.setKey(KEY_BACK, 27, c);
-
-    q.setMapping(m);
+    // Initialize the Options
+    Options.SetOptions(OptionTree());
 
     // We need to wait for the theme to load all its resources
     promises.push(Theme.GetTheme().loaded);
+
+    //Player.SavePlayers();
+    Player.InitPlayers();
 
     return Promise.all(promises);
   }
