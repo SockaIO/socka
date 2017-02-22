@@ -10,12 +10,16 @@ import {Theme, Input} from '../services';
  */
 export class MappingMenuItem extends MenuItem{
 
-  constructor(option) {
+  constructor(option, prefix, players) {
     super();
     this.option = option;
-    this.value = option.default;
-    this.controller = null;
+    this.values = new Map();
 
+    for (let player of players) {
+      this.values.set(player.getId(), player.optionStore.get(`${prefix}.${option.id}`));
+    }
+
+    this.controller = null;
     this.discard = true;
   }
 
@@ -24,7 +28,11 @@ export class MappingMenuItem extends MenuItem{
     return this.graphicComponent.sprite;
   }
 
-  enter() {
+  getValues () {
+    return this.values;
+  }
+
+  enter(player) {
     this.discard = true;
     Input.SetRawListener ((e) => {
       if (this.discard) {
@@ -32,10 +40,23 @@ export class MappingMenuItem extends MenuItem{
         return;
       }
 
-      this.value = e.key;
+      this.values.set(player.getId(), e.key);
+
       this.controller = e.controller;
       Input.RemoveRawListener();
     });
+  }
+
+  onSelected(player) {
+    if (this.graphicComponent) {
+      this.graphicComponent.onSelected(player.getId());
+    }
+  }
+
+  onDeselected(player) {
+    if (this.graphicComponent) {
+      this.graphicComponent.onDeselected(player.getId());
+    }
   }
 
   update() {

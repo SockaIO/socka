@@ -25,7 +25,7 @@ class MenuView extends View {
       items.push(new TextMenuItem(e.name, e.action));
     }
 
-    this.menu = new Menu(items, width, height, Theme.GetTheme().createMenuGC, true);
+    this.menu = new Menu(items, width, height, Theme.GetTheme().createMenuOptionGC, true);
     this.sprite = this.menu.sprite;
     this.update();
   }

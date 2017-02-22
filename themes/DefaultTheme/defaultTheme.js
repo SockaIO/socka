@@ -207,6 +207,13 @@ export default class DefaultTheme extends interfaces.Theme {
   }
 
   /**
+   * Create Menu Graphic Component
+   */
+  createMenuOptionGC(...args) {
+    return new MenuOptionGraphicComponent(this, ...args);
+  }
+
+  /**
    * Create Text Menu Item Graphic Component
    */
   createTextMenuItemGC(...args) {
@@ -1202,11 +1209,21 @@ class TextMenuItemDefaultGraphicComponent extends interfaces.MenuItemGraphicComp
     this.width = width;
     this.height = height;
     this.sprite = new PIXI.extras.BitmapText(text, {font: this.height + 'px font', align: 'center'});
+
+    this.players = new Set();
   }
 
-  onSelected() {}
+  onSelected(playerId='toto') {
+    this.players.add(playerId);
+    this.sprite.tint = 0x009900;
+  }
 
-  onDeselected() {}
+  onDeselected(playerId='toto') {
+    this.players.delete(playerId);
+    if (this.players.size === 0) {
+      this.sprite.tint = 0xffffff;
+    }
+  }
 }
 
 class MappingMenuItemDefaultGraphicComponent extends interfaces.MenuItemGraphicComponent {
@@ -1222,20 +1239,37 @@ class MappingMenuItemDefaultGraphicComponent extends interfaces.MenuItemGraphicC
     this.sprite = new PIXI.Container();
 
     this.name = new PIXI.extras.BitmapText(`${menuItem.option.getName()}: `, {font: this.height + 'px font', align: 'center'});
-    this.offset = this.name.width + 10;
     this.sprite.addChild(this.name);
 
-    this.value = new PIXI.extras.BitmapText('' + menuItem.value, {font: this.height + 'px font', align: 'center'});
-    this.value.x = this.offset;
-    this.sprite.addChild(this.value);
+    this.offset = 200;
+    this.entryWidth = 120;
+
+    this.values = new Map();
+
+    let x = 0;
+    for (let [playerId, value] of menuItem.getValues()) {
+      let v = new PIXI.extras.BitmapText('' + value, {font: this.height + 'px font', align: 'center'});
+      this.values.set(playerId, v);
+      v.x = this.offset + x++ * (this.entryWidth);
+      this.sprite.addChild(v);
+    }
+
   }
 
-  onSelected() {}
+  onSelected(playerId) {
+    let sprite = this.values.get(playerId);
+    sprite.tint = 0x00ff00;
+  }
 
-  onDeselected() {}
+  onDeselected(playerId) {
+    let sprite = this.values.get(playerId);
+    sprite.tint = 0xffffff;
+  }
 
   update() {
-    this.value.text = '' + this.menuItem.value;
+    for (let [playerId ,v] of this.values) {
+      v.text = this.menuItem.getValues().get(playerId);
+    }
   }
 }
 
@@ -1623,5 +1657,95 @@ class ResultsDefaultGraphicComponent extends interfaces.ResultsGraphicComponent 
 
   }
 }
+
+/**
+ * Fancy Menu
+ */
+
+class MenuOptionGraphicComponent extends interfaces.MenuGraphicComponent {
+
+  constructor(theme, width, height, menu) {
+    super(theme);
+
+    // Engine Container
+    this.height = height;
+    this.width = width;
+    this.menu = menu;
+
+    this.createMainSprite();
+
+    // Usefull constants
+    this.lineHeight = 50;
+    this.margin = 10;
+    this.numLines = Math.floor((this.height) / (this.lineHeight + this.margin));
+    this.origin = this.height / 2;
+
+    this.createEntries(menu.getEntries());
+    this.theme = theme;
+
+    this.minView = 0;
+    this.maxView = this.numLines;
+
+  }
+
+  createEntries(entries) {
+
+    this.entries = [];
+
+    for (let entry of entries) {
+      let sprite = entry.createGraphicComponent(this.width, this.lineHeight);
+      this.foreground.addChild(sprite);
+      this.entries.push(sprite);
+      sprite.visible = false;
+    }
+  }
+
+  createMainSprite() {
+    this.sprite = new PIXI.Container();
+
+    this.background = new PIXI.Container();
+    this.foreground = new PIXI.Container();
+
+    this.sprite.addChild(this.background);
+    this.sprite.addChild(this.foreground);
+  }
+
+  /**
+   * Barbarian Update
+   */
+  update() {
+
+    const selectedIndex = this.menu.getSelectedIndex();
+
+    if (selectedIndex < this.minView)
+    {
+      this.minView = selectedIndex;
+      this.maxView = this.minView + this.numLines;
+
+    } else if (selectedIndex > this.maxView) {
+
+      this.maxView = selectedIndex;
+      this.minView = this.maxView - this.numLines;
+    }
+
+    for (let x = 0; x < this.entries.length; x++) {
+
+      let sprite = this.entries[x];
+
+      if (x < this.minView || x > this.maxView)
+      {
+        sprite.visible = false;
+        continue;
+      }
+      sprite.visible = true;
+
+      const index = x - this.minView;
+
+      sprite.y = index * (this.lineHeight + this.margin);
+      sprite.x = 0;
+    }
+  }
+}
+
 
 

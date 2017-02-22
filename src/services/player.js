@@ -44,6 +44,14 @@ class Player {
     this.mapping = mapping;
   }
 
+  /**
+   * Return the Identifier of the player
+   * returns {String} Player ID
+   */
+  getId() {
+    return this.name;
+  }
+
 
   /**
    * Serialize to JSON

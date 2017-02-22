@@ -1,5 +1,8 @@
 'use strict';
 
+const NULL_PLAYER = {id: 'totolepipo'};
+NULL_PLAYER.getId = () => {return this.id;};
+
 import {Theme} from '../services';
 
 /**
@@ -22,7 +25,7 @@ export class Menu {
    * @param {String} key Key used for sorting and identification (default is name)
    * @param {Boolean} sort Set to true to sort the entries (default is false)
    */
-  constructor(entries, width, height, graphicComponentFactory, sort=false, key='name') {
+  constructor(entries, width, height, graphicComponentFactory, sort=false, players=[NULL_PLAYER], key='name') {
     this.entries = entries;
     this.key = key;
 
@@ -33,8 +36,14 @@ export class Menu {
     }
 
     this.graphicComponent = graphicComponentFactory (width, height, this);
-    this.selected = 0;
-    this.setSelected(0);
+
+    this.selecteds = new Map();
+    this.players = players;
+
+    for (let p of players) {
+      this.selecteds.set(p.getId(), 0);
+      this.setSelected(0, p);
+    }
   }
 
   /**
@@ -57,34 +66,34 @@ export class Menu {
    * Get the Selected Entry
    * @returns {Object} Selected Entry
    */
-  getSelected() {
-    return this.entries[this.selected];
+  getSelected(player=NULL_PLAYER) {
+    return this.entries[this.selecteds.get(player.getId())];
   }
 
   /**
    * Get the Selected Index
    * @returns {Number} The selected index
    */
-  getSelectedIndex() {
-    return this.selected;
+  getSelectedIndex(player=NULL_PLAYER) {
+    return this.selecteds.get(player.getId());
   }
 
   /**
    * Set the Seleted Entry
    * @param {Number} index Entry index
    */
-  setSelected(index) {
-    this.getSelected().onDeselected();
-    this.selected = index;
-    this.getSelected().onSelected();
+  setSelected(index, player=NULL_PLAYER) {
+    this.getSelected(player).onDeselected(player);
+    this.selecteds.set(player.getId(), index);
+    this.getSelected(player).onSelected(player);
   }
 
   /**
    * Move the selector
    * @param {Number} change Change in the selected entry
    */
-  move(change) {
-    this.setSelected((this.entries.length + this.selected + change) % this.entries.length);
+  move(change, player=NULL_PLAYER) {
+    this.setSelected((this.entries.length + this.getSelectedIndex(player) + change) % this.entries.length, player);
   }
 
   /**
@@ -130,27 +139,27 @@ export class MenuItem {
   /**
    * Left Action
    */
-  left() {}
+  left(player) {}
 
   /**
    * Right Action
    */
-  right() {}
+  right(player) {}
 
   /**
    * Enter Action
    */
-  enter() {}
+  enter(player) {}
 
   /**
    * Action when selected
    */
-  onSelected() {}
+  onSelected(player) {}
 
   /**
    * Action when  deselected
    */
-  onDeselected() {}
+  onDeselected(player) {}
 
   /**
    * Get the GC Sprite
@@ -181,15 +190,15 @@ export class TextMenuItem extends MenuItem {
     return this.graphicComponent.sprite;
   }
 
-  onSelected() {
+  onSelected(player=NULL_PLAYER) {
     if (this.graphicComponent) {
-      this.graphicComponent.onSelected();
+      this.graphicComponent.onSelected(player.getId());
     }
   }
 
-  onDeselected() {
+  onDeselected(player=NULL_PLAYER) {
     if (this.graphicComponent) {
-      this.graphicComponent.onDeselected();
+      this.graphicComponent.onDeselected(player.getId());
     }
   }
 
