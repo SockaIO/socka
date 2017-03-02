@@ -56,6 +56,16 @@ export default class OptionStore {
     return this.options.get(id);
   }
 
+  /**
+   * Update the World based on the player options
+   * @param {Player} The player
+   */
+  updateWorld(player) {
+    for (let [id, value] of this.options) {
+      let option = Options.GetOption(id);
+      option.updateWorld(value, player);
+    }
+  }
 
   /**
    * Serialize to JSON

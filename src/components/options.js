@@ -12,14 +12,15 @@ export class MappingMenuItem extends MenuItem{
 
   constructor(option, prefix, players) {
     super();
+
     this.option = option;
     this.values = new Map();
+    this.key = `${prefix}.${option.id}`;
 
     for (let player of players) {
-      this.values.set(player.getId(), player.optionStore.get(`${prefix}.${option.id}`));
+      this.values.set(player.getId(), player.optionStore.get(this.key));
     }
 
-    this.controller = null;
     this.discard = true;
   }
 
@@ -40,7 +41,7 @@ export class MappingMenuItem extends MenuItem{
         return;
       }
 
-      this.values.set(player.getId(), e.key);
+      this.values.set(player.getId(), {key: e.key, controller: e.controller.getId ()});
 
       this.controller = e.controller;
       Input.RemoveRawListener();

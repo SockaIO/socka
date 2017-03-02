@@ -1,6 +1,8 @@
 'use stric';
 
 import {Options} from './';
+import {KEYS} from '../constants/input';
+import {Input} from '../services';
 
 /**
  * @namespace services.OptionTree
@@ -20,12 +22,26 @@ export default function GetOptionTree() {
   /*
    * Mapping
    */
-  let left = new Options.MappingOption('LEFT', 'left', 37);
-  let up = new Options.MappingOption('UP', 'up', 38);
-  let right = new Options.MappingOption('RIGHT', 'right', 39);
-  let down = new Options.MappingOption('DOWN', 'down', 40);
-  let enter = new Options.MappingOption('ENTER', 'enter', 13);
-  let back = new Options.MappingOption('BACK', 'back', 8);
+  let left = new Options.MappingOption('LEFT', 'left', {key: 37, controller: -1});
+  let up = new Options.MappingOption('UP', 'up', {key: 38, controller: -1});
+  let right = new Options.MappingOption('RIGHT', 'right', {key: 39, controller: -1});
+  let down = new Options.MappingOption('DOWN', 'down', {key: 40, controller: -1});
+  let enter = new Options.MappingOption('ENTER', 'enter', {key: 13, controller: -1});
+  let back = new Options.MappingOption('BACK', 'back', {key: 8, controller: -1});
+
+  const keyOptions = [left, right, down, up, enter, back];
+
+  for (let x = 0; x < keyOptions.length ; x++) {
+
+    let fct = (value, player) => {
+      let m = player.mapping;
+      const k = KEYS[x];
+      m.resetKey(k);
+      m.setKey(k, value.key, Input.GetController(value.controller));
+    };
+
+    keyOptions[x].setUpdateWorld(fct);
+  }
 
   let mapping = new Options.OptionGroup('Mapping', 'mapping', [left, up, right, down, enter, back]);
 

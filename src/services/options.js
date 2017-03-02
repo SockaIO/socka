@@ -48,6 +48,7 @@ export function GetRoot() {
   return options;
 }
 
+
 /**
 * Option Folder. Contains OptionGroup objects
  */
@@ -165,6 +166,7 @@ class Option {
     this.name = name;
     this.id = id;
     this.default = def;
+    this.updateWorldCallback = () => {};
   }
 
   /**
@@ -196,6 +198,22 @@ class Option {
    */
   getStoreEntry(prefix) {
     return new Map([[`${prefix}.${this.id}`, this]]);
+  }
+
+  /**
+   * Update the World to reflect an option change
+   * @param {Player} player The Player owning that value
+   */
+  updateWorld(value, player) {
+    this.updateWorldCallback(value, player);
+  }
+
+  /**
+   * Set the Update World Callback
+   * @param {Function} Update World Function
+   */
+  setUpdateWorld(fct) {
+    this.updateWorldCallback = fct;
   }
 }
 

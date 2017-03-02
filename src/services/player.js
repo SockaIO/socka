@@ -9,11 +9,12 @@ import {KEY_UP, KEY_LEFT, KEY_RIGHT, KEY_DOWN, KEY_ENTER, KEY_BACK} from '../con
  * @namespace services.Player
  */
 
-let players = new Set();
+let players = new Map();
 
 export {
   CreatePlayer,
   GetPlayers,
+  GetPlayer,
   LoadPlayers,
   SavePlayers,
   InitPlayers
@@ -88,7 +89,7 @@ class Player {
  */
 function CreatePlayer() {
   const p = new Player();
-  players.add(p);
+  players.set(p.getId(), p);
   return p;
 }
 
@@ -102,6 +103,15 @@ function GetPlayers() {
 }
 
 /**
+ * Get a Player By Id
+ * @param {String} id Player Id
+ * @return {Player} Corresponding Player
+ */
+function GetPlayer(id) {
+  return players.get(id);
+}
+
+/**
  * Load from local Storage
  */
 function LoadPlayers() {
@@ -109,16 +119,18 @@ function LoadPlayers() {
   let playerList = JSON.parse(playerListData);
 
   for (let p of playerList) {
-    players.add(Player.CreateFromJson(p));
+    const pl = Player.CreateFromJson(p);
+    players.set(pl.getId(), pl);
+    pl.setMapping(new Input.Mapping());
+    pl.optionStore.updateWorld(pl);
   }
-
 }
 
 /**
  * Save the players to local Storage
  */
 function SavePlayers() {
-  localStorage.setItem('players', JSON.stringify(Array.from(players).map((x) => {return x.toJson();})));
+  localStorage.setItem('players', JSON.stringify(Array.from(GetPlayers()).map((x) => {return x.toJson();})));
 }
 
 /**

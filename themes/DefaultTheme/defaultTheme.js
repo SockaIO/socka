@@ -1242,18 +1242,22 @@ class MappingMenuItemDefaultGraphicComponent extends interfaces.MenuItemGraphicC
     this.sprite.addChild(this.name);
 
     this.offset = 200;
-    this.entryWidth = 120;
+    this.entryWidth = 300;
 
     this.values = new Map();
 
     let x = 0;
     for (let [playerId, value] of menuItem.getValues()) {
-      let v = new PIXI.extras.BitmapText('' + value, {font: this.height + 'px font', align: 'center'});
+      let v = new PIXI.extras.BitmapText(this.getText(value), {font: this.height + 'px font', align: 'center'});
       this.values.set(playerId, v);
       v.x = this.offset + x++ * (this.entryWidth);
       this.sprite.addChild(v);
     }
 
+  }
+
+  getText(value) {
+    return `${value.key} [Pad: ${value.controller}]`;
   }
 
   onSelected(playerId) {
@@ -1268,7 +1272,7 @@ class MappingMenuItemDefaultGraphicComponent extends interfaces.MenuItemGraphicC
 
   update() {
     for (let [playerId ,v] of this.values) {
-      v.text = this.menuItem.getValues().get(playerId);
+      v.text = this.getText(this.menuItem.getValues().get(playerId));
     }
   }
 }

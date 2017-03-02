@@ -14,6 +14,7 @@ export {
   GetDefaultKeyboardController,
   Subscribe,
   GetControllers,
+  GetController,
   GetDefaultKeyboardMapping,
   Mapping,
   SetRawListener,
@@ -41,8 +42,13 @@ class Controller {
       speed: 200,
       action: null
     };
-
   }
+
+  /**
+   * Get the ID of the Controller
+   * @return {Number} ID
+   */
+  getId() {}
 
   /**
    * Called when a button with rapid fire is tapped
@@ -162,7 +168,7 @@ function Setup() {
   window.addEventListener('gamepadconnected', (e) => Connect(e), false);
   window.addEventListener('gamepaddisconnected', (e) => Disconnect(e), false);
 
-  controllers.set(-1, new KeyboardController());
+  controllers.set(-1, new KeyboardController(-1));
 
   // We have to hardcode the fullscreen for ease of use
   document.addEventListener('keyup', (e) => {
@@ -194,6 +200,15 @@ function Subscribe(observer) {
 
 function GetControllers() {
   return controllers.values();
+}
+
+/**
+ * Get Controller By ID
+ * @param {Number} id The Controller ID
+ * @returns {Controller} the Controller
+ */
+function GetController(id) {
+  return controllers.get(id);
 }
 
 /**
@@ -247,16 +262,21 @@ function Disconnect(e) {
  */
 class KeyboardController extends Controller{
 
-  constructor() {
+  constructor(id) {
 
     super();
 
     this.pushed = new Set();
+    this.id = id;
 
     this.songPlayer = null;
     this.cmdQueue = [];
 
     this.setup();
+  }
+
+  getId() {
+    return this.id;
   }
 
   handleInput() {
@@ -311,6 +331,10 @@ class PadController extends Controller {
 
     this.gamepad = gamepad;
     this.pushed = new Set();
+  }
+
+  getId () {
+    return this.gamepad.index;
   }
 
   handleInput() {
@@ -374,6 +398,14 @@ class Mapping {
    */
   setKey(key, button, controller) {
     this.mapping.get(key).add([controller, button]);
+  }
+
+  /**
+   * Reset the binding for a key
+   * @param {Symbol} key | Key Symbol
+   */
+  resetKey(key) {
+    this.mapping.get(key).clear();
   }
 
   /**
@@ -444,7 +476,7 @@ function SetRawListener(callback) {
   }
 }
 
-function RemoveRawListener(callback) {
+function RemoveRawListener() {
   for (let c of GetControllers()) {
     c.removeRawListener();
   }

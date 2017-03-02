@@ -61,20 +61,19 @@ export default class OptionsView extends View {
 
       entries.push(new TextMenuItem('Save', () => {
 
-        let m = new Input.Mapping();
+        // Remove the Save Entry
+        entries.splice(-1, 1);
 
-        m.setKey(KEY_LEFT, entries[0].value, entries[0].controller);
-        m.setKey(KEY_UP, entries[1].value, entries[1].controller);
-        m.setKey(KEY_RIGHT, entries[2].value, entries[2].controller);
-        m.setKey(KEY_DOWN, entries[3].value, entries[3].controller);
-        m.setKey(KEY_ENTER, entries[4].value, entries[4].controller);
-        m.setKey(KEY_BACK, entries[5].value, entries[5].controller);
-
-        for (let p of Player.GetPlayers()) {
-          p.setMapping(m);
-          break;
+        // Store the values for all the players
+        for (let e of entries) {
+          for (let [playerId, value] of e.getValues()) {
+            let player = Player.GetPlayer(playerId);
+            player.optionStore.set(e.key, value);
+            e.option.updateWorld(value, player);
+          }
         }
 
+        Player.SavePlayers();
         game.popView();
       }));
     }
