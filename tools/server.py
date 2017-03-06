@@ -1,16 +1,26 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 
 """
 Simple Webserver used to serve songs files. It supports authentication and CORS
 """
 
-from SimpleHTTPServer import SimpleHTTPRequestHandler
-import BaseHTTPServer
+try:
+    from SimpleHTTPServer import SimpleHTTPRequestHandler
+    from BaseHTTPServer import HTTPServer
+except ImportError:
+    from http.server import SimpleHTTPRequestHandler
+    from http.server import HTTPServer
 import base64
 
-class AuthHandler (SimpleHTTPRequestHandler):
+PASSWORD = "admin:password"
 
-    def end_headers (self):
+HOST = ''
+PORT = 8000
+
+_KEY = base64.b64encode(PASSWORD.encode("utf-8")).decode("utf-8")
+
+class AuthHandler(SimpleHTTPRequestHandler):
+    def end_headers(self):
         self.send_header('Access-Control-Allow-Origin', 'http://localhost:8080')
         self.send_header('Access-Control-Allow-Credentials', 'true')
         SimpleHTTPRequestHandler.end_headers(self)
@@ -25,28 +35,32 @@ class AuthHandler (SimpleHTTPRequestHandler):
 
     def do_HEAD(self):
         self.end_headers()
-         
+
     def do_AUTHHEAD(self):
         self.send_response(401)
         self.send_header('WWW-Authenticate', 'Basic realm=\"Test\"')
         self.end_headers()
 
     def do_GET(self):
-        if self.headers.getheader('Authorization') == None:
+        try:
+            auth = self.headers['Authorization']
+        except KeyError:
+            auth = self.headers.getheader('Authorization')
+
+        if auth is None:
             self.do_AUTHHEAD()
-            self.wfile.write('No Auth Header received')
-            pass
-        elif self.headers.getheader('Authorization') == 'Basic ' + key:
+            self.wfile.write('No Auth Header received'.encode("utf-8"))
+        elif auth == 'Basic ' + _KEY:
             SimpleHTTPRequestHandler.do_GET(self)
-            pass
         else:
             self.do_AUTHHEAD()
-            self.wfile.write(self.headers.getheader('Authorization'))
+            self.wfile.write(auth.encode("utf-8"))
             self.wfile.write('Bad Auth')
-            pass
 
+def main():
+    """ Run the server """
+    httpd = HTTPServer((HOST, PORT), AuthHandler)
+    httpd.serve_forever()
 
 if __name__ == '__main__':
-    password = "admin:password"
-    key = base64.b64encode(password)
-    BaseHTTPServer.test(AuthHandler, BaseHTTPServer.HTTPServer)
+    main()
