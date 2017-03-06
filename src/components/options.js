@@ -66,3 +66,88 @@ export class MappingMenuItem extends MenuItem{
 
 }
 
+
+/**
+ * Enum Option Menu Item
+ * @extends MenuItem
+ *
+ */
+export class EnumMenuItem extends MenuItem{
+
+  constructor(option, prefix, players) {
+    super();
+
+    this.option = option;
+    this.key = `${prefix}.${option.id}`;
+
+    this.values = new Map();
+    this.indexes = new Map();
+
+    for (let player of players) {
+      let playerId = player.getId();
+      let value = player.optionStore.get(this.key);
+
+      this.values.set(playerId, value);
+      this.indexes.set(playerId, this.getEnum().indexOf(value));
+    }
+  }
+
+  getIndexes() {
+    return this.indexes;
+  }
+
+  createGraphicComponent(width, height) {
+    this.graphicComponent = Theme.GetTheme().createEnumMenuItemGC(width, height, this);
+    return this.graphicComponent.sprite;
+  }
+
+  getEnum () {
+    return this.option.acceptedValues;
+  }
+
+  getValues () {
+    return this.values;
+  }
+
+  move(direction, player) {
+    const index = this.indexes.get(player.getId());
+    const newIndex = index + direction;
+
+
+    if (newIndex < this.getEnum().length && newIndex >= 0) {
+      this.indexes.set(player.getId(), newIndex);
+      this.values.set(player.getId(), this.getEnum()[newIndex]);
+
+      this.graphicComponent.onChange(player.getId(), newIndex);
+    }
+  }
+
+  onSelected(player) {
+    if (this.graphicComponent) {
+      this.graphicComponent.onSelected(player.getId());
+    }
+  }
+
+  onDeselected(player) {
+    if (this.graphicComponent) {
+      this.graphicComponent.onDeselected(player.getId());
+    }
+  }
+
+  update() {
+    this.graphicComponent.update();
+  }
+
+}
+
+export class MenuItemHighlighter {
+
+  constructor (menuItems) {
+    console.log(menuItems.map((x) => {return x.graphicComponent;}));
+    this.graphicComponent = Theme.GetTheme().createMenuItemHighlighterGC(menuItems.map((x) => {return x.graphicComponent;}));
+  }
+
+  get sprite() {
+    return this.graphicComponent.sprite;
+  }
+}

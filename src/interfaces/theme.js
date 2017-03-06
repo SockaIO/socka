@@ -153,6 +153,45 @@ class Theme {
   doInit() {}
 }
 
+/**
+ * Highlight the menu item value selected by a player
+ *
+ * @memberof interfaces
+ */
+class MenuItemHighlighterGraphicComponent extends GraphicComponent {
+
+  constructor(theme, menuItems) {
+
+    console.log(menuItems);
+    super(theme);
+
+    for (let m of menuItems) {
+      if (m.setHighlighter !== undefined) {
+        m.setHighlighter(this);
+      }
+    }
+  }
+
+  /**
+   * Change the highlighted sprite
+   */
+  setHighlighted(sprite) {}
+
+}
+
+/**
+ * Emphasize the value of the option chosen by the player
+ *
+ * @memberof interfaces
+ */
+class MenuItemSelectorGraphicComponent extends GraphicComponent {
+
+  /**
+   * Set the selected Sprite
+   */
+  setSelected(sprite) {}
+
+}
 
 export {
   SimpleNoteGraphicComponent,
@@ -163,7 +202,9 @@ export {
   PauseGraphicComponent,
   LoadingViewGraphicComponent,
   ResultsGraphicComponent,
-  Theme 
+  Theme,
+  MenuItemHighlighterGraphicComponent,
+  MenuItemSelectorGraphicComponent
 };
 
 

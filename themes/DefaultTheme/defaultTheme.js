@@ -10,7 +10,7 @@ import {TM_W1, TM_W2, TM_W3, TM_W4, TM_W5, TM_MISS, TM_MINE, S_OK, S_NG, TIMING_
 import {TAP_NOTE, FAKE_NOTE, ROLL_NOTE, MINE_NOTE, HOLD_NOTE, LIFT_NOTE, EVENT_NOTE_HIT, EVENT_NOTE_MISS, EVENT_NOTE_FINISH} from '../../src/constants/chart';
 
 /*
- * The Theme class is responsible for laoding 
+ * The Theme class is responsible for laoding
  * the assets that will be used by the different graphic components
  */
 
@@ -87,7 +87,7 @@ export default class DefaultTheme extends interfaces.Theme {
       }
       this.textures['arrows'] = arrowTextures;
 
-      // Mines 
+      // Mines
       let mineTextures = [];
       for (let y = 0; y < 2; y++) {
         for (let x=0; x < 4; x++) {
@@ -228,6 +228,27 @@ export default class DefaultTheme extends interfaces.Theme {
   }
 
   /**
+   * Create Enum Menu Item Graphic Component
+   */
+  createEnumMenuItemGC(...args) {
+    return new EnumMenuItemDefaultGraphicComponent(this, ...args);
+  }
+
+  /**
+   * Create Menu Item Highlighter Graphic Component
+   */
+  createMenuItemHighlighterGC(...args) {
+    return new MenuItemHighlighterDefaultGraphicComponent(this, ...args);
+  }
+
+  /**
+   * Create Menu Item Selector Graphic Component
+   */
+  createMenuItemSelectorGC(...args) {
+    return new MenuItemSelectorDefaultGraphicComponent(this, ...args);
+  }
+
+  /**
    * Create Song Menu Graphic Component
    */
   createSongMenuGC(...args) {
@@ -343,7 +364,7 @@ class SimpleNoteDefaultGraphicComponent extends interfaces.SimpleNoteGraphicComp
     if (this.sprite.parent !== null) {
       this.sprite.parent.removeChild(this.note.sprite);
     }
-    this.sprite.destroy(); 
+    this.sprite.destroy();
   }
 
   dodge() {
@@ -486,7 +507,7 @@ class ReceptorDefaultGraphicComponent extends interfaces.ReceptorGraphicComponen
     if (this.sprite.parent !== null) {
       this.sprite.parent.removeChild(this.note.sprite);
     }
-    this.sprite.destroy(); 
+    this.sprite.destroy();
   }
 
   holdJudge(note, timing) {
@@ -589,9 +610,9 @@ class LongNoteDefaultGraphicComponent extends interfaces.LongNoteGraphicComponen
 
     body.height = length;
 
-    c.addChild(body); 
-    c.addChild(cap); 
-    c.addChild(arrow); 
+    c.addChild(body);
+    c.addChild(cap);
+    c.addChild(arrow);
 
     this.sprite = c;
 
@@ -606,7 +627,7 @@ class LongNoteDefaultGraphicComponent extends interfaces.LongNoteGraphicComponen
     if (this.sprite.parent !== null) {
       this.sprite.parent.removeChild(this.note.sprite);
     }
-    this.sprite.destroy({children: true}); 
+    this.sprite.destroy({children: true});
   }
 
   deactivate() {
@@ -1211,17 +1232,31 @@ class TextMenuItemDefaultGraphicComponent extends interfaces.MenuItemGraphicComp
     this.sprite = new PIXI.extras.BitmapText(text, {font: this.height + 'px font', align: 'center'});
 
     this.players = new Set();
+    this.highlighter = null;
+  }
+
+  setHighlighter (h) {
+    this.highlighter = h;
   }
 
   onSelected(playerId='toto') {
-    this.players.add(playerId);
-    this.sprite.tint = 0x009900;
+    if (this.highlighter !== null) {
+      this.highlighter.setHighlighted(this.sprite);
+    } else {
+      this.players.add(playerId);
+      this.sprite.tint = 0x009900;
+    }
+
   }
 
   onDeselected(playerId='toto') {
-    this.players.delete(playerId);
-    if (this.players.size === 0) {
-      this.sprite.tint = 0xffffff;
+    if (this.highlighter !== null) {
+      this.highlighter.setHighlighted(this.sprite);
+    } else {
+      this.players.delete(playerId);
+      if (this.players.size === 0) {
+        this.sprite.tint = 0xffffff;
+      }
     }
   }
 }
@@ -1230,7 +1265,7 @@ class MappingMenuItemDefaultGraphicComponent extends interfaces.MenuItemGraphicC
 
   constructor(theme, width, height, menuItem) {
     super(theme);
-    
+
     this.menuItem = menuItem;
 
     this.width = width;
@@ -1277,6 +1312,143 @@ class MappingMenuItemDefaultGraphicComponent extends interfaces.MenuItemGraphicC
   }
 }
 
+class EnumMenuItemDefaultGraphicComponent extends interfaces.MenuItemGraphicComponent {
+
+  constructor(theme, width, height, menuItem) {
+    super(theme);
+
+    this.menuItem = menuItem;
+
+    this.width = width;
+    this.height = height;
+
+    this.sprite = new PIXI.Container();
+
+    this.name = new PIXI.extras.BitmapText(`${menuItem.option.getName()}: `, {font: this.height + 'px font', align: 'center'});
+    this.sprite.addChild(this.name);
+
+    this.offset = 300;
+    this.margin = 20;
+
+    // Create the list
+    let x = this.offset;
+
+    this.values = [];
+
+    for (let v of menuItem.getEnum ()) {
+      let t = new PIXI.extras.BitmapText(v, {font: this.height + 'px font', align: 'center'});
+      t.x = x;
+      x += this.margin + t.width;
+      this.sprite.addChild (t);
+      this.values.push(t);
+    }
+
+    this.selectors = new Map();
+
+    for (let [playerId, index] of menuItem.getIndexes()) {
+      let selector = this.theme.createMenuItemSelectorGC();
+      selector.setSelected(this.values[index]);
+      this.selectors.set(playerId, selector);
+      this.sprite.addChild(selector.sprite);
+    }
+
+    this.highlighter = null;
+  }
+
+  setHighlighter(highlighter) {
+    this.highlighter = highlighter;
+  }
+
+  getText(value) {
+    return `${value.key} [Pad: ${value.controller}]`;
+  }
+
+  onSelected(playerId) {
+    let sprite = this.values[this.menuItem.getIndexes().get(playerId)];
+    if (this.highlighter !== null) {
+      this.highlighter.setHighlighted (sprite);
+    }
+  }
+
+  onDeselected() {}
+
+  onChange(playerId, newIndex) {
+    let sprite = this.values[newIndex];
+    if (this.highlighter !== null) {
+      this.highlighter.setHighlighted(sprite);
+    }
+    this.selectors.get(playerId).setSelected(sprite);
+  }
+
+  update() {}
+}
+
+class MenuItemSelectorDefaultGraphicComponent extends interfaces.MenuItemSelectorGraphicComponent {
+
+  /**
+   * constructor
+   */
+  constructor(theme) {
+    super(theme);
+
+    this.sprite = new PIXI.Container();
+
+    this.bar = new PIXI.Graphics();
+    this.sprite.addChild(this.bar);
+  }
+
+
+  setSelected(sprite) {
+
+    this.bar.destroy();
+
+    let width = sprite.width;
+    let height = 5;
+
+    let x = sprite.x + 5;
+    let y = sprite.y + sprite.height;
+
+    this.bar = new PIXI.Graphics();
+    this.bar.beginFill(0xff0000, 0.5);
+    this.bar.drawRect(x, y, width, height);
+    this.bar.endFill();
+
+    this.sprite.addChild(this.bar);
+  }
+}
+
+class MenuItemHighlighterDefaultGraphicComponent extends interfaces.MenuItemHighlighterGraphicComponent {
+
+  /**
+   * constructor
+   */
+  constructor(theme, menuItems) {
+    super(theme, menuItems);
+
+    this.sprite = new PIXI.Container();
+
+    this.bar = new PIXI.Graphics();
+    this.sprite.addChild(this.bar);
+  }
+
+  setHighlighted(sprite) {
+
+    this.bar.destroy();
+
+    let width = sprite.width;
+    let height = sprite.height;
+
+    let x = sprite.worldTransform.tx + 5;
+    let y = sprite.worldTransform.ty + 5;
+
+    this.bar = new PIXI.Graphics();
+    this.bar.beginFill(0xff0000, 0.2);
+    this.bar.drawRect(x, y, width, height);
+    this.bar.endFill();
+
+    this.sprite.addChild(this.bar);
+  }
+}
 
 
 class LoadingViewDefaultGraphicComponent extends interfaces.LoadingViewGraphicComponent{

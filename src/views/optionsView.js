@@ -2,7 +2,8 @@
 
 import View from './view';
 import {Theme, Player, Input} from '../services';
-import {Menu, TextMenuItem, MappingMenuItem} from '../components';
+import {Menu, TextMenuItem, MappingMenuItem, EnumMenuItem, MenuItemHighlighter} from '../components';
+import * as PIXI from 'pixi.js';
 
 import {KEY_LEFT, KEY_RIGHT, KEY_UP, KEY_DOWN, TAP, RAPID_FIRE, KEY_BACK, KEY_ENTER} from '../constants/input';
 
@@ -56,6 +57,10 @@ export default class OptionsView extends View {
 
         if (o.constructor.name === 'MappingOption') {
           entries.push(new MappingMenuItem(o, `${prefix}.${option.id}`, this.players));
+
+        } else if (o.constructor.name === 'EnumOption') {
+          console.log('tt');
+          entries.push(new EnumMenuItem(o, `${prefix}.${option.id}`, this.players));
         }
       }
 
@@ -79,9 +84,13 @@ export default class OptionsView extends View {
     }
 
     this.menu = new Menu(entries, width, height, Theme.GetTheme().createMenuOptionGC, false, this.players);
-    this.sprite = this.menu.sprite;
-    this.update();
+    this.highlighter = new MenuItemHighlighter(entries);
 
+    this.sprite = new PIXI.Container();
+    this.sprite.addChild(this.menu.sprite);
+    this.sprite.addChild(this.highlighter.sprite);
+
+    this.update();
   }
 
   back() {
@@ -98,6 +107,14 @@ export default class OptionsView extends View {
 
   start(player) {
     this.menu.getSelected(player).enter(player);
+  }
+
+  left(player) {
+    this.menu.getSelected(player).move(-1, player);
+  }
+
+  right(player) {
+    this.menu.getSelected(player).move(1, player);
   }
 
   update() {
@@ -121,6 +138,9 @@ export default class OptionsView extends View {
 
       factories.set([KEY_BACK, TAP], close(p, this.back, this));
       factories.set([KEY_ENTER, TAP], close(p, this.start, this));
+
+      factories.set([KEY_LEFT, TAP], close(p, this.left, this));
+      factories.set([KEY_RIGHT, TAP], close(p, this.right, this));
 
       p.mapping.setCommands(factories);
     }
