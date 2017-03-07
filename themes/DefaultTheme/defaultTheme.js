@@ -1232,16 +1232,16 @@ class TextMenuItemDefaultGraphicComponent extends interfaces.MenuItemGraphicComp
     this.sprite = new PIXI.extras.BitmapText(text, {font: this.height + 'px font', align: 'center'});
 
     this.players = new Set();
-    this.highlighter = null;
+    this.highlighters = new Map();
   }
 
-  setHighlighter (h) {
-    this.highlighter = h;
+  setHighlighter (h, playerId) {
+    this.highlighters.set(playerId, h);
   }
 
   onSelected(playerId='toto') {
-    if (this.highlighter !== null) {
-      this.highlighter.setHighlighted(this.sprite);
+    if (this.highlighters.has(playerId)) {
+      this.highlighters.get(playerId).setHighlighted(this.sprite);
     } else {
       this.players.add(playerId);
       this.sprite.tint = 0x009900;
@@ -1250,8 +1250,8 @@ class TextMenuItemDefaultGraphicComponent extends interfaces.MenuItemGraphicComp
   }
 
   onDeselected(playerId='toto') {
-    if (this.highlighter !== null) {
-      this.highlighter.setHighlighted(this.sprite);
+    if (this.highlighters.has(playerId)) {
+      // Empty
     } else {
       this.players.delete(playerId);
       if (this.players.size === 0) {
@@ -1280,6 +1280,7 @@ class MappingMenuItemDefaultGraphicComponent extends interfaces.MenuItemGraphicC
     this.entryWidth = 300;
 
     this.values = new Map();
+    this.highlighters = new Map();
 
     let x = 0;
     for (let [playerId, value] of menuItem.getValues()) {
@@ -1291,18 +1292,31 @@ class MappingMenuItemDefaultGraphicComponent extends interfaces.MenuItemGraphicC
 
   }
 
+  setHighlighter (h, playerId) {
+    this.highlighters.set(playerId, h);
+  }
+
   getText(value) {
     return `${value.key} [Pad: ${value.controller}]`;
   }
 
   onSelected(playerId) {
     let sprite = this.values.get(playerId);
-    sprite.tint = 0x00ff00;
+
+    if (this.highlighters.get(playerId)) {
+      this.highlighters.get(playerId).setHighlighted(sprite);
+    } else {
+      sprite.tint = 0x00ff00;
+    }
   }
 
   onDeselected(playerId) {
     let sprite = this.values.get(playerId);
-    sprite.tint = 0xffffff;
+    if (this.highlighters.get(playerId)) {
+      // Empty
+    } else {
+      sprite.tint = 0xffffff;
+    }
   }
 
   update() {
@@ -1346,17 +1360,17 @@ class EnumMenuItemDefaultGraphicComponent extends interfaces.MenuItemGraphicComp
     this.selectors = new Map();
 
     for (let [playerId, index] of menuItem.getIndexes()) {
-      let selector = this.theme.createMenuItemSelectorGC();
+      let selector = this.theme.createMenuItemSelectorGC(this.menuItem.getColor(playerId));
       selector.setSelected(this.values[index]);
       this.selectors.set(playerId, selector);
       this.sprite.addChild(selector.sprite);
     }
 
-    this.highlighter = null;
+    this.highlighters = new Map();
   }
 
-  setHighlighter(highlighter) {
-    this.highlighter = highlighter;
+  setHighlighter(highlighter, playerId) {
+    this.highlighters.set(playerId, highlighter);
   }
 
   getText(value) {
@@ -1365,8 +1379,8 @@ class EnumMenuItemDefaultGraphicComponent extends interfaces.MenuItemGraphicComp
 
   onSelected(playerId) {
     let sprite = this.values[this.menuItem.getIndexes().get(playerId)];
-    if (this.highlighter !== null) {
-      this.highlighter.setHighlighted (sprite);
+    if (this.highlighters.has(playerId)) {
+      this.highlighters.get(playerId).setHighlighted (sprite);
     }
   }
 
@@ -1374,8 +1388,8 @@ class EnumMenuItemDefaultGraphicComponent extends interfaces.MenuItemGraphicComp
 
   onChange(playerId, newIndex) {
     let sprite = this.values[newIndex];
-    if (this.highlighter !== null) {
-      this.highlighter.setHighlighted(sprite);
+    if (this.highlighters.has(playerId)) {
+      this.highlighters.get(playerId).setHighlighted(sprite);
     }
     this.selectors.get(playerId).setSelected(sprite);
   }
@@ -1388,13 +1402,14 @@ class MenuItemSelectorDefaultGraphicComponent extends interfaces.MenuItemSelecto
   /**
    * constructor
    */
-  constructor(theme) {
+  constructor(theme, color) {
     super(theme);
 
     this.sprite = new PIXI.Container();
 
     this.bar = new PIXI.Graphics();
     this.sprite.addChild(this.bar);
+    this.color = color;
   }
 
 
@@ -1409,7 +1424,7 @@ class MenuItemSelectorDefaultGraphicComponent extends interfaces.MenuItemSelecto
     let y = sprite.y + sprite.height;
 
     this.bar = new PIXI.Graphics();
-    this.bar.beginFill(0xff0000, 0.5);
+    this.bar.beginFill(this.color, 0.5);
     this.bar.drawRect(x, y, width, height);
     this.bar.endFill();
 
@@ -1422,18 +1437,22 @@ class MenuItemHighlighterDefaultGraphicComponent extends interfaces.MenuItemHigh
   /**
    * constructor
    */
-  constructor(theme, menuItems) {
-    super(theme, menuItems);
+  constructor(theme, menuItems, playerId, playerColor) {
+    super(theme, menuItems, playerId);
 
     this.sprite = new PIXI.Container();
 
     this.bar = new PIXI.Graphics();
     this.sprite.addChild(this.bar);
+    this.color = playerColor;
+
+    this.object = null;
   }
 
   setHighlighted(sprite) {
 
     this.bar.destroy();
+    this.object = sprite;
 
     let width = sprite.width;
     let height = sprite.height;
@@ -1442,11 +1461,17 @@ class MenuItemHighlighterDefaultGraphicComponent extends interfaces.MenuItemHigh
     let y = sprite.worldTransform.ty + 5;
 
     this.bar = new PIXI.Graphics();
-    this.bar.beginFill(0xff0000, 0.2);
+    this.bar.beginFill(this.color, 0.2);
     this.bar.drawRect(x, y, width, height);
     this.bar.endFill();
 
     this.sprite.addChild(this.bar);
+  }
+
+  update() {
+    if (this.object !== null) {
+      this.setHighlighted(this.object);
+    }
   }
 }
 

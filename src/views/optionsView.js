@@ -1,9 +1,8 @@
 'use strict';
 
 import View from './view';
-import {Theme, Player, Input} from '../services';
+import {Theme, Player} from '../services';
 import {Menu, TextMenuItem, MappingMenuItem, EnumMenuItem, MenuItemHighlighter} from '../components';
-import * as PIXI from 'pixi.js';
 
 import {KEY_LEFT, KEY_RIGHT, KEY_UP, KEY_DOWN, TAP, RAPID_FIRE, KEY_BACK, KEY_ENTER} from '../constants/input';
 
@@ -47,7 +46,6 @@ export default class OptionsView extends View {
       for (let c of option.getChildren()) {
         entries.push(createEntry(c,`${prefix}.${option.id}`, game));
       }
-
     }
     // We have an option Group
     else if (option.constructor.name === 'OptionGroup')
@@ -59,7 +57,6 @@ export default class OptionsView extends View {
           entries.push(new MappingMenuItem(o, `${prefix}.${option.id}`, this.players));
 
         } else if (o.constructor.name === 'EnumOption') {
-          console.log('tt');
           entries.push(new EnumMenuItem(o, `${prefix}.${option.id}`, this.players));
         }
       }
@@ -83,12 +80,8 @@ export default class OptionsView extends View {
       }));
     }
 
-    this.menu = new Menu(entries, width, height, Theme.GetTheme().createMenuOptionGC, false, this.players);
-    this.highlighter = new MenuItemHighlighter(entries);
-
-    this.sprite = new PIXI.Container();
-    this.sprite.addChild(this.menu.sprite);
-    this.sprite.addChild(this.highlighter.sprite);
+    this.menu = new Menu(entries, width, height, Theme.GetTheme().createMenuOptionGC, true, MenuItemHighlighter, this.players);
+    this.sprite = this.menu.sprite;
 
     this.update();
   }

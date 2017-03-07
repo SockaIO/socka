@@ -160,14 +160,13 @@ class Theme {
  */
 class MenuItemHighlighterGraphicComponent extends GraphicComponent {
 
-  constructor(theme, menuItems) {
+  constructor(theme, menuItems, playerId) {
 
-    console.log(menuItems);
     super(theme);
 
     for (let m of menuItems) {
       if (m.setHighlighter !== undefined) {
-        m.setHighlighter(this);
+        m.setHighlighter(this, playerId);
       }
     }
   }

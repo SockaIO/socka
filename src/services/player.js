@@ -10,6 +10,7 @@ import {KEY_UP, KEY_LEFT, KEY_RIGHT, KEY_DOWN, KEY_ENTER, KEY_BACK} from '../con
  */
 
 let players = new Map();
+let colors = [0xff0000, 0x0000ff, 0x00ff00];
 
 export {
   CreatePlayer,
@@ -35,6 +36,15 @@ class Player {
   constructor() {
     this.name = 'Player ' + (players.size + 1);
     this.optionStore = new OptionStore();
+    this.color = colors[players.size];
+  }
+
+  /**
+   * Return the player Color
+   * @returns {Number} Hex code for the color
+   */
+  getColor () {
+    return this.color;
   }
 
   /**

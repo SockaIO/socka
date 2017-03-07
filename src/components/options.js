@@ -82,6 +82,7 @@ export class EnumMenuItem extends MenuItem{
 
     this.values = new Map();
     this.indexes = new Map();
+    this.colors = new Map();
 
     for (let player of players) {
       let playerId = player.getId();
@@ -89,11 +90,16 @@ export class EnumMenuItem extends MenuItem{
 
       this.values.set(playerId, value);
       this.indexes.set(playerId, this.getEnum().indexOf(value));
+      this.colors.set(playerId, player.getColor());
     }
   }
 
   getIndexes() {
     return this.indexes;
+  }
+
+  getColor(playerId) {
+    return this.colors.get(playerId);
   }
 
   createGraphicComponent(width, height) {
@@ -142,12 +148,15 @@ export class EnumMenuItem extends MenuItem{
 
 export class MenuItemHighlighter {
 
-  constructor (menuItems) {
-    console.log(menuItems.map((x) => {return x.graphicComponent;}));
-    this.graphicComponent = Theme.GetTheme().createMenuItemHighlighterGC(menuItems.map((x) => {return x.graphicComponent;}));
+  constructor (menuItems, player) {
+    this.graphicComponent = Theme.GetTheme().createMenuItemHighlighterGC(menuItems.map((x) => {return x.graphicComponent;}), player.getId(), player.getColor());
   }
 
   get sprite() {
     return this.graphicComponent.sprite;
+  }
+
+  update() {
+    this.graphicComponent.update();
   }
 }

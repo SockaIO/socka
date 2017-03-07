@@ -1,7 +1,8 @@
 'use strict';
 
-const NULL_PLAYER = {id: 'totolepipo'};
-NULL_PLAYER.getId = () => {return this.id;};
+const NULL_PLAYER = {};
+NULL_PLAYER.getId = () => {return 'totolepipo';};
+NULL_PLAYER.getColor = () => {return 0xff0000;};
 
 import {Theme} from '../services';
 
@@ -25,7 +26,7 @@ export class Menu {
    * @param {String} key Key used for sorting and identification (default is name)
    * @param {Boolean} sort Set to true to sort the entries (default is false)
    */
-  constructor(entries, width, height, graphicComponentFactory, sort=false, players=[NULL_PLAYER], key='name') {
+  constructor(entries, width, height, graphicComponentFactory, sort=false, highlighterFactory=null, players=[NULL_PLAYER], key='name') {
     this.entries = entries;
     this.key = key;
 
@@ -39,6 +40,16 @@ export class Menu {
 
     this.selecteds = new Map();
     this.players = players;
+
+    this.highlighters = new Map();
+
+    if (highlighterFactory !== null) {
+      for (let p of players) {
+        let h = new highlighterFactory (entries, p);
+        this.highlighters.set(p.getId(), h);
+        this.sprite.addChild(h.sprite);
+      }
+    }
 
     for (let p of players) {
       this.selecteds.set(p.getId(), 0);
@@ -117,6 +128,11 @@ export class Menu {
     this.graphicComponent.update ();
     for (let e of this.entries) {
       e.update();
+    }
+
+    for (let h of this.highlighters.values())
+    {
+      h.update();
     }
   }
 

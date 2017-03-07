@@ -2,8 +2,8 @@
 
 // Internal dependencies
 import {Game} from './src/components';
-import {FileManager, Player} from './src/services';
-import {MenuView, EngineView, SongMenuView} from './src/views';
+import {FileManager, Player, Options} from './src/services';
+import {MenuView, EngineView, SongMenuView, OptionsView} from './src/views';
 
 import {HttpEndpoint} from './src/services/endpoint';
 
@@ -80,6 +80,14 @@ function init() {
       for (let p of packsGen) {
         entries.push(packMenuEntry(p, game));
       }
+
+      entries.push({
+        name: 'Options',
+        action: () => {
+          let o = new OptionsView(Options.GetRoot(), '', game);
+          game.pushView(o);
+        }
+      });
 
       let menu = new MenuView(entries, game);
       game.pushView(menu);
