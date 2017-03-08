@@ -20,7 +20,7 @@ class SongMenuView extends View {
     let width, height;
     [width, height] = game.getScreenSize();
 
-    this.selectedEntry = 0; 
+    this.selectedEntry = 0;
     this.entries = entries;
 
     this.graphicComponent = Theme.GetTheme().createSongMenuGC(width, height, this);
@@ -96,7 +96,7 @@ class SongMenuView extends View {
           return;
         }
 
-        this.selectedSong.charts = song.charts.filter((c) => {return c.type === 'dance-single';});
+        this.selectedSong.charts = song.charts.filter((c) => {return c.type === 'dance-single' || c.type === 'SINGLE';});
         this.selectedSong.allCharts = song.charts;
         this.selectedChart = 0;
         this.graphicComponent.updateSongDisplay();
