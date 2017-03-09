@@ -52,7 +52,7 @@ class SongPlayer {
    */
   pause() {
     this.startPauseTime = this.ctx.currentTime - this.audioStart;
-    //this.source.onended = () => {};
+    this.source.onended = () => {};
     this.source.stop();
   }
 
