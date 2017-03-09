@@ -277,6 +277,13 @@ class HttpSongIndex extends SongIndex{
           rsc.set(RSC_BANNER, link.href);
         }
 
+        if (IMG_EXTS.includes(ext) &&
+            !(nameCanon.includes('bn') || nameCanon.includes('bg')) &&
+            !rsc.has(RSC_BANNER)) {
+
+          rsc.set(RSC_BANNER, link.href);
+        }
+
         if (AUDIO_EXTS.includes(ext)) {
           rsc.set(RSC_AUDIO, link.href);
         }
@@ -306,7 +313,10 @@ class HttpSongIndex extends SongIndex{
     return this.rsc.then((rscs) => {
 
       let fallback = this.fallbackRscs.get(type);
-      if ((!rscs.has(type) && fallback === undefined) || (fallback !== undefined && fallback === this.url + '/')) {
+
+      // If the resc was not found and the fallback was not checked
+      // Or the resc was not found and the fallback failed
+      if ((!rscs.has(type) && fallback === undefined) || (!rscs.has(type) && fallback !== undefined && fallback === this.url + '/')) {
 
         // Theses resources can be located thanks to the SM file
         if ([RSC_BANNER, RSC_BACKGROUND].includes(type) && !this.fallbackRscs.has(type)) {
@@ -321,7 +331,7 @@ class HttpSongIndex extends SongIndex{
       }
 
       let rsc = rscs.get(type);
-      if (this.fallbackRscs.get(type) !== undefined) {
+      if (!rscs.has(type) && this.fallbackRscs.get(type) !== undefined) {
         rsc = this.fallbackRscs.get(type);
       }
 
