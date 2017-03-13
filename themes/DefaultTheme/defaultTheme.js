@@ -563,8 +563,16 @@ class LongNoteDefaultGraphicComponent extends interfaces.LongNoteGraphicComponen
 
     this.sprite.y = beat * multiplier;
 
-    this.sprite.children[1].y = duration * multiplier;
+    this.sprite.children[1].y = duration * multiplier - 1;
+
+    let height = this.sprite.children[0].height;
     this.sprite.children[0].height = duration * multiplier;
+
+    // Move the tile offset to keep the illusion of movement
+    if (this.note.type == ROLL_NOTE) {
+      let heightDiff = duration * multiplier - height;
+      this.sprite.children[0].tilePosition.y = (this.sprite.children[0].tilePosition.y + heightDiff) % 64;
+    }
   }
 
   resize(scale, multiplier) {
@@ -575,7 +583,7 @@ class LongNoteDefaultGraphicComponent extends interfaces.LongNoteGraphicComponen
     this.sprite.children[1].scale.y = scale;
     this.sprite.children[0].scale.x = scale;
 
-    this.sprite.children[1].y = this.note.duration * multiplier;
+    this.sprite.children[1].y = this.note.duration * multiplier - 1;
     this.sprite.children[0].height = this.note.duration * multiplier;
   }
 
@@ -592,7 +600,13 @@ class LongNoteDefaultGraphicComponent extends interfaces.LongNoteGraphicComponen
     [bodyTexture, capTexture] = this.getTextures();
 
     // Tiling sprites are just too fucking slow to create
-    let body = new PIXI.Sprite(bodyTexture);
+    // But it is ugly for the roll so let's use it anyway
+    let body;
+    if (this.note.type === ROLL_NOTE) {
+      body = new PIXI.extras.TilingSprite(bodyTexture, 128, 64);
+    } else {
+      body = new PIXI.Sprite(bodyTexture);
+    }
     let cap = new PIXI.Sprite(capTexture);
 
     arrow.anchor.x = 0.5;
