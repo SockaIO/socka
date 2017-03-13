@@ -159,7 +159,7 @@ class Note {
    * @return {Number} Division 
    */
   get division () {
-    let div = Math.round(this.step.beat*10000)/10000 - Math.floor(this.step.beat);
+    let div = Math.round(this.step.beat*10000000)/10000000 - Math.floor(this.step.beat);
 
     let mult = 1;
     let idx = 0;
