@@ -31,7 +31,7 @@ class Game {
     // Create the PIXI Environment
     let canvas = document.getElementById('game');
     this.stage = new PIXI.Container();
-    this.renderer = PIXI.autoDetectRenderer(this.width, this.height, {backgroundColor : 0x1099bb, view: canvas}, true);
+    this.renderer = PIXI.autoDetectRenderer(this.width, this.height, {backgroundColor : 0x0e333d, view: canvas}, true);
 
     if (debug === true) {
       this.stats = new Stats();

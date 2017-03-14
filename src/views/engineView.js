@@ -45,9 +45,9 @@ class EngineView extends View {
     // Create the loading View
     this.loading = new LoadingView(width, height, game); 
 
-    const engineWidth = Math.min(500, width / 2);
+    const engineWidth = Math.min(500, width/2);
     const engineHeight = height;
-    const offset = width / 2 - engineWidth;
+    const offset = width/2  - engineWidth;
 
     let i = 0;
     for (let player of players) {

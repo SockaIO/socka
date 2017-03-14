@@ -1494,7 +1494,7 @@ class LoadingViewDefaultGraphicComponent extends interfaces.LoadingViewGraphicCo
     this.background = new PIXI.Sprite(theme.getTexture('blank'));
     this.background.width = width;
     this.background.height = height;
-    this.background.tint = 0x1099bb;
+    this.background.tint = 0x0e333d;
 
     this.textSprite = new PIXI.Text(this._text, {font : '24px Arial', fill : 0xffffff, align : 'center'});
     this.textSprite.y = height - 90;
