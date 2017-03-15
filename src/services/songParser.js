@@ -12,7 +12,7 @@ import { TAP_NOTE, HOLD_NOTE, ROLL_NOTE, MINE_NOTE, LIFT_NOTE, FAKE_NOTE} from '
  */
 class Song {
   constructor() {
-    
+
     // Textual informations
     this.metadata = new Map();
 
@@ -32,7 +32,7 @@ class Song {
     // TODO: BgChange
 
     // Charts
-    this.charts = []; 
+    this.charts = [];
 
     // Timing
     this.offset = 0;
@@ -83,16 +83,16 @@ class Song {
 
     let timing = this.timingPartition[index];
     let beat = timing.startBeat + timing.bps * (time - timing.startTime);
-    
+
     return [beat, index];
 
   }
 
   /**
-   * Get the time corresponding to a given beat 
-   * @param {Number} beat | beat to covnert to time 
+   * Get the time corresponding to a given beat
+   * @param {Number} beat | beat to covnert to time
    * @param {Number} startIndex | index to start looking from
-   * @returns {Number} Time 
+   * @returns {Number} Time
    * @returns {Number} index of the timing partition
    */
   getTime(beat, startIndex=0) {
@@ -219,7 +219,7 @@ getTypeSymbol.map = {
 function createTimingPartition(song) {
 
   // First process the bpms data;
-  
+
   let sections = [];
 
   song.bpms.sort((a, b) => a.beat -b.beat);
@@ -439,6 +439,7 @@ function * iterDWISteps(data) {
 
   let tempoStack = [1/2];
   let beat = 0;
+  let subbeat = 0;
   let idx = -1;
   let step = '';
 
@@ -481,15 +482,17 @@ function * iterDWISteps(data) {
 
     // Ignore none beat
     if (step !== '0') {
-      yield {'step': step, 'beat': beat};
+      yield {'step': step, 'beat': beat, 'subbeat': subbeat};
     }
 
-    beat += tempoStack.slice(-1)[0];
+    let tempo = tempoStack.slice(-1)[0]
+    beat += tempo;
+    subbeat += tempo*48;
     step = '';
   }
 }
 
-/** 
+/**
  * Combine 0011 + 0030 in 0031
  * @param {Object|Array} steps | Steps to Combine
  * @returns {Object} Combined step
@@ -581,7 +584,10 @@ function computeDWISteps(data) {
     }
     data = tmp;
 
-    let newStep = new Step(note.beat, data, stepIndex++);
+    let division = getDivision (note.subbeat);
+
+    let newStep = new Step(note.beat, data, stepIndex++, division);
+
     if (prevStep !== null) {
       prevStep.nextBeat = note.beat - prevStep.beat;
       newStep.prevBeat = note.beat - prevStep.beat;
@@ -699,14 +705,6 @@ function getChart(data) {
       // TODO Support more tracks
       if (s !== '0000') {
 
-        let x;
-
-        for (x = 0; x < divs.length; ++x) {
-          if (subBeat % divs[x] === 0) {
-            break;
-          }
-        }
-
         let division = getDivision (subBeat);
         let newStep = new Step(beat, s, stepIndex++, division);
 
@@ -714,7 +712,7 @@ function getChart(data) {
           prevStep.nextBeat = beat - prevStep.beat;
           newStep.prevBeat = beat - prevStep.beat;
         }
-        
+
         stepData.push(newStep);
         prevStep = newStep;
       }
@@ -774,10 +772,10 @@ function loadFromDWIFile(data) {
       fieldMap.set(v.tag, v.value);
     } else {
       let actual = fieldMap.get(v.tag);
-      let tmp = Array.isArray(actual) ? actual : [actual]; 
+      let tmp = Array.isArray(actual) ? actual : [actual];
       tmp.push(v.value);
       fieldMap.set(v.tag, tmp);
-    } 
+    }
   }
 
   // We process the fields that are mandatory
@@ -858,10 +856,10 @@ function loadFromSMFile (data) {
       fieldMap.set(v.tag, v.value);
     } else {
       let actual = fieldMap.get(v.tag);
-      let tmp = Array.isArray(actual) ? actual : [actual]; 
+      let tmp = Array.isArray(actual) ? actual : [actual];
       tmp.push(v.value);
       fieldMap.set(v.tag, tmp);
-    } 
+    }
   }
 
   // We process the fields that are mandatory
@@ -940,4 +938,3 @@ export function ParseSong(data, type) {
 
   return;
 }
-
