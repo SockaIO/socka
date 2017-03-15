@@ -159,20 +159,7 @@ class Note {
    * @return {Number} Division 
    */
   get division () {
-    let div = Math.round(this.step.beat*10000000)/10000000 - Math.floor(this.step.beat);
-
-    let mult = 1;
-    let idx = 0;
-
-    while (mult <= 256) {
-      if (Number.isInteger(div*mult)) {
-        return idx;
-      }
-      idx++;
-      mult*=2;
-    }
-
-    return 0;
+    return this.step.division;
   }
 
   /**
@@ -717,11 +704,12 @@ class LongNoteFinishedState extends LongNoteState {
  */
 class NoteStep {
 
-  constructor(beat, time, engine) {
+  constructor(beat, time, division, engine) {
     this.notes = [];
     this.delays = [];
     this.beat = beat;
     this.time = time;
+    this.division = division;
     this.engine = engine;
 
     // Number of notes to hit to trigger the step

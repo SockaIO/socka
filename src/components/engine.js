@@ -102,7 +102,7 @@ class Engine {
 
     for (let step of this.chart.steps) {
 
-      let noteStep = new NoteStep(step.beat, step.time, this);
+      let noteStep = new NoteStep(step.beat, step.time, step.division, this);
 
       for (let directionS in step.arrows) {
         let direction = parseInt(directionS, 10);

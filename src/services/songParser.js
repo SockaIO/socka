@@ -142,8 +142,9 @@ class Chart {
  */
 class Step {
 
-  constructor(beat, data, index) {
+  constructor(beat, data, index, division) {
     this.beat = beat;
+    this.division = division;
     this.data = data;
 
     this.nextBeat = 0;
@@ -686,14 +687,28 @@ function getChart(data) {
 
   for (let m of measures) {
     let tempo = 4 / m.length;
-    //let maxType = m.length / 4;
+
+    let increment = 192 / m.length;
+
+    // Decimal part of the beat express as 192th of beat
+    // Allow to compute the division in an integer fashion
+    let subBeat = 0;
 
     for (let s of m) {
 
       // TODO Support more tracks
       if (s !== '0000') {
 
-        let newStep = new Step(beat, s, stepIndex++);
+        let x;
+
+        for (x = 0; x < divs.length; ++x) {
+          if (subBeat % divs[x] === 0) {
+            break;
+          }
+        }
+
+        let division = getDivision (subBeat);
+        let newStep = new Step(beat, s, stepIndex++, division);
 
         if (prevStep !== null) {
           prevStep.nextBeat = beat - prevStep.beat;
@@ -705,6 +720,7 @@ function getChart(data) {
       }
 
       beat += tempo;
+      subBeat += increment;
     }
   }
 
@@ -888,6 +904,21 @@ function loadFromSMFile (data) {
   song.populateStepTimes();
 
   return song;
+}
+
+const divs = [(192 / 4), (192 / 8), (192 / 12), (192 / 16), (192 / 24), (192 / 32), (192 / 48)];
+
+function getDivision (subBeat) {
+
+  let x = 0;
+
+  for (x = 0; x < divs.length; ++x) {
+    if (subBeat % divs[x] === 0) {
+      break;
+    }
+  }
+
+  return x;
 }
 
 /**
