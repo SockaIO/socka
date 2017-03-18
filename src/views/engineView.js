@@ -43,7 +43,7 @@ class EngineView extends View {
     this.song = song;
 
     // Create the loading View
-    this.loading = new LoadingView(width, height, game); 
+    this.loading = new LoadingView(width, height, game);
 
     const engineWidth = Math.min(500, width/2);
     const engineHeight = height;
@@ -183,7 +183,14 @@ class EngineView extends View {
     }
   }
 
+  /**
+   * The game is closed
+   */
+   onPoped() {
+     if (this.started) {
+       this.songPlayer.close();
+     }
+   }
+
 }
 export default EngineView;
-
-

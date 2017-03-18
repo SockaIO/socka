@@ -71,6 +71,13 @@ class SongPlayer {
   }
 
   /**
+   * Close the song
+   */
+   close() {
+     this.ctx.close();
+   }
+
+  /**
    * Get the End Promise
    * @returns {Promise} Promise resolved when playback finished or cancelled
    */
