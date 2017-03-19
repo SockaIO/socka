@@ -17,7 +17,7 @@ export default function GetOptionTree() {
   let resolution = new Options.EnumOption('Resolution', 'resolution', ['1280x720', '1920x1080'], '1280x720');
   let fullscreen = new Options.EnumOption('Fullscreen', 'fullscreen', ['True', 'False'], 'False');
 
-  let display = new Options.OptionGroup('Display', 'display', [resolution, fullscreen]);
+  let display = new Options.OptionGroup('Display', 'display', true, [resolution, fullscreen]);
 
   /*
    * Mapping
@@ -43,7 +43,7 @@ export default function GetOptionTree() {
     keyOptions[x].setUpdateWorld(fct);
   }
 
-  let mapping = new Options.OptionGroup('Mapping', 'mapping', [left, up, right, down, enter, back]);
+  let mapping = new Options.OptionGroup('Mapping', 'mapping', false, [left, up, right, down, enter, back]);
 
   /*
    * Root

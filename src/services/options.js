@@ -112,16 +112,25 @@ export class OptionGroup {
    * Constructor.
    * @param {String} name Group name
    * @param {String} id Group ID
+   * @param {Bool} global Is the Group global parameters
    * @param {Option|Array} options Options contained in the group
    */
-  constructor (name, id, options) {
+  constructor (name, id, global, options) {
     this.name = name;
     this.id = id;
     this.options = new Map();
+    this.global = global;
 
     for (let o of options) {
       this.options.set (o.getName (), o);
     }
+  }
+
+  /**
+   * Is the group global
+   */
+  isGlobal() {
+    return this.global;
   }
 
   /**

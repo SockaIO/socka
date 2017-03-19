@@ -12,13 +12,16 @@ import {KEY_UP, KEY_LEFT, KEY_RIGHT, KEY_DOWN, KEY_ENTER, KEY_BACK} from '../con
 let players = new Map();
 let colors = [0xff0000, 0x0000ff, 0x00ff00];
 
+let GamePlayer;
+
 export {
   CreatePlayer,
   GetPlayers,
   GetPlayer,
   LoadPlayers,
   SavePlayers,
-  InitPlayers
+  InitPlayers,
+  GamePlayer
 };
 
 /**
@@ -118,6 +121,10 @@ function GetPlayers() {
  * @return {Player} Corresponding Player
  */
 function GetPlayer(id) {
+  if (id === 'GamePlayer') {
+    return GamePlayer;
+  }
+
   return players.get(id);
 }
 
@@ -148,6 +155,7 @@ function SavePlayers() {
  */
 function InitPlayers()
 {
+
   if (!localStorage.getItem('players')) {
 
     // Create the first player
@@ -173,5 +181,31 @@ function InitPlayers()
   } else {
     LoadPlayers();
   }
+
+  InitGamePlayer();
+
 }
 
+/**
+ * Initialize the game player
+ */
+function InitGamePlayer() {
+
+
+  if (!localStorage.getItem('GamePlayer')) {
+    GamePlayer = new Player ();
+    GamePlayer.name = 'GamePlayer';
+
+  } else {
+
+    let data = localStorage.getItem('GamePlayer');
+    GamePlayer = Player.CreateFromJson(data);
+  }
+
+  // Give the Game player the same mapping as the 1st player
+  for (let p of GetPlayers())
+  {
+    GamePlayer.setMapping(p.mapping);
+    break;
+  }
+}

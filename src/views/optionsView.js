@@ -53,6 +53,8 @@ export default class OptionsView extends View {
 
       for (let o of option.getOptions()) {
 
+        this.players = option.isGlobal() ? [Player.GamePlayer] : this.players;
+
         if (o.constructor.name === 'MappingOption') {
           entries.push(new MappingMenuItem(o, `${prefix}.${option.id}`, this.players));
 
@@ -122,7 +124,7 @@ export default class OptionsView extends View {
       };
     };
 
-    for (let p of Player.GetPlayers()) {
+    for (let p of this.players) {
 
       let factories = new Map();
 

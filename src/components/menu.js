@@ -1,10 +1,6 @@
 'use strict';
 
-const NULL_PLAYER = {};
-NULL_PLAYER.getId = () => {return 'totolepipo';};
-NULL_PLAYER.getColor = () => {return 0xff0000;};
-
-import {Theme} from '../services';
+import {Theme, Player} from '../services';
 
 /**
  * Class representing a menu. Each entry has a name attribute that get displayed
@@ -26,7 +22,7 @@ export class Menu {
    * @param {String} key Key used for sorting and identification (default is name)
    * @param {Boolean} sort Set to true to sort the entries (default is false)
    */
-  constructor(entries, width, height, graphicComponentFactory, sort=false, highlighterFactory=null, players=[NULL_PLAYER], key='name') {
+  constructor(entries, width, height, graphicComponentFactory, sort=false, highlighterFactory=null, players=[Player.GamePlayer], key='name') {
     this.entries = entries;
     this.key = key;
 
@@ -77,7 +73,7 @@ export class Menu {
    * Get the Selected Entry
    * @returns {Object} Selected Entry
    */
-  getSelected(player=NULL_PLAYER) {
+  getSelected(player=Player.GamePlayer) {
     return this.entries[this.selecteds.get(player.getId())];
   }
 
@@ -85,7 +81,7 @@ export class Menu {
    * Get the Selected Index
    * @returns {Number} The selected index
    */
-  getSelectedIndex(player=NULL_PLAYER) {
+  getSelectedIndex(player=Player.GamePlayer) {
     return this.selecteds.get(player.getId());
   }
 
@@ -93,7 +89,7 @@ export class Menu {
    * Set the Seleted Entry
    * @param {Number} index Entry index
    */
-  setSelected(index, player=NULL_PLAYER) {
+  setSelected(index, player=Player.GamePlayer) {
     this.getSelected(player).onDeselected(player);
     this.selecteds.set(player.getId(), index);
     this.getSelected(player).onSelected(player);
@@ -103,7 +99,7 @@ export class Menu {
    * Move the selector
    * @param {Number} change Change in the selected entry
    */
-  move(change, player=NULL_PLAYER) {
+  move(change, player=Player.GamePlayer) {
     this.setSelected((this.entries.length + this.getSelectedIndex(player) + change) % this.entries.length, player);
   }
 
@@ -206,7 +202,7 @@ export class TextMenuItem extends MenuItem {
     return this.graphicComponent.sprite;
   }
 
-  onSelected(player=NULL_PLAYER) {
+  onSelected(player=Player.GamePlayer) {
     if (this.graphicComponent) {
       this.graphicComponent.onSelected(player.getId());
     }

@@ -1253,7 +1253,7 @@ class TextMenuItemDefaultGraphicComponent extends interfaces.MenuItemGraphicComp
     this.highlighters.set(playerId, h);
   }
 
-  onSelected(playerId='toto') {
+  onSelected(playerId='GamePlayer') {
     if (this.highlighters.has(playerId)) {
       this.highlighters.get(playerId).setHighlighted(this.sprite);
     } else {
@@ -1263,7 +1263,7 @@ class TextMenuItemDefaultGraphicComponent extends interfaces.MenuItemGraphicComp
 
   }
 
-  onDeselected(playerId='toto') {
+  onDeselected(playerId='GamePlayer') {
     if (this.highlighters.has(playerId)) {
       // Empty
     } else {
