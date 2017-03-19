@@ -73,9 +73,9 @@ class SongPlayer {
   /**
    * Close the song
    */
-   close() {
-     this.ctx.close();
-   }
+  close() {
+    this.ctx.close();
+  }
 
   /**
    * Get the End Promise

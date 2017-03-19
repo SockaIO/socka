@@ -186,11 +186,11 @@ class EngineView extends View {
   /**
    * The game is closed
    */
-   onPoped() {
-     if (this.started) {
-       this.songPlayer.close();
-     }
-   }
+  onPoped() {
+    if (this.started) {
+      this.songPlayer.close();
+    }
+  }
 
 }
 export default EngineView;
