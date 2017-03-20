@@ -158,6 +158,13 @@ export class SongIndex {
   loadResources() {}
 
   /**
+   * Free the memory used by the resources that are cached
+   */
+  freeResources () {
+    this.rscMap.clear ();
+  }
+
+  /**
    * Return the unique ID of the endpoint
    * @returns {String} ID
    * @virtual

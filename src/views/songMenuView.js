@@ -154,6 +154,12 @@ class SongMenuView extends View {
     this.graphicComponent.sprite.visible = false;
   }
 
+  onPoped() {
+    for (let e of this.entries) {
+      e.song.freeResources();
+    }
+  }
+
 
   get selectedSubEntry() {
     return this.selectedSubEntries[this.selectedEntry];
