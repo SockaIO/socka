@@ -15,9 +15,15 @@ export default function GetOptionTree() {
    * Display
    */
   let resolution = new Options.EnumOption('Resolution', 'resolution', ['1280x720', '1920x1080'], '1280x720');
-  let fullscreen = new Options.EnumOption('Fullscreen', 'fullscreen', ['True', 'False'], 'False');
+  resolution.setUpdateWorld ((value, player, game) => {
 
-  let display = new Options.OptionGroup('Display', 'display', true, [resolution, fullscreen]);
+    let width, height;
+    [width, height] = value.split('x');
+
+    game.resize(width, height);
+  });
+
+  let display = new Options.OptionGroup('Display', 'display', true, [resolution]);
 
   /*
    * Mapping

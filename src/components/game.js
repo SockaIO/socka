@@ -56,9 +56,24 @@ class Game {
     promises.push(Theme.GetTheme().loaded);
 
     //Player.SavePlayers();
-    Player.InitPlayers();
+    Player.InitPlayers(this);
 
     return Promise.all(promises);
+  }
+
+  /**
+   * Resize the renderer
+   * @param {Number} width New width (in px)
+   * @param {Number} height New height (in px)
+   */
+  resize(width, height) {
+    this.width = width;
+    this.height = height;
+
+    this.renderer.resize(width, height);
+
+    this.renderer.view.style.width = width + 'px';
+    this.renderer.view.style.height = height + 'px';
   }
 
   /**

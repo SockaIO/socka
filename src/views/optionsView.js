@@ -73,7 +73,7 @@ export default class OptionsView extends View {
           for (let [playerId, value] of e.getValues()) {
             let player = Player.GetPlayer(playerId);
             player.optionStore.set(e.key, value);
-            e.option.updateWorld(value, player);
+            e.option.updateWorld(value, player, game);
           }
         }
 

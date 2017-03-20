@@ -123,6 +123,7 @@ export class OptionGroup {
 
     for (let o of options) {
       this.options.set (o.getName (), o);
+      o.global = global;
     }
   }
 
@@ -211,10 +212,15 @@ class Option {
 
   /**
    * Update the World to reflect an option change
+   * @param {*} value The new value for the option
    * @param {Player} player The Player owning that value
+   * @param {game} game The Game Object
    */
-  updateWorld(value, player) {
-    this.updateWorldCallback(value, player);
+  updateWorld(value, player, game) {
+    if ((player.getId () === 'GamePlayer' && this.global ||
+         player.getId () !== 'GamePlayer' && !this.global)) {
+      this.updateWorldCallback(value, player, game);
+    }
   }
 
   /**

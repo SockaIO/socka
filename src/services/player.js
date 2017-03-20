@@ -130,8 +130,9 @@ function GetPlayer(id) {
 
 /**
  * Load from local Storage
+ * @param {Game} game The Game Object
  */
-function LoadPlayers() {
+function LoadPlayers(game) {
   let playerListData = localStorage.getItem('players');
   let playerList = JSON.parse(playerListData);
 
@@ -139,7 +140,7 @@ function LoadPlayers() {
     const pl = Player.CreateFromJson(p);
     players.set(pl.getId(), pl);
     pl.setMapping(new Input.Mapping());
-    pl.optionStore.updateWorld(pl);
+    pl.optionStore.updateWorld(pl, game);
   }
 }
 
@@ -148,12 +149,14 @@ function LoadPlayers() {
  */
 function SavePlayers() {
   localStorage.setItem('players', JSON.stringify(Array.from(GetPlayers()).map((x) => {return x.toJson();})));
+  localStorage.setItem('GamePlayer', GamePlayer.toJson());
 }
 
 /**
  * Initialize the players. If possible load from local Storage. Otherwise create 2 new players
+ * @param {Game} game The Game Object
  */
-function InitPlayers()
+function InitPlayers(game)
 {
 
   if (!localStorage.getItem('players')) {
@@ -179,17 +182,18 @@ function InitPlayers()
 
 
   } else {
-    LoadPlayers();
+    LoadPlayers(game);
   }
 
-  InitGamePlayer();
+  InitGamePlayer(game);
 
 }
 
 /**
  * Initialize the game player
+ * @param {Game} game The Game Object
  */
-function InitGamePlayer() {
+function InitGamePlayer(game) {
 
 
   if (!localStorage.getItem('GamePlayer')) {
@@ -197,9 +201,9 @@ function InitGamePlayer() {
     GamePlayer.name = 'GamePlayer';
 
   } else {
-
     let data = localStorage.getItem('GamePlayer');
     GamePlayer = Player.CreateFromJson(data);
+    GamePlayer.optionStore.updateWorld(GamePlayer, game);
   }
 
   // Give the Game player the same mapping as the 1st player

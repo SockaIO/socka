@@ -60,10 +60,10 @@ export default class OptionStore {
    * Update the World based on the player options
    * @param {Player} The player
    */
-  updateWorld(player) {
+  updateWorld(player, game) {
     for (let [id, value] of this.options) {
       let option = Options.GetOption(id);
-      option.updateWorld(value, player);
+      option.updateWorld(value, player, game);
     }
   }
 
