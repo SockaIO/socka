@@ -15,6 +15,7 @@ export class Menu {
 
   /**
    * Constructor of the Menu
+   * @param {Symbol} id Menu Identifier for differenciation in the theme
    * @param {Object|Array} entries Menu entries
    * @param {Number} width Menu Width 
    * @param {Number} height Menu Height
@@ -22,9 +23,10 @@ export class Menu {
    * @param {String} key Key used for sorting and identification (default is name)
    * @param {Boolean} sort Set to true to sort the entries (default is false)
    */
-  constructor(entries, width, height, graphicComponentFactory, sort=false, highlighterFactory=null, players=[Player.GamePlayer], key='name') {
+  constructor(id, entries, width, height, graphicComponentFactory, sort=false, highlighterFactory=null, players=[Player.GamePlayer], key='name') {
     this.entries = entries;
     this.key = key;
+    this.id = id;
 
     this.compareFunction = (a, b) => {return a[key] > b[key];};
 

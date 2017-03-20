@@ -5,6 +5,7 @@ import {Theme, Player} from '../services';
 import {Menu, TextMenuItem} from '../components';
 
 import {KEY_UP, KEY_DOWN, TAP, RAPID_FIRE, KEY_BACK, KEY_ENTER} from '../constants/input';
+import {MENU_MAIN} from '../constants/resources';
 
 /**
  * View Class for a simple menu
@@ -25,7 +26,7 @@ class MenuView extends View {
       items.push(new TextMenuItem(e.name, e.action));
     }
 
-    this.menu = new Menu(items, width, height, Theme.GetTheme().createMenuGC, true);
+    this.menu = new Menu(MENU_MAIN, items, width, height, Theme.GetTheme().createMenuGC.bind(Theme.GetTheme()), true);
     this.sprite = this.menu.sprite;
     this.update();
   }

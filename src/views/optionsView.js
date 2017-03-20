@@ -82,7 +82,7 @@ export default class OptionsView extends View {
       }));
     }
 
-    this.menu = new Menu(entries, width, height, Theme.GetTheme().createMenuOptionGC, true, MenuItemHighlighter, this.players);
+    this.menu = new Menu(MENU_OPTION, entries, width, height, Theme.GetTheme().createMenuOptionGC.bind(Theme.GetTheme()), true, MenuItemHighlighter, this.players);
     this.sprite = this.menu.sprite;
 
     this.update();

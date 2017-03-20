@@ -14,3 +14,8 @@ export const RSC_BANNER = Symbol.for('RSC_BANNER');
 export const RSC_BACKGROUND = Symbol.for('RSC_BACKGROUND');
 /** @memberof constants.resources */
 export const RSC_SONG = Symbol.for('RSC_SONG');
+
+/** @memberof constants.resources */
+export const MENU_MAIN = Symbol.for('MENU_MAIN');
+/** @memberof constants.resources */
+export const MENU_OPTION = Symbol.for('MENU_OPTION');
