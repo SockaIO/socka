@@ -5,6 +5,7 @@ import {Theme, Player} from '../services';
 import {Menu, TextMenuItem, MappingMenuItem, EnumMenuItem, MenuItemHighlighter} from '../components';
 
 import {KEY_LEFT, KEY_RIGHT, KEY_UP, KEY_DOWN, TAP, RAPID_FIRE, KEY_BACK, KEY_ENTER} from '../constants/input';
+import {MENU_OPTION} from '../constants/resources';
 
 
 
