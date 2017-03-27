@@ -40,6 +40,7 @@ export default class OptionsView extends View {
     this.players = Array.from(Player.GetPlayers ());
 
     let entries = [];
+    let optionByKey = new Map();
 
     // We have a folder
     if (option.constructor.name === 'OptionFolder') {
@@ -57,11 +58,13 @@ export default class OptionsView extends View {
         this.players = option.isGlobal() ? [Player.GamePlayer] : this.players;
 
         if (o.constructor.name === 'MappingOption') {
-          entries.push(new MappingMenuItem(o, `${prefix}.${option.id}`, this.players));
+          entries.push(new MappingMenuItem(o.name, `${prefix}.${option.id}.${o.id}`, this.players));
 
         } else if (o.constructor.name === 'EnumOption') {
-          entries.push(new EnumMenuItem(o, `${prefix}.${option.id}`, this.players));
+          entries.push(new EnumMenuItem(o.name, `${prefix}.${option.id}.${o.id}`, o.acceptedValues, this.players));
         }
+
+        optionByKey.set(`${prefix}.${option.id}.${o.id}`, o);
       }
 
       entries.push(new TextMenuItem('Save', () => {
@@ -74,7 +77,7 @@ export default class OptionsView extends View {
           for (let [playerId, value] of e.getValues()) {
             let player = Player.GetPlayer(playerId);
             player.optionStore.set(e.key, value);
-            e.option.updateWorld(value, player, game);
+            optionByKey.get(e.key).updateWorld(value, player, game);
           }
         }
 

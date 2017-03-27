@@ -11,18 +11,22 @@ import {INPUT_UPDATE, INPUT_CANCEL, INPUT_ENTER} from '../constants/input';
  */
 export class MappingMenuItem extends MenuItem{
 
-  constructor(option, prefix, players) {
+  constructor(name, key, players, defaultValues=[]) {
     super();
 
-    this.option = option;
     this.values = new Map();
-    this.key = `${prefix}.${option.id}`;
 
-    for (let player of players) {
-      this.values.set(player.getId(), player.optionStore.get(this.key));
+    this.name = name;
+    this.key = key;
+
+    if (defaultValues.size > 0) {
+      this.values = defaultValues;
+
+    } else {
+      for (let player of players) {
+        this.values.set(player.getId(), player.optionStore.get(this.key));
+      }
     }
-
-    this.discard = true;
   }
 
   createGraphicComponent(width, height) {
@@ -75,11 +79,12 @@ export class MappingMenuItem extends MenuItem{
  */
 export class EnumMenuItem extends MenuItem{
 
-  constructor(option, prefix, players) {
+  constructor(name, key, acceptedValues, players, defaultValues=[]) {
     super();
 
-    this.option = option;
-    this.key = `${prefix}.${option.id}`;
+    this.name = name;
+    this.key = key;
+    this.acceptedValues = acceptedValues;
 
     this.values = new Map();
     this.indexes = new Map();
@@ -87,7 +92,13 @@ export class EnumMenuItem extends MenuItem{
 
     for (let player of players) {
       let playerId = player.getId();
-      let value = player.optionStore.get(this.key);
+      let value;
+
+      if (defaultValues.size > 0) {
+        value = defaultValues.get(playerId);
+      } else {
+        value = player.optionStore.get(this.key);
+      }
 
       this.values.set(playerId, value);
       this.indexes.set(playerId, this.getEnum().indexOf(value));
@@ -109,7 +120,7 @@ export class EnumMenuItem extends MenuItem{
   }
 
   getEnum () {
-    return this.option.acceptedValues;
+    return this.acceptedValues;
   }
 
   getValues () {
@@ -157,9 +168,6 @@ export class InputMenuItem extends MenuItem{
   constructor(name, defaultValue) {
     super();
 
-    //this.option = option;
-    //this.key = `${prefix}.${option.id}`;
-
     this.name = name;
     this.value = defaultValue;
     this.backupValue = defaultValue;
@@ -179,11 +187,7 @@ export class InputMenuItem extends MenuItem{
     this.backupValue = this.value;
     this.graphicComponent.onFocus();
 
-    console.log('aaa');
-
     Input.SetInputListener(this.value, (type, e) => {
-
-      console.log('ttt');
 
       switch(type) {
       case INPUT_CANCEL:

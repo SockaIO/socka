@@ -1418,7 +1418,7 @@ class EnumMenuItemDefaultGraphicComponent extends interfaces.MenuItemGraphicComp
 
     this.sprite = new PIXI.Container();
 
-    this.name = new PIXI.extras.BitmapText(`${menuItem.option.getName()}: `, {font: this.height + 'px font', align: 'center'});
+    this.name = new PIXI.extras.BitmapText(`${menuItem.name}: `, {font: this.height + 'px font', align: 'center'});
     this.sprite.addChild(this.name);
 
     this.offset = 300;
