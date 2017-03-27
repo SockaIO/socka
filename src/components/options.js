@@ -2,6 +2,7 @@
 
 import {MenuItem} from './menu';
 import {Theme, Input} from '../services';
+import {INPUT_UPDATE, INPUT_CANCEL, INPUT_ENTER} from '../constants/input';
 
 /**
  * Mapping Option Menu Item
@@ -34,10 +35,10 @@ export class MappingMenuItem extends MenuItem{
   }
 
   enter(player) {
-    this.discard = true;
+
     Input.SetRawListener ((e) => {
-      if (this.discard) {
-        this.discard = false;
+
+      if (e.jsEvent.type === 'keyup') {
         return;
       }
 
@@ -144,6 +145,79 @@ export class EnumMenuItem extends MenuItem{
     this.graphicComponent.update();
   }
 
+}
+
+/**
+ * Text Option Menu Item
+ * @extends MenuItem
+ *
+ */
+export class InputMenuItem extends MenuItem{
+
+  constructor(name, defaultValue) {
+    super();
+
+    //this.option = option;
+    //this.key = `${prefix}.${option.id}`;
+
+    this.name = name;
+    this.value = defaultValue;
+    this.backupValue = defaultValue;
+  }
+
+  createGraphicComponent(width, height) {
+    this.graphicComponent = Theme.GetTheme().createInputMenuItemGC(width, height, this);
+    return this.graphicComponent.sprite;
+  }
+
+  getValue () {
+    return this.value;
+  }
+
+  enter() {
+
+    this.backupValue = this.value;
+    this.graphicComponent.onFocus();
+
+    console.log('aaa');
+
+    Input.SetInputListener(this.value, (type, e) => {
+
+      console.log('ttt');
+
+      switch(type) {
+      case INPUT_CANCEL:
+        this.graphicComponent.onBlur();
+        this.value = this.backupValue;
+        break;
+      case INPUT_ENTER:
+        this.graphicComponent.onBlur();
+        this.value = e;
+        break;
+      case INPUT_UPDATE:
+        this.value = e;
+        break;
+      }
+    });
+
+    return;
+  }
+
+  onSelected(player) {
+    if (this.graphicComponent) {
+      this.graphicComponent.onSelected(player.getId());
+    }
+  }
+
+  onDeselected(player) {
+    if (this.graphicComponent) {
+      this.graphicComponent.onDeselected(player.getId());
+    }
+  }
+
+  update() {
+    this.graphicComponent.update();
+  }
 }
 
 export class MenuItemHighlighter {

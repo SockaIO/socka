@@ -36,3 +36,11 @@ export const KEYS = [
   KEY_ENTER,
   KEY_BACK
 ];
+
+/** @memberof constants.input */
+export const INPUT_UPDATE = Symbol.for('INPUT_UPDATE');
+/** @memberof constants.input */
+export const INPUT_ENTER = Symbol.for('INPUT_ENTER');
+/** @memberof constants.input */
+export const INPUT_CANCEL = Symbol.for('INPUT_CANCEL');
+

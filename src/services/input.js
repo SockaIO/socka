@@ -5,7 +5,7 @@
  */
 
 import {Subject} from '../helpers';
-import {TAP, LIFT, KEYS, KEY_UP, KEY_LEFT, KEY_RIGHT, KEY_DOWN, KEY_ENTER, KEY_BACK, EVENT_PAD_CONNECTED, EVENT_PAD_DISCONNECTED, RAPID_FIRE} from '../constants/input';
+import {TAP, LIFT, KEYS, KEY_UP, KEY_LEFT, KEY_RIGHT, KEY_DOWN, KEY_ENTER, KEY_BACK, EVENT_PAD_CONNECTED, EVENT_PAD_DISCONNECTED, RAPID_FIRE, INPUT_UPDATE, INPUT_ENTER, INPUT_CANCEL} from '../constants/input';
 
 let controllers = new Map();
 let controllerSubject = new Subject();
@@ -18,7 +18,8 @@ export {
   GetDefaultKeyboardMapping,
   Mapping,
   SetRawListener,
-  RemoveRawListener
+  RemoveRawListener,
+  SetInputListener
 };
 
 /**
@@ -307,7 +308,7 @@ class KeyboardController extends Controller{
     }
 
     if (this.rawListener !== null) {
-      this.rawListener({key, controller: this});
+      this.rawListener({key, controller: this, jsEvent: e});
       return;
     }
 
@@ -480,6 +481,32 @@ function RemoveRawListener() {
   for (let c of GetControllers()) {
     c.removeRawListener();
   }
+}
+
+function SetInputListener(defaultValue, callback) {
+
+  let input = document.getElementById('hiddenInput');
+  input.value = defaultValue;
+  input.selectionStart = input.selectionEnd = input.value.length;
+
+  for (let c of GetControllers()) {
+    c.setRawListener((e) => {
+
+      let type = INPUT_UPDATE;
+      if (e.key === 13 && e.jsEvent.type === 'keydown') { // Enter
+        input.blur();
+        type = INPUT_ENTER;
+        RemoveRawListener();
+      }
+      else if (e.key === 27 && e.jsEvent.type === 'keydown') {
+        input.blur();
+        type = INPUT_CANCEL;
+        RemoveRawListener();
+      }
+      callback(type, input.value);
+    });
+  }
+  input.focus();
 }
 
 Setup();

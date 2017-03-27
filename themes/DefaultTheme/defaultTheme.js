@@ -221,6 +221,13 @@ export default class DefaultTheme extends interfaces.Theme {
   }
 
   /**
+   * Create Text Menu Item Graphic Component
+   */
+  createInputMenuItemGC(...args) {
+    return new InputMenuItemDefaultGraphicComponent(this, ...args);
+  }
+
+  /**
    * Create Mapping Menu Item Graphic Component
    */
   createMappingMenuItemGC(...args) {
@@ -1339,6 +1346,65 @@ class MappingMenuItemDefaultGraphicComponent extends interfaces.MenuItemGraphicC
     }
   }
 }
+
+class InputMenuItemDefaultGraphicComponent extends interfaces.MenuItemGraphicComponent {
+
+  constructor(theme, width, height, menuItem) {
+    super(theme);
+
+    this.menuItem = menuItem;
+
+    this.width = width;
+    this.height = height;
+
+    this.sprite = new PIXI.Container();
+
+    this.name = new PIXI.extras.BitmapText(`${menuItem.name}: `, {font: this.height + 'px font', align: 'center'});
+    this.sprite.addChild(this.name);
+
+    this.offset = this.name.width + 30;
+    this.value = new PIXI.extras.BitmapText(`${menuItem.value}: `, {font: this.height + 'px font', align: 'center'});
+    this.value.x = this.offset;
+    this.sprite.addChild(this.value);
+
+    this.highlighters = new Map();
+
+  }
+
+  setHighlighter (h, playerId) {
+    this.highlighters.set(playerId, h);
+  }
+
+  onSelected(playerId) {
+    let sprite = this.name;
+
+    if (this.highlighters.get(playerId)) {
+      this.highlighters.get(playerId).setHighlighted(sprite);
+    } else {
+      sprite.tint = 0x00ff00;
+    }
+  }
+
+  onDeselected(playerId) {
+    let sprite = this.name;
+    if (this.highlighters.get(playerId)) {
+      // Empty
+    } else {
+      sprite.tint = 0xffffff;
+    }
+  }
+
+  onFocus() {
+  }
+
+  onBlur() {
+  }
+
+  update() {
+    this.value.text = this.menuItem.value;
+  }
+}
+
 
 class EnumMenuItemDefaultGraphicComponent extends interfaces.MenuItemGraphicComponent {
 
