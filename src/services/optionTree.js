@@ -2,7 +2,7 @@
 
 import {Options} from './';
 import {KEYS} from '../constants/input';
-import {Input} from '../services';
+import {Input, Player} from '../services';
 
 /**
  * @namespace services.OptionTree
@@ -24,6 +24,26 @@ export default function GetOptionTree() {
   });
 
   let display = new Options.OptionGroup('Display', 'display', true, [resolution]);
+
+  /*
+   * Player
+   */
+  let numPlayers = new Options.EnumOption('Players', 'numPlayers', ['1', '2'], '1');
+  numPlayers.setUpdateWorld((value) => {
+    Player.SetNumPlayers(value);
+  });
+
+  let namePlayer1 = new Options.TextOption('Name Player 1', 'namePlayer1', 1, 100, 'Player 1');
+  namePlayer1.setUpdateWorld((value) => {
+    Player.GetPlayer(1).name = value;
+  });
+
+  let namePlayer2 = new Options.TextOption('Name Player 2', 'namePlayer2', 1, 100, 'Player 2');
+  namePlayer2.setUpdateWorld((value) => {
+    Player.GetPlayer(2).name = value;
+  });
+
+  let players = new Options.OptionGroup('Players', 'players', true, [numPlayers, namePlayer1, namePlayer2]);
 
   /*
    * Mapping
@@ -54,7 +74,7 @@ export default function GetOptionTree() {
   /*
    * Root
    */
-  let root = new Options.OptionFolder('root', 'root', [display, mapping]);
+  let root = new Options.OptionFolder('root', 'root', [display, players, mapping]);
 
   return root;
 }

@@ -217,8 +217,8 @@ class Option {
    * @param {game} game The Game Object
    */
   updateWorld(value, player, game) {
-    if ((player.getId () === 'GamePlayer' && this.global ||
-         player.getId () !== 'GamePlayer' && !this.global)) {
+    if ((player.getId () === 0 && this.global ||
+         player.getId () !== 0 && !this.global)) {
       this.updateWorldCallback(value, player, game);
     }
   }

@@ -10,6 +10,7 @@ import {KEY_UP, KEY_LEFT, KEY_RIGHT, KEY_DOWN, KEY_ENTER, KEY_BACK} from '../con
  */
 
 let players = new Map();
+let activePlayers = new Map();
 let colors = [0xff0000, 0x0000ff, 0x00ff00];
 
 let GamePlayer;
@@ -21,7 +22,8 @@ export {
   LoadPlayers,
   SavePlayers,
   InitPlayers,
-  GamePlayer
+  GamePlayer,
+  SetNumPlayers
 };
 
 /**
@@ -37,9 +39,14 @@ class Player {
    * @param {String} name - Player name
    */
   constructor() {
-    this.name = 'Player ' + (players.size + 1);
+
+    // The name will be overwritten when the game player is loaded
+    this.name = '';
+
+    this.id = players.size + 1;
     this.optionStore = new OptionStore();
     this.color = colors[players.size];
+    this.mapping = new Input.Mapping();
   }
 
   /**
@@ -63,7 +70,7 @@ class Player {
    * returns {String} Player ID
    */
   getId() {
-    return this.name;
+    return this.id;
   }
 
 
@@ -112,7 +119,7 @@ function CreatePlayer() {
  * @memberof servicse.Player
  */
 function GetPlayers() {
-  return players.values();
+  return activePlayers.values();
 }
 
 /**
@@ -121,7 +128,7 @@ function GetPlayers() {
  * @return {Player} Corresponding Player
  */
 function GetPlayer(id) {
-  if (id === 'GamePlayer') {
+  if (id === 0) {
     return GamePlayer;
   }
 
@@ -148,7 +155,7 @@ function LoadPlayers(game) {
  * Save the players to local Storage
  */
 function SavePlayers() {
-  localStorage.setItem('players', JSON.stringify(Array.from(GetPlayers()).map((x) => {return x.toJson();})));
+  localStorage.setItem('players', JSON.stringify(Array.from(players.values()).map((x) => {return x.toJson();})));
   localStorage.setItem('GamePlayer', GamePlayer.toJson());
 }
 
@@ -187,6 +194,28 @@ function InitPlayers(game)
 
   InitGamePlayer(game);
 
+  // Initialize the active players
+  let numPlayers = GamePlayer.optionStore.get('.root.players.numPlayers');
+  SetNumPlayers(numPlayers);
+}
+
+
+/**
+ * Set the number of active players
+ * @param {Number} num Number of Active Players
+ */
+function SetNumPlayers(num) {
+
+  let count = 0;
+  activePlayers.clear();
+
+  for (let p of players.values()) {
+    activePlayers.set(p.getId(), p);
+
+    if (++count >= num) {
+      break;
+    }
+  }
 }
 
 /**
@@ -195,19 +224,19 @@ function InitPlayers(game)
  */
 function InitGamePlayer(game) {
 
-
   if (!localStorage.getItem('GamePlayer')) {
     GamePlayer = new Player ();
     GamePlayer.name = 'GamePlayer';
-
+    GamePlayer.id = 0;
   } else {
     let data = localStorage.getItem('GamePlayer');
     GamePlayer = Player.CreateFromJson(data);
+    GamePlayer.id = 0;
     GamePlayer.optionStore.updateWorld(GamePlayer, game);
   }
 
   // Give the Game player the same mapping as the 1st player
-  for (let p of GetPlayers())
+  for (let p of players.values())
   {
     GamePlayer.setMapping(p.mapping);
     break;

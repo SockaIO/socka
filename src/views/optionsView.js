@@ -2,7 +2,7 @@
 
 import View from './view';
 import {Theme, Player} from '../services';
-import {Menu, TextMenuItem, MappingMenuItem, EnumMenuItem, MenuItemHighlighter} from '../components';
+import {Menu, TextMenuItem, MappingMenuItem, EnumMenuItem, MenuItemHighlighter, InputMenuItem} from '../components';
 
 import {KEY_LEFT, KEY_RIGHT, KEY_UP, KEY_DOWN, TAP, RAPID_FIRE, KEY_BACK, KEY_ENTER} from '../constants/input';
 import {MENU_OPTION} from '../constants/resources';
@@ -62,6 +62,9 @@ export default class OptionsView extends View {
 
         } else if (o.constructor.name === 'EnumOption') {
           entries.push(new EnumMenuItem(o.name, `${prefix}.${option.id}.${o.id}`, o.acceptedValues, this.players));
+
+        } else if (o.constructor.name === 'TextOption') {
+          entries.push(new InputMenuItem(o.name, `${prefix}.${option.id}.${o.id}`, this.players));
         }
 
         optionByKey.set(`${prefix}.${option.id}.${o.id}`, o);
