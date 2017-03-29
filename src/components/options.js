@@ -165,12 +165,29 @@ export class EnumMenuItem extends MenuItem{
  */
 export class InputMenuItem extends MenuItem{
 
-  constructor(name, defaultValue) {
+  constructor(name, key, players, defaultValues=[]) {
     super();
 
     this.name = name;
-    this.value = defaultValue;
-    this.backupValue = defaultValue;
+    this.key = key;
+    this.backupValue;
+
+    this.values = new Map();
+
+    for (let p of players) {
+
+      let value;
+
+      if (defaultValues.size > 0) {
+        value = defaultValues.get(p.getId());
+      } else {
+        value = p.optionStore.get(this.key);
+      }
+
+      this.values.set(p.getId(), value);
+      this.modifyingPlayerId = p.getId ();
+    }
+
   }
 
   createGraphicComponent(width, height) {
@@ -178,28 +195,34 @@ export class InputMenuItem extends MenuItem{
     return this.graphicComponent.sprite;
   }
 
-  getValue () {
-    return this.value;
+  getValues () {
+    return this.values;
   }
 
-  enter() {
+  getValue () {
+    return this.values.get(this.modifyingPlayerId);
+  }
 
-    this.backupValue = this.value;
+  enter(player) {
+
+
+    this.modifyingPlayerId = player.getId();
+    this.backupValue = this.values.get(this.modifyingPlayerId);
     this.graphicComponent.onFocus();
 
-    Input.SetInputListener(this.value, (type, e) => {
+    Input.SetInputListener(this.getValue(), (type, e) => {
 
       switch(type) {
       case INPUT_CANCEL:
         this.graphicComponent.onBlur();
-        this.value = this.backupValue;
+        this.values.set(this.modifyingPlayerId, this.backupValue);
         break;
       case INPUT_ENTER:
         this.graphicComponent.onBlur();
-        this.value = e;
+        this.values.set(this.modifyingPlayerId, e);
         break;
       case INPUT_UPDATE:
-        this.value = e;
+        this.values.set(this.modifyingPlayerId, e);
         break;
       }
     });

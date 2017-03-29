@@ -1363,7 +1363,7 @@ class InputMenuItemDefaultGraphicComponent extends interfaces.MenuItemGraphicCom
     this.sprite.addChild(this.name);
 
     this.offset = this.name.width + 30;
-    this.value = new PIXI.extras.BitmapText(`${menuItem.value}: `, {font: this.height + 'px font', align: 'center'});
+    this.value = new PIXI.extras.BitmapText(`${menuItem.getValue()}: `, {font: this.height + 'px font', align: 'center'});
     this.value.x = this.offset;
     this.sprite.addChild(this.value);
 
@@ -1401,7 +1401,7 @@ class InputMenuItemDefaultGraphicComponent extends interfaces.MenuItemGraphicCom
   }
 
   update() {
-    this.value.text = this.menuItem.value;
+    this.value.text = this.menuItem.getValue();
   }
 }
 
