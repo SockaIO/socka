@@ -792,7 +792,7 @@ function loadFromDWIFile(data) {
   song.sampleLength = fieldMap.get('SAMPLELENGTH');
 
   // Timing Data
-  song.offset = fieldMap.get('GAP')/1000;
+  song.offset = -fieldMap.get('GAP')/1000;
 
   song.bpms = getList('0.000=' + fieldMap.get('BPM')).concat(getList(fieldMap.get('CHANGEBPMS') || ''));
   song.stops = getList(fieldMap.get('FREEZE') || '');
