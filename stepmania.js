@@ -60,6 +60,24 @@ function packMenuEntry(pack, game) {
 }
 
 /**
+ * Generate the Pack Menu Entries
+ */
+function generatePackMenu(packs, game) {
+
+  packs.then((packsGen) => {
+
+    let entries = [];
+
+    for (let p of packsGen) {
+      entries.push(packMenuEntry(p, game));
+    }
+
+    let menu = new MenuView(entries, game);
+    game.pushView(menu);
+  });
+}
+
+/**
  * Initialize the game.
  */
 function init() {
@@ -74,25 +92,24 @@ function init() {
 
   game.init().then(() => {
 
-    let entries = [];
-
-    packs.then((packsGen) => {
-      for (let p of packsGen) {
-        entries.push(packMenuEntry(p, game));
-      }
-
-      entries.push({
+    let entries = [
+      {
+        name: 'Play',
+        action: () => {
+          generatePackMenu(packs, game);
+        }
+      },
+      {
         name: 'Options',
         action: () => {
           let o = new OptionsView(Options.GetRoot(), '', game);
           game.pushView(o);
         }
-      });
+      }];
 
-      let menu = new MenuView(entries, game);
-      game.pushView(menu);
-      game.main();
+    let menu = new MenuView(entries, game);
+    game.pushView(menu);
 
-    });
+    game.main();
   });
 }

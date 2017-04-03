@@ -18,7 +18,7 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.png$/,
+        test: /\.(png|jpg)$/,
         use: ['file-loader?name=[path][name].[ext]']
       },
       {

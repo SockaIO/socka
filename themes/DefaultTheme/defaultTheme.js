@@ -8,6 +8,7 @@ import log from 'loglevel';
 import {theme as interfaces} from '../../src/interfaces';
 import {TM_W1, TM_W2, TM_W3, TM_W4, TM_W5, TM_MISS, TM_MINE, S_OK, S_NG, TIMING_TEXTS, RANK_TEXTS} from '../../src/constants/judge';
 import {TAP_NOTE, FAKE_NOTE, ROLL_NOTE, MINE_NOTE, HOLD_NOTE, LIFT_NOTE, EVENT_NOTE_HIT, EVENT_NOTE_MISS, EVENT_NOTE_FINISH} from '../../src/constants/chart';
+import {MENU_MAIN} from '../../src/constants/resources';
 
 /*
  * The Theme class is responsible for laoding
@@ -47,6 +48,7 @@ export default class DefaultTheme extends interfaces.Theme {
       font: require('./img/font.xml'),
       fontImg: require('./img/font.png'),
       blank: require('./img/blank.png'),
+      bgMain: require('./img/BG1-logo.jpg'),
     };
 
   }
@@ -1206,7 +1208,9 @@ class MenuFancyGraphicComponent extends interfaces.MenuGraphicComponent {
   createMainSprite() {
     this.sprite = new PIXI.Container();
 
-    this.background = new PIXI.Container();
+    if (this.menu.id === MENU_MAIN) {
+      this.background = new PIXI.Sprite(this.theme.getTexture('bgMain'));
+    }
     this.foreground = new PIXI.Container();
 
     this.sprite.addChild(this.background);
