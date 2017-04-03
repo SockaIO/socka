@@ -3,7 +3,7 @@
 import {OptionStore} from '../components';
 import * as Input from './input';
 
-import {KEY_UP, KEY_LEFT, KEY_RIGHT, KEY_DOWN, KEY_ENTER, KEY_BACK} from '../constants/input';
+import {KEY_UP, KEY_LEFT, KEY_RIGHT, KEY_DOWN, KEY_ENTER, KEY_BACK, KEYS} from '../constants/input';
 
 /**
  * @namespace services.Player
@@ -85,6 +85,33 @@ class Player {
     };
 
     return JSON.stringify(output);
+  }
+
+  /**
+   * Save the current mapping to the optionStore
+   */
+  saveMapping () {
+
+    let keyTexts = {
+      [KEY_LEFT]: 'left',
+      [KEY_RIGHT]: 'right',
+      [KEY_UP]: 'up',
+      [KEY_DOWN]: 'down',
+      [KEY_ENTER]: 'enter',
+      [KEY_BACK]: 'back',
+    };
+
+    for (let key of KEYS) {
+      let controller, keyCode;
+
+      // Get returns a set of one element so we need to extract the value
+      [controller, keyCode] = [...this.mapping.mapping.get(key)][0];
+
+      this.optionStore.set(`.root.mapping.${keyTexts[key]}`, {
+        key: keyCode,
+        controller: controller.id
+      });
+    }
   }
 
   /**
@@ -187,6 +214,9 @@ function InitPlayers(game)
 
     q.setMapping(m);
 
+    // Save the mapping into the preference
+    q.saveMapping();
+    p.saveMapping();
 
   } else {
     LoadPlayers(game);
