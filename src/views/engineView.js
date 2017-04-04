@@ -51,7 +51,7 @@ class EngineView extends View {
 
     let i = 0;
     for (let player of players) {
-      let e = new Engine(engineWidth, engineHeight, 6, player, this.songPlayer);
+      let e = new Engine(engineWidth, engineHeight, Number(player.optionStore.get('.root.gameplay.fieldOfView')), player, this.songPlayer);
       e.sprite.x = i++ * engineWidth + offset;
       e.sprite.y = 0;
 

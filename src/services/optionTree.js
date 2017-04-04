@@ -26,6 +26,14 @@ export default function GetOptionTree() {
   let display = new Options.OptionGroup('Display', 'display', true, [resolution]);
 
   /*
+   * Gameplay
+   */
+
+  let field = new Options.EnumOption('Field of view', 'fieldOfView', ['4', '5', '6', '7', '8'], '6');
+
+  let gameplay = new Options.OptionGroup('Gameplay', 'gameplay', false, [field]);
+
+  /*
    * Player
    */
   let numPlayers = new Options.EnumOption('Players', 'numPlayers', ['1', '2'], '1');
@@ -74,7 +82,7 @@ export default function GetOptionTree() {
   /*
    * Root
    */
-  let root = new Options.OptionFolder('root', 'root', [display, players, mapping]);
+  let root = new Options.OptionFolder('root', 'root', [display, gameplay, players, mapping]);
 
   return root;
 }
