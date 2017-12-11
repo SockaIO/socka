@@ -8,6 +8,8 @@ import {RSC_AUDIO, RSC_BANNER, RSC_BACKGROUND, RSC_SONG, RSC_CHART} from '../con
 import * as PIXI from 'pixi.js';
 import {ParseSong} from './songParser';
 
+import log from 'loglevel';
+
 let endpoints = new Set();
 
 /**
@@ -179,6 +181,9 @@ export class SongIndex {
    */
   load(type) {
     if (!this.rscMap.has(type)) {
+
+      log.debug(`Loading ${type.toString()} from external`);
+
       if (type === RSC_BACKGROUND || type === RSC_BANNER) {
         return this.doLoad(type).then((data) => {
           let texture = createTexture(data);
@@ -204,6 +209,10 @@ export class SongIndex {
       }
 
     } else {
+      log.debug(`Loading ${type.toString()} from cache`);
+      if (type === RSC_AUDIO) {
+        return Promise.resolve(this.rscMap.get(type).slice(0)); // Need to copy not to consume the buffer in the cache
+      }
       return Promise.resolve(this.rscMap.get(type));
     }
 

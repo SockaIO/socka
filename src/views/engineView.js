@@ -10,6 +10,9 @@ import ResultsView from './resultsView';
 import {KEY_UP, KEY_LEFT, KEY_DOWN, KEY_RIGHT, TAP, LIFT, KEY_BACK} from '../constants/input';
 
 import {RSC_BACKGROUND} from '../constants/resources';
+
+import log from 'loglevel';
+
 /**
  * View Class for the gameplay.
  * Can contain one or more engines
@@ -66,6 +69,7 @@ class EngineView extends View {
     for (let e of this.engines) {
       this.promises.push(e.loadSong(song, difficulty).then(() =>{
         let j = this.engines.indexOf(e);
+        log.debug(`Engine ${j} loaded`);
         this.loading.loadPart(`Engine ${j} loaded`);
       }));
       this.loading.addPart();
@@ -73,6 +77,7 @@ class EngineView extends View {
 
     // Song Player
     this.promises.push(this.songPlayer.load(song).then((song) => {
+      log.debug('Song Player Loaded');
       this.loading.loadPart('Song Player loaded');
       return song;
     }));
@@ -81,6 +86,7 @@ class EngineView extends View {
     // Engine View GC
     this.promises.push(song.load(RSC_BACKGROUND).then((texture) => {
       this.graphicComponent.setBackground(texture);
+      log.debug('Background Loaded');
       this.loading.loadPart('Background loaded');
     }));
     this.loading.addPart();
