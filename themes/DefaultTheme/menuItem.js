@@ -11,7 +11,7 @@ export class TextMenuItemDefaultGraphicComponent extends interfaces.MenuItemGrap
 
     this.width = width;
     this.height = height;
-    this.sprite = new PIXI.extras.BitmapText(text, {font: this.height + 'px font', align: 'center'});
+    this.sprite = new PIXI.extras.BitmapText(text, {font: this.height + 'px clementeRegular', align: 'center'});
 
     this.players = new Set();
     this.highlighters = new Map();
@@ -55,7 +55,7 @@ export class MappingMenuItemDefaultGraphicComponent extends interfaces.MenuItemG
 
     this.sprite = new PIXI.Container();
 
-    this.name = new PIXI.extras.BitmapText(`${menuItem.name}: `, {font: this.height + 'px font', align: 'center'});
+    this.name = new PIXI.extras.BitmapText(`${menuItem.name}: `, {font: this.height + 'px clementeRegular', align: 'center'});
     this.sprite.addChild(this.name);
 
     this.offset = 200;
@@ -66,7 +66,7 @@ export class MappingMenuItemDefaultGraphicComponent extends interfaces.MenuItemG
 
     let x = 0;
     for (let [playerId, value] of menuItem.getValues()) {
-      let v = new PIXI.extras.BitmapText(this.getText(value), {font: this.height + 'px font', align: 'center'});
+      let v = new PIXI.extras.BitmapText(this.getText(value), {font: this.height + 'px clementeRegular', align: 'center'});
       this.values.set(playerId, v);
       v.x = this.offset + x++ * (this.entryWidth);
       this.sprite.addChild(v);
@@ -120,11 +120,11 @@ export class InputMenuItemDefaultGraphicComponent extends interfaces.MenuItemGra
 
     this.sprite = new PIXI.Container();
 
-    this.name = new PIXI.extras.BitmapText(`${menuItem.name}: `, {font: this.height + 'px font', align: 'center'});
+    this.name = new PIXI.extras.BitmapText(`${menuItem.name}: `, {font: this.height + 'px clementeRegular', align: 'center'});
     this.sprite.addChild(this.name);
 
     this.offset = this.name.width + 30;
-    this.value = new PIXI.extras.BitmapText(`${menuItem.getValue()}: `, {font: this.height + 'px font', align: 'center'});
+    this.value = new PIXI.extras.BitmapText(`${menuItem.getValue()}: `, {font: this.height + 'px clementeRegular', align: 'center'});
     this.value.x = this.offset;
     this.sprite.addChild(this.value);
 
@@ -179,7 +179,7 @@ export class EnumMenuItemDefaultGraphicComponent extends interfaces.MenuItemGrap
 
     this.sprite = new PIXI.Container();
 
-    this.name = new PIXI.extras.BitmapText(`${menuItem.name}: `, {font: this.height + 'px font', align: 'center'});
+    this.name = new PIXI.extras.BitmapText(`${menuItem.name}: `, {font: this.height + 'px clementeRegular', align: 'center'});
     this.sprite.addChild(this.name);
 
     this.offset = 300;
@@ -191,7 +191,7 @@ export class EnumMenuItemDefaultGraphicComponent extends interfaces.MenuItemGrap
     this.values = [];
 
     for (let v of menuItem.getEnum ()) {
-      let t = new PIXI.extras.BitmapText(v, {font: this.height + 'px font', align: 'center'});
+      let t = new PIXI.extras.BitmapText(v, {font: this.height + 'px clementeRegular', align: 'center'});
       t.x = x;
       x += this.margin + t.width;
       this.sprite.addChild (t);

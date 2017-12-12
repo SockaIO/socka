@@ -214,7 +214,7 @@ export class JudgmentDefaultGraphicComponent {
 export class ScoreDefaultGraphicComponent {
 
   constructor() {
-    this.sprite = new PIXI.extras.BitmapText('',{font : '24px font', align : 'center'});
+    this.sprite = new PIXI.extras.BitmapText('',{font : '24px clementeRegular', align : 'center'});
     this.update(0);
   }
 
@@ -252,7 +252,7 @@ export class ScoreDefaultGraphicComponent {
 export class ComboDefaultGraphicComponent {
 
   constructor() {
-    this.sprite = new PIXI.extras.BitmapText('Combo',{font : '24px font', align : 'center'});
+    this.sprite = new PIXI.extras.BitmapText('Combo',{font : '24px clementeRegular', align : 'center'});
     this.update(0);
   }
 

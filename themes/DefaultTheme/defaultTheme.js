@@ -77,11 +77,15 @@ export default class DefaultTheme extends interfaces.Theme {
       lifemeterUnder: require('./img/lifemeterUnder.png'),
       progressBarMiddle: require('./img/progressBarMiddle.png'),
       progressBarUnder: require('./img/progressBarUnder.png'),
-      font: require('./img/font.xml'),
-      fontImg: require('./img/font.png'),
+      clementeRegular: require('./img/clementeRegular.png'),
+      // We Load the key twice to have the png also imported with webpack (kindof a hack but convenient)
+      // If we load it explicitely we get a warning a texture being loaded twice
+      /* eslint no-dupe-keys: 0 */
+      clementeRegular: require('./img/clementeRegular.fnt'),
       blank: require('./img/blank.png'),
       bgMain: require('./img/BG1-logo.jpg'),
     };
+
 
   }
 

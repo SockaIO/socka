@@ -25,7 +25,7 @@ export class LoadingViewDefaultGraphicComponent extends interfaces.LoadingViewGr
     this.background.height = height;
     this.background.tint = 0x0e333d;
 
-    this.textSprite = new PIXI.Text(this._text, {font : '24px Arial', fill : 0xffffff, align : 'center'});
+    this.textSprite = new PIXI.extras.BitmapText(this._text, {font : '24px clementeRegular', align : 'center'});
     this.textSprite.y = height - 90;
     this.textSprite.x = width/2;
     this.textSprite.anchor.x = 0.5;

@@ -55,21 +55,21 @@ export class ResultsDefaultGraphicComponent extends interfaces.ResultsGraphicCom
 
     let container = new PIXI.Container();
 
-    let nameSprite = new PIXI.extras.BitmapText(result.player.name, {font: 40 + 'px font', align: 'left'});
+    let nameSprite = new PIXI.extras.BitmapText(result.player.name, {font: 40 + 'px clementeRegular', align: 'left'});
     container.addChild(nameSprite);
 
-    let rankSprite = new PIXI.extras.BitmapText(RANK_TEXTS[result.rank], {font: 40 + 'px font', align: 'left'});
+    let rankSprite = new PIXI.extras.BitmapText(RANK_TEXTS[result.rank], {font: 40 + 'px clementeRegular', align: 'left'});
     rankSprite.y = 50;
     rankSprite.x = 20;
     container.addChild(rankSprite);
 
     let text = this.getText(result);
-    let textSprite = new PIXI.extras.BitmapText(text, {font: 25 + 'px font', align: 'left'});
+    let textSprite = new PIXI.extras.BitmapText(text, {font: 25 + 'px clementeRegular', align: 'left'});
     textSprite.y = 100;
 
     container.addChild(textSprite);
 
-    let score = new PIXI.extras.BitmapText('Score: ' + result.score, {font: 40 + 'px font', align: 'left'});
+    let score = new PIXI.extras.BitmapText('Score: ' + result.score, {font: 40 + 'px clementeRegular', align: 'left'});
     container.addChild(score);
 
     score.y = 350;
@@ -147,7 +147,7 @@ export class ResultsDefaultGraphicComponent extends interfaces.ResultsGraphicCom
 
     container.addChild(this.overlay);
 
-    let text = new PIXI.extras.BitmapText('Your Results', {font: 40 + 'px font', align: 'center'});
+    let text = new PIXI.extras.BitmapText('Your Results', {font: 40 + 'px clementeRegular', align: 'center'});
     text.x = 20;
     text.y = 20;
     container.addChild(text);

@@ -22,7 +22,7 @@ module.exports = {
         use: ['file-loader?name=[path][name].[ext]']
       },
       {
-        test: /\.xml$/,
+        test: /\.(xml|fnt)$/,
         use: ['file-loader?name=[path][name].[ext]']
       },
       {
