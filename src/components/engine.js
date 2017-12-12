@@ -207,7 +207,7 @@ class Engine {
    */
   updateAction() {
 
-    if (this.actionIndex >= this.steps.length - 2) {
+    if (this.actionIndex > this.steps.length - 2) {
       return;
     }
 
@@ -235,7 +235,7 @@ class Engine {
       }
 
       this.actionIndex++;
-      if (this.actionIndex >= this.steps.length - 2) {
+      if (this.actionIndex > this.steps.length - 2) {
         return;
       }
 
