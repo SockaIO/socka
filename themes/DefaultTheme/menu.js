@@ -1,6 +1,8 @@
 'use strict';
 
 import * as PIXI from 'pixi.js';
+import {TweenLite} from 'gsap';
+
 import {theme as interfaces} from '../../src/interfaces';
 
 import {MENU_MAIN} from '../../src/constants/resources';
@@ -23,9 +25,12 @@ export class MenuDefaultGraphicComponent extends interfaces.MenuGraphicComponent
     this.numLines = (this.height / 2) / (this.lineHeight + this.margin) - 1;
     this.origin = this.height / 2;
 
+    // Parameters
+    this.transitionDuration = 0.25;
+    this.amplification = 2;
+
     this.createEntries(menu.getEntries());
     this.theme = theme;
-
   }
 
   createEntries(entries) {
@@ -52,15 +57,42 @@ export class MenuDefaultGraphicComponent extends interfaces.MenuGraphicComponent
     this.sprite.addChild(this.foreground);
   }
 
+  // Returns the Position + Scale
+  getPosition(distance, sprite) {
+    let newScale = 1;
+
+    // Center on the origin line
+    let newY = this.origin - sprite.height / 2;
+    // Shift from the amplified middle to first place;
+    newY += Math.sign(distance) * (this.lineHeight * (this.amplification + 1) / 2 + this.margin);
+    // Shift the remaining of the way
+    newY += Math.sign(distance) * (Math.abs(distance) - 1) * (this.lineHeight + this.margin);
+
+    if (distance === 0) {
+      newScale = this.amplification;
+      newY = this.origin - sprite.height / 2;
+    }
+
+    let newX = this.width/2 - sprite.width / 2;
+
+    return {
+      x: newX,
+      y: newY,
+      scale: {x: newScale, y: newScale}
+    };
+  }
+
   /**
    * Barbarian Update
    */
   update() {
 
+    const selectedIndex = this.menu.getSelectedIndex();
+
     for (let x = 0; x < this.entries.length; x++) {
 
       let sprite = this.entries[x];
-      let distance = x - this.menu.getSelectedIndex();
+      let distance = x - selectedIndex;
 
       // Not displayed
       if (Math.abs(distance) > this.numLines) {
@@ -69,16 +101,12 @@ export class MenuDefaultGraphicComponent extends interfaces.MenuGraphicComponent
         sprite.visible = true;
       }
 
-      sprite.y = this.origin + distance * (this.lineHeight + this.margin) + Math.sign(distance) * this.lineHeight / 2 + (sprite.height / 2);
-      sprite.scale = {x:1, y:1};
-      sprite.x = this.width/2 - sprite.width / 2;
+      let newPosition = this.getPosition(distance, sprite);
+
+      TweenLite.to(sprite, this.transitionDuration, {y: newPosition.y});
+      TweenLite.to(sprite.scale, this.transitionDuration, newPosition.scale);
+      sprite.x = newPosition.x;
     }
-
-    let selected = this.entries[this.menu.getSelectedIndex()];
-    selected.scale = {x:2, y:2};
-    selected.x = this.width/2 - selected.width / 2;
-    selected.y = this.origin;
-
   }
 }
 

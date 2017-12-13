@@ -14,8 +14,10 @@ import {MENU_MAIN} from '../constants/resources';
  * @memberof views
  */
 class MenuView extends View {
-  constructor(entries, game) {
+  constructor(entries, game, root=false) {
     super(game);
+
+    this.root = root;
 
     let width, height;
     [width, height] = game.getScreenSize();
@@ -32,7 +34,9 @@ class MenuView extends View {
   }
 
   back() {
-    this.game.popView();
+    if (this.root === false) {
+      this.game.popView();
+    }
   }
 
   up() {

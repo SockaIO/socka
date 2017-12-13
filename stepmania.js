@@ -107,7 +107,7 @@ function init() {
         }
       }];
 
-    let menu = new MenuView(entries, game);
+    let menu = new MenuView(entries, game, true);
     game.pushView(menu);
 
     game.main();
