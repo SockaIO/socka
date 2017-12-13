@@ -1,6 +1,17 @@
 'use strict';
 
 const webpack = require('webpack');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const HtmlWebpackHarddiskPlugin = require('html-webpack-harddisk-plugin');
+const path = require('path');
+
+const indexOptions = {
+  title: 'Socka',
+  template: 'src/index.html',
+  inject: true,
+  alwaysWriteToDisk: true, // Required to use with webpack-dev-server
+  filename: path.resolve(__dirname + '/dist/index.html')
+};
 
 module.exports = {
   context: __dirname,
@@ -8,13 +19,15 @@ module.exports = {
     app: './stepmania.js',
   },
   output: {
-    path: __dirname + '/dist/assets/',
+    path: path.resolve(__dirname + '/dist/assets/'),
     filename: '[name].bundle.js',
     publicPath: '/assets/',
   },
   devServer: {
-    contentBase: __dirname + '/src/',
+    contentBase: path.resolve(__dirname, 'dist'),
+    publicPath: '/assets/',
   },
+  plugins: [new HtmlWebpackPlugin(indexOptions), new HtmlWebpackHarddiskPlugin()],
   module: {
     rules: [
       {
