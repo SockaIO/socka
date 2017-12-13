@@ -112,14 +112,29 @@ function listLinks(url, opts) {
     let el = document.createElement('html');
     el.innerHTML = data;
 
+    let parse_url = document.createElement('a');
+    parse_url.href = url;
+
     return function* () {
       for (let a of el.getElementsByTagName('a')) {
 
         // Get the Absolute URL
         let href = a.getAttribute('href');
         if (!href.startsWith('http')) {
-          href = url + '/' + href;
+          if (href.startsWith("/")) {
+            href = parse_url.origin + href;
+          } else if (href.startsWith("?")) {
+            continue;
+          } else {
+            href = url + '/' + href;
+          }
         }
+
+        // Link to the parent directory
+        if (url.includes(href)) {
+            continue;
+        }
+
 
         // Get the name
         let name = a.innerHTML;
