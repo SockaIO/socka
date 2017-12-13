@@ -1,6 +1,7 @@
 'use strict';
 
 import * as PIXI from 'pixi.js';
+import {TweenLite} from 'gsap';
 
 import {theme as interfaces} from '../../src/interfaces';
 
@@ -182,8 +183,8 @@ export class EnumMenuItemDefaultGraphicComponent extends interfaces.MenuItemGrap
     this.name = new PIXI.extras.BitmapText(`${menuItem.name}: `, {font: this.height + 'px clementeRegular', align: 'center'});
     this.sprite.addChild(this.name);
 
-    this.offset = 300;
     this.margin = 20;
+    this.offset = this.name.width + this.margin;
 
     // Create the list
     let x = this.offset;
@@ -258,10 +259,10 @@ export class MenuItemSelectorDefaultGraphicComponent extends interfaces.MenuItem
 
     this.bar.destroy();
 
-    let width = sprite.width;
+    let width = sprite.width + 5;
     let height = 5;
 
-    let x = sprite.x + 5;
+    let x = sprite.x;
     let y = sprite.y + sprite.height;
 
     this.bar = new PIXI.Graphics();
@@ -284,27 +285,33 @@ export class MenuItemHighlighterDefaultGraphicComponent extends interfaces.MenuI
     this.sprite = new PIXI.Container();
 
     this.bar = new PIXI.Graphics();
-    this.sprite.addChild(this.bar);
     this.color = playerColor;
+
+    this.bar.beginFill(this.color, 0.2);
+    this.bar.drawRect(0, 0, 10, 10);
+    this.bar.endFill();
+
+    this.sprite.addChild(this.bar);
+
+    // Parameters
+    this.transitionDuration = 0.2;
 
     this.object = null;
   }
 
   setHighlighted(sprite) {
 
-    this.bar.destroy();
+    //this.bar.destroy();
     this.object = sprite;
 
-    let width = sprite.width;
-    let height = sprite.height;
+    let width = sprite.width + 5;
+    let height = sprite.height + 5;
 
-    let x = sprite.worldTransform.tx + 5;
-    let y = sprite.worldTransform.ty + 5;
+    let x = sprite.worldTransform.tx;
+    let y = sprite.worldTransform.ty;
 
-    this.bar = new PIXI.Graphics();
-    this.bar.beginFill(this.color, 0.2);
-    this.bar.drawRect(x, y, width, height);
-    this.bar.endFill();
+    TweenLite.to(this.bar.position, this.transitionDuration, {x, y});
+    TweenLite.to(this.bar, this.transitionDuration, {width, height});
 
     this.sprite.addChild(this.bar);
   }

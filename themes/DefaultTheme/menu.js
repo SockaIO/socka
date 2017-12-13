@@ -5,7 +5,7 @@ import {TweenLite} from 'gsap';
 
 import {theme as interfaces} from '../../src/interfaces';
 
-import {MENU_MAIN} from '../../src/constants/resources';
+import {MENU_MAIN, MENU_OPTION} from '../../src/constants/resources';
 
 export class MenuDefaultGraphicComponent extends interfaces.MenuGraphicComponent {
 
@@ -295,6 +295,9 @@ export class OptionMenuDefaultGraphicComponent extends interfaces.MenuGraphicCom
       this.entries.push(sprite);
       sprite.visible = false;
     }
+
+    this.offsetY = this.origin - ((this.lineHeight + this.margin) * this.entries.length) / 2;
+    this.offsetX = this.width / 2 - Math.max(...this.entries.map((x) => x.width)) / 2;
   }
 
   createMainSprite() {
@@ -302,6 +305,10 @@ export class OptionMenuDefaultGraphicComponent extends interfaces.MenuGraphicCom
 
     this.background = new PIXI.Container();
     this.foreground = new PIXI.Container();
+
+    if (this.menu.id === MENU_OPTION) {
+      this.background = new PIXI.Sprite(this.theme.getTexture('bgMain'));
+    }
 
     this.sprite.addChild(this.background);
     this.sprite.addChild(this.foreground);
@@ -313,7 +320,6 @@ export class OptionMenuDefaultGraphicComponent extends interfaces.MenuGraphicCom
   update() {
 
     const selectedIndex = this.menu.getSelectedIndex();
-
     if (selectedIndex < this.minView)
     {
       this.minView = selectedIndex;
@@ -324,6 +330,8 @@ export class OptionMenuDefaultGraphicComponent extends interfaces.MenuGraphicCom
       this.maxView = selectedIndex;
       this.minView = this.maxView - this.numLines;
     }
+
+
 
     for (let x = 0; x < this.entries.length; x++) {
 
@@ -338,8 +346,8 @@ export class OptionMenuDefaultGraphicComponent extends interfaces.MenuGraphicCom
 
       const index = x - this.minView;
 
-      sprite.y = index * (this.lineHeight + this.margin);
-      sprite.x = 0;
+      sprite.y = this.offsetY + index * (this.lineHeight + this.margin);
+      sprite.x = this.offsetX;
     }
   }
 }
