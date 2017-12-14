@@ -118,6 +118,7 @@ export class InputMenuItemDefaultGraphicComponent extends interfaces.MenuItemGra
 
     this.width = width;
     this.height = height;
+    this.transitionDuration = 0.2;
 
     this.sprite = new PIXI.Container();
 
@@ -131,6 +132,13 @@ export class InputMenuItemDefaultGraphicComponent extends interfaces.MenuItemGra
 
     this.highlighters = new Map();
 
+    this.cursor = new PIXI.Graphics();
+    this.cursor.beginFill(0xffffff, 0.5);
+    this.cursor.drawRect(0, 0, 10, this.height);
+    this.cursor.endFill();
+    this.cursor.visible = false;
+
+    this.sprite.addChild(this.cursor);
   }
 
   setHighlighter (h, playerId) {
@@ -157,13 +165,30 @@ export class InputMenuItemDefaultGraphicComponent extends interfaces.MenuItemGra
   }
 
   onFocus() {
+    this.cursor.visible = true;
   }
 
   onBlur() {
+    this.cursor.visible = false;
+  }
+
+  textWidth () {
+    let width = this.value.width;
+
+    // Add margin if the final char is a space
+    if (this.value.text.slice(-1) === ' ') {
+      width += 10;
+    }
+
+    // Add a little margin
+    width += 2;
+
+    return width;
   }
 
   update() {
     this.value.text = this.menuItem.getValue();
+    TweenLite.to(this.cursor, this.transitionDuration, {x: this.offset + this.textWidth()});
   }
 }
 
