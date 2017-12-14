@@ -1,6 +1,7 @@
 'use strict';
 
 import {Theme, Player} from '../services';
+import {NUM_PLAYERS} from '../constants/signaling';
 
 /**
  * Class representing a menu. Each entry has a name attribute that get displayed
@@ -40,19 +41,69 @@ export class Menu {
     this.players = players;
 
     this.highlighters = new Map();
-
-    if (highlighterFactory !== null) {
-      for (let p of players) {
-        let h = new highlighterFactory (entries, p);
-        this.highlighters.set(p.getId(), h);
-        this.sprite.addChild(h.sprite);
-      }
-    }
+    this.highlighterFactory = highlighterFactory;
 
     for (let p of players) {
-      this.selecteds.set(p.getId(), 0);
-      this.setSelected(0, p);
+      this.addPlayer(p);
     }
+  }
+
+  /**
+   * Add a player to the menu
+   */
+  addPlayer(player) {
+    if (this.highlighterFactory !== null) {
+      let h = new this.highlighterFactory (this.entries, player);
+      this.highlighters.set(player.getId(), h);
+      this.sprite.addChild(h.sprite);
+    }
+
+    this.selecteds.set(player.getId(), 0);
+    this.setSelected(0, player);
+  }
+
+  /**
+   * Remove a players
+   */
+  removePlayer(player) {
+    // Remove the highlighter
+    let h = this.highlighters.get(player.getId());
+    h.sprite.destroy();
+    this.highlighters.delete(player.getId());
+
+    // Remove the selected Memory
+    this.selecteds.delete(player.getId());
+  }
+
+  /**
+   * Update the Players connected
+   */
+  updatePlayers() {
+
+    // We do not update if the menu is controlled by the game player
+    if (this.players.length > 0 && this.players[0] === Player.GamePlayer) {
+      return;
+    }
+
+    let newPlayers = [...Player.GetPlayers()]; // Convert iterator to array
+
+    if (newPlayers.length > this.players.length) {
+      for (let p of newPlayers) {
+        // The player is not new
+        if (this.selecteds.has(p.getId())) {
+          continue;
+        }
+        this.addPlayer(p);
+      }
+    } else {
+      for (let p of this.players) {
+        if (newPlayers.includes(p)) {
+          continue;
+        }
+        this.removePlayer(p);
+      }
+    }
+    this.players = newPlayers;
   }
 
   /**
@@ -136,6 +187,22 @@ export class Menu {
 
   upgrade(modifications) {
     this.graphicComponent.upgrade(modifications);
+
+    if (!Array.isArray(modifications)) {
+      modifications = [modifications];
+    }
+
+    for (let m of modifications) {
+      this.handleModification(m);
+    }
+  }
+
+  handleModification(modification) {
+    switch(modification.type) {
+    case NUM_PLAYERS:
+      this.updatePlayers();
+      break;
+    }
   }
 
   /**
@@ -214,7 +281,7 @@ export class TextMenuItem extends MenuItem {
     }
   }
 
-  onDeselected(player=NULL_PLAYER) {
+  onDeselected(player=Player.GamePlayer) {
     if (this.graphicComponent) {
       this.graphicComponent.onDeselected(player.getId());
     }

@@ -2,7 +2,7 @@
 
 import {Options} from './';
 import {KEYS} from '../constants/input';
-import {RESIZE} from '../constants/signaling';
+import {RESIZE, NUM_PLAYERS} from '../constants/signaling';
 import {Input, Player} from '../services';
 
 /**
@@ -38,8 +38,9 @@ export default function GetOptionTree() {
    * Player
    */
   let numPlayers = new Options.EnumOption('Players', 'numPlayers', ['1', '2'], '1');
-  numPlayers.setUpdateWorld((value) => {
+  numPlayers.setUpdateWorld((value, player, game) => {
     Player.SetNumPlayers(value);
+    game.upgrade({type: NUM_PLAYERS});
   });
 
   let namePlayer1 = new Options.TextOption('Name Player 1', 'namePlayer1', 1, 100, 'Player 1');

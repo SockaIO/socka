@@ -6,6 +6,7 @@ import {Menu, TextMenuItem, MappingMenuItem, EnumMenuItem, MenuItemHighlighter, 
 
 import {KEY_LEFT, KEY_RIGHT, KEY_UP, KEY_DOWN, TAP, RAPID_FIRE, KEY_BACK, KEY_ENTER} from '../constants/input';
 import {MENU_OPTION} from '../constants/resources';
+import {NUM_PLAYERS} from '../constants/signaling';
 
 
 
@@ -125,6 +126,23 @@ export default class OptionsView extends View {
 
   upgrade(modifications) {
     this.menu.upgrade(modifications);
+
+    if (!Array.isArray(modifications)) {
+      modifications = [modifications];
+    }
+
+    for (let m of modifications) {
+      this.handleModification(m);
+    }
+  }
+
+  handleModification(modification) {
+    switch(modification.type) {
+    case NUM_PLAYERS:
+        // Nothing to implement yet because we cannot have an option
+        // View dependent on the players loaded after we change the option
+      break;
+    }
   }
 
   onFocus() {
