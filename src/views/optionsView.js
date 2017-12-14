@@ -123,6 +123,10 @@ export default class OptionsView extends View {
     this.menu.update();
   }
 
+  upgrade(modifications) {
+    this.menu.upgrade(modifications);
+  }
+
   onFocus() {
 
     let close = (player, fct, obj) => {

@@ -2,6 +2,7 @@
 
 import {Options} from './';
 import {KEYS} from '../constants/input';
+import {RESIZE} from '../constants/signaling';
 import {Input, Player} from '../services';
 
 /**
@@ -20,7 +21,7 @@ export default function GetOptionTree() {
     let width, height;
     [width, height] = value.split('x');
 
-    game.resize(width, height);
+    game.upgrade({type: RESIZE, width, height});
   });
 
   let display = new Options.OptionGroup('Display', 'display', true, [resolution]);

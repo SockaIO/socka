@@ -6,6 +6,7 @@ import {TweenLite} from 'gsap';
 import {theme as interfaces} from '../../src/interfaces';
 
 import {MENU_MAIN, MENU_OPTION} from '../../src/constants/resources';
+import {RESIZE} from '../../src/constants/signaling';
 
 export class MenuDefaultGraphicComponent extends interfaces.MenuGraphicComponent {
 
@@ -19,11 +20,7 @@ export class MenuDefaultGraphicComponent extends interfaces.MenuGraphicComponent
 
     this.createMainSprite();
 
-    // Usefull constants
-    this.lineHeight = 30;
-    this.margin = 5;
-    this.numLines = (this.height / 2) / (this.lineHeight + this.margin) - 1;
-    this.origin = this.height / 2;
+    this.initConstants();
 
     // Parameters
     this.transitionDuration = 0.25;
@@ -31,6 +28,14 @@ export class MenuDefaultGraphicComponent extends interfaces.MenuGraphicComponent
 
     this.createEntries(menu.getEntries());
     this.theme = theme;
+  }
+
+  initConstants() {
+    // Usefull constants
+    this.lineHeight = 30;
+    this.margin = 5;
+    this.numLines = (this.height / 2) / (this.lineHeight + this.margin) - 1;
+    this.origin = this.height / 2;
   }
 
   createEntries(entries) {
@@ -106,6 +111,16 @@ export class MenuDefaultGraphicComponent extends interfaces.MenuGraphicComponent
       TweenLite.to(sprite, this.transitionDuration, {y: newPosition.y});
       TweenLite.to(sprite.scale, this.transitionDuration, newPosition.scale);
       sprite.x = newPosition.x;
+    }
+  }
+
+  handleModification(modification) {
+    switch(modification.type) {
+    case RESIZE:
+      this.width = modification.width;
+      this.height = modification.height;
+
+      this.initConstants();
     }
   }
 }
@@ -269,20 +284,27 @@ export class OptionMenuDefaultGraphicComponent extends interfaces.MenuGraphicCom
     this.width = width;
     this.menu = menu;
 
-    this.createMainSprite();
-
-    // Usefull constants
     this.lineHeight = 50;
     this.margin = 10;
-    this.numLines = Math.floor((this.height) / (this.lineHeight + this.margin));
-    this.origin = this.height / 2;
 
+    this.createMainSprite();
     this.createEntries(menu.getEntries());
+
+    this.initConstants();
     this.theme = theme;
 
     this.minView = 0;
     this.maxView = this.numLines;
 
+  }
+
+  initConstants() {
+    // Usefull constants
+    this.numLines = Math.floor((this.height) / (this.lineHeight + this.margin));
+    this.origin = this.height / 2;
+
+    this.offsetY = this.origin - ((this.lineHeight + this.margin) * this.entries.length) / 2;
+    this.offsetX = this.width / 2 - Math.max(...this.entries.map((x) => x.width)) / 2;
   }
 
   createEntries(entries) {
@@ -295,9 +317,6 @@ export class OptionMenuDefaultGraphicComponent extends interfaces.MenuGraphicCom
       this.entries.push(sprite);
       sprite.visible = false;
     }
-
-    this.offsetY = this.origin - ((this.lineHeight + this.margin) * this.entries.length) / 2;
-    this.offsetX = this.width / 2 - Math.max(...this.entries.map((x) => x.width)) / 2;
   }
 
   createMainSprite() {
@@ -348,6 +367,16 @@ export class OptionMenuDefaultGraphicComponent extends interfaces.MenuGraphicCom
 
       sprite.y = this.offsetY + index * (this.lineHeight + this.margin);
       sprite.x = this.offsetX;
+    }
+  }
+
+  handleModification(modification) {
+    switch(modification.type) {
+    case RESIZE:
+      this.width = modification.width;
+      this.height = modification.height;
+
+      this.initConstants();
     }
   }
 }

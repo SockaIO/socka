@@ -48,6 +48,11 @@ class View {
    * @return {PIXI.Container} The view Container
    */
   getView() {}
+
+  /**
+   * Upgrade the View
+   */
+  upgrade(modifications) {}
 }
 
 export default View;

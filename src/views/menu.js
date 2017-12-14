@@ -55,6 +55,10 @@ class MenuView extends View {
     this.menu.update();
   }
 
+  upgrade(modifications) {
+    this.menu.upgrade(modifications);
+  }
+
   onFocus() {
 
     let factories = new Map();

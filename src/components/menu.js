@@ -134,6 +134,10 @@ export class Menu {
     }
   }
 
+  upgrade(modifications) {
+    this.graphicComponent.upgrade(modifications);
+  }
+
   /**
    * Get the GC Sprite
    * @returns {PIXI.Container} GC Sprite

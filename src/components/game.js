@@ -2,6 +2,7 @@
 'use strict';
 
 import {Input, Player, Theme, OptionTree, Options} from '../services';
+import {RESIZE} from '../constants/signaling';
 
 import * as PIXI from 'pixi.js';
 import Stats from 'stats-js';
@@ -74,6 +75,36 @@ class Game {
 
     this.renderer.view.style.width = width + 'px';
     this.renderer.view.style.height = height + 'px';
+  }
+
+  /**
+   * Handle an upgrade
+   * @param {object|array} modifications - Modifications to apply
+   */
+  upgrade(modifications) {
+    if (!Array.isArray(modifications)) {
+      modifications = [modifications];
+    }
+
+    for (let m of modifications) {
+      this.handleModification(m);
+    }
+
+    for (let v of this.views) {
+      v.upgrade(modifications);
+    }
+  }
+
+  /**
+   * Handle a modification
+   * @param {object} modification - Modification to apply
+   */
+  handleModification(modification) {
+    switch(modification.type) {
+    case RESIZE:
+      this.resize(modification.width, modification.height);
+      break;
+    }
   }
 
   /**

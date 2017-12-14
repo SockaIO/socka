@@ -73,6 +73,17 @@ class ReceptorGraphicComponent extends GraphicComponent{
 class MenuGraphicComponent extends GraphicComponent{
 
   update() {}
+  upgrade(modifications) {
+    if (!Array.isArray(modifications)) {
+      modifications = [modifications];
+    }
+
+    for (let m of modifications) {
+      this.handleModification(m);
+    }
+  }
+
+  handleModification(modification) {}
 }
 
 
