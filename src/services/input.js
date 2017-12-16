@@ -103,7 +103,7 @@ class Controller {
   handleInput() {}
 
   /**
-   * Set the binding between a button and a comman
+   * Set the binding between a button and a command
    *
    * @param {Number} button | Button ID
    * @param {Symbol} action | Action
@@ -314,6 +314,7 @@ class KeyboardController extends Controller{
 
     let cmd = this.getCommand(action, key);
     if (cmd !== null) {
+      e.preventDefault();
       this.cmdQueue.push(cmd);
     }
   }
