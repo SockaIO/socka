@@ -121,9 +121,9 @@ function listLinks(url, opts) {
         // Get the Absolute URL
         let href = a.getAttribute('href');
         if (!href.startsWith('http')) {
-          if (href.startsWith("/")) {
+          if (href.startsWith('/')) {
             href = parse_url.origin + href;
-          } else if (href.startsWith("?")) {
+          } else if (href.startsWith('?')) {
             continue;
           } else {
             href = url + '/' + href;
@@ -132,9 +132,8 @@ function listLinks(url, opts) {
 
         // Link to the parent directory
         if (url.includes(href)) {
-            continue;
+          continue;
         }
-
 
         // Get the name
         let name = a.innerHTML;
@@ -168,7 +167,7 @@ class HttpPack extends Pack{
 
       let subPack = [];
 
-      links = Array.from(links);
+      links = Array.from(links).filter(l => l.folder);
 
       if (links.length === 0) {
         return [];
@@ -190,6 +189,9 @@ class HttpPack extends Pack{
         if (songLevel === true) {
           for (let link of links) {
             // Create the SongIndex Object based on the link
+            if (!link.folder) {
+              continue;
+            }
             songs.add(new HttpSongIndex(link.name, link.href, this.opts));
           }
           return songs;
