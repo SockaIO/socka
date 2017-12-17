@@ -105,15 +105,17 @@ function listLinks(url, opts) {
       throw {message: resp.statusText, status: resp.status};
     }
 
-    return resp.text(); 
+    return Promise.all([resp.url, resp.text()]);
   }).then ((data) => {
+
+    let full_url = data[0];
 
     // Construct DOM from the HTML String
     let el = document.createElement('html');
-    el.innerHTML = data;
+    el.innerHTML = data[1];
 
     let parse_url = document.createElement('a');
-    parse_url.href = url;
+    parse_url.href = full_url;
 
     return function* () {
       for (let a of el.getElementsByTagName('a')) {
@@ -126,20 +128,22 @@ function listLinks(url, opts) {
           } else if (href.startsWith('?')) {
             continue;
           } else {
-            href = url + '/' + href;
+            href = full_url + '/' + href;
           }
         }
 
         // Link to the parent directory
-        if (url.includes(href)) {
+        if (full_url.includes(href)) {
           continue;
         }
 
         // Get the name
-        let name = a.innerHTML;
+        let name = a.title || a.innerHTML;
         let folder = false;
         if (name.endsWith('/')) {
           name = name.slice(0, -1);
+          folder = true;
+        } else if (!name.split('/').splice(-1)[0].includes('.')) {
           folder = true;
         }
         yield {name, href, folder};
@@ -278,7 +282,6 @@ class HttpSongIndex extends SongIndex{
       let rsc = new Map();
 
       for (let link of links) {
-
         let nameCanon = link.name.toLowerCase();
         let ext = nameCanon.split('.').slice(-1)[0];
 

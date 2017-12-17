@@ -3,6 +3,7 @@
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const HtmlWebpackHarddiskPlugin = require('html-webpack-harddisk-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 const path = require('path');
 
 const indexOptions = {
@@ -27,7 +28,18 @@ module.exports = {
     contentBase: path.resolve(__dirname, 'dist'),
     publicPath: '/assets/',
   },
-  plugins: [new HtmlWebpackPlugin(indexOptions), new HtmlWebpackHarddiskPlugin()],
+  plugins: [
+    new HtmlWebpackPlugin(indexOptions),
+    new HtmlWebpackHarddiskPlugin(),
+    new CopyWebpackPlugin([
+      {
+        from: 'songs',
+        to: path.resolve(__dirname + '/dist/songs'),
+      }
+    ], {
+      copyUnmodified: true,
+    }),
+  ],
   module: {
     rules: [
       {

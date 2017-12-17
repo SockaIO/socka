@@ -86,6 +86,7 @@ function init() {
   log.info('Starting Game Initialization');
 
   FileManager.AddEndpoint(HttpEndpoint.CreateHttpEndpoint('http://localhost:8000'));
+  FileManager.AddEndpoint(HttpEndpoint.CreateHttpEndpoint('/songs'));
   let packs = FileManager.ListPacks();
 
   let game = new Game(1280, 720, true);
