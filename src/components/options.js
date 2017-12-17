@@ -42,6 +42,8 @@ export class MappingMenuItem extends MenuItem{
 
     Input.SetRawListener ((e) => {
 
+      e.jsEvent.preventDefault();
+
       if (e.jsEvent.type === 'keyup') {
         return;
       }
