@@ -64,11 +64,14 @@ function packMenuEntry(pack, game) {
  */
 function generatePackMenu(packs, game) {
 
+  log.debug('Generating the Pack List');
+
   packs.then((packsGen) => {
 
     let entries = [];
 
     for (let p of packsGen) {
+      log.debug(`Handling Pack ${JSON.stringify(p)}`);
       entries.push(packMenuEntry(p, game));
     }
 

@@ -42,7 +42,7 @@ export class HttpEndpoint extends Endpoint {
 
       // Catch HTTP Errors
       if (!response.ok) {
-        throw {message: response.statusText, status: response.status};
+        throw {message: response.statusText, status: response.status, url, opts, type: 'HTTP Endpoint'};
       }
 
       // The URL is reachable, create the endpoint

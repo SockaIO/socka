@@ -37,7 +37,21 @@ export function ListPacks() {
       }
 
       return packs;
+    }, (err) => {
+      log.error(`Error while getting the packs ${json.stringify(err)}`);
     });
+  }, () => {
+
+    // Remove the Failing endpoints from the list
+    for (let p of endpoints) {
+      p.catch((err) => {
+        log.error(`Endpoint creation failed with error ${JSON.stringify(err)}.`);
+        endpoints.delete(p);
+      });
+    }
+
+    // Retry to list the packs
+    return ListPacks();
   });
 }
 
