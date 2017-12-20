@@ -60,7 +60,7 @@ export class MappingMenuItemDefaultGraphicComponent extends interfaces.MenuItemG
     this.sprite.addChild(this.name);
 
     this.offset = 200;
-    this.entryWidth = 300;
+    this.entryWidth = 350;
 
     this.values = new Map();
     this.highlighters = new Map();
@@ -79,8 +79,17 @@ export class MappingMenuItemDefaultGraphicComponent extends interfaces.MenuItemG
     this.highlighters.set(playerId, h);
   }
 
+  // TODO: Improve with better pad name (extracted using the Input service?)
+  getPrettyPadName(value) {
+    if (value.controller === -1) {
+      return 'Keyboard';
+    } else {
+      return `Pad: ${value.controller}`;
+    }
+  }
+
   getText(value) {
-    return `${value.key} [Pad: ${value.controller}]`;
+    return `${value.key} [${this.getPrettyPadName(value)}]`;
   }
 
   onSelected(playerId) {
