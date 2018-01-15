@@ -3,7 +3,7 @@
 import {Options} from './';
 import {KEYS} from '../constants/input';
 import {RESIZE, NUM_PLAYERS} from '../constants/signaling';
-import {Input, Player} from '../services';
+import {Player} from '../services';
 
 /**
  * @namespace services.OptionTree
@@ -73,7 +73,7 @@ export default function GetOptionTree() {
       let m = player.mapping;
       const k = KEYS[x];
       m.resetKey(k);
-      m.setKey(k, value.key, Input.GetController(value.controller));
+      m.setKey(k, value.key, value.controller);
     };
 
     keyOptions[x].setUpdateWorld(fct);

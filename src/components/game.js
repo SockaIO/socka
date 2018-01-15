@@ -7,6 +7,8 @@ import {RESIZE} from '../constants/signaling';
 import * as PIXI from 'pixi.js';
 import Stats from 'stats-js';
 
+import log from 'loglevel';
+
 /**
  * Global Game entity.
  *
@@ -51,14 +53,17 @@ class Game {
     let promises = [];
 
     // Initialize the Options
+    log.debug('Initializing the options');
     Options.SetOptions(OptionTree());
 
     // We need to wait for the theme to load all its resources
     promises.push(Theme.GetTheme().loaded);
 
     //Player.SavePlayers();
+    log.debug('Initializing the players');
     Player.InitPlayers(this);
 
+    log.debug('Waiting for all the asynchronous Initialization');
     return Promise.all(promises);
   }
 

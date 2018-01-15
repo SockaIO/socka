@@ -198,7 +198,7 @@ function GetDefaultKeyboardController() {
  * @memberof services.Input
  */
 function Subscribe(observer) {
-  controllerSubject.subscribe(observer);
+  controllerSubject.addObserver(observer);
 }
 
 function GetControllers() {
@@ -344,7 +344,7 @@ class PadController extends Controller {
   handleInput() {
 
     // Somehow we need to refetch the gamepad object each time
-    this.gamepad = navigator.getGamepads()[this.gamepad.index]
+    this.gamepad = navigator.getGamepads()[this.gamepad.index];
 
     let output = [];
 
@@ -393,6 +393,9 @@ class Mapping {
     }
 
     this.bindings = new Set();
+
+    this.pendingMappings = new Map();
+    this.pendingBindings = new Map();
   }
 
   /**
@@ -400,11 +403,68 @@ class Mapping {
    *
    * @param {Symbol} key | Key Symbol
    * @param {Number} button | Button ID
-   * @param {Controller} controller | Controller
+   * @param {Number} controllerId | Controller ID
    *
    */
-  setKey(key, button, controller) {
-    this.mapping.get(key).add([controller, button]);
+  setKey(key, button, controllerId) {
+    let controller = GetController(controllerId);
+
+    if (controller !== undefined) {
+      this.mapping.get(key).add([controller, button]);
+    } else {
+      this.setFutureKey(key, button, controllerId);
+    }
+  }
+
+  /**
+   * Affect a controller button to a key when
+   * the controller is plugged
+   *
+   * @param {Symbol} key | Key Symbol
+   * @param {Number} button | Button ID
+   * @param {Number} controllerId | Controller ID
+   *
+   */
+  setFutureKey(key, button, controllerId) {
+    // Subscribe for Input Events
+    log.debug('Subscribing For Input Event for future Binding');
+    Subscribe(this);
+
+    if (!this.pendingMappings.has(controllerId)) {
+      this.pendingMappings.set(controllerId, []);
+    }
+
+    // Add the Key to the queue
+    this.pendingMappings.get(controllerId).push([key, button, controllerId]);
+  }
+
+  /**
+   * Notify for Input events
+   * @param {Object} ev | Event
+   */
+  onNotify(event) {
+    if (event.type === EVENT_PAD_CONNECTED) {
+      // We have pending bindings for this pad
+      if (this.pendingMappings.has(event.pad.getId())) {
+
+        for (let fk of this.pendingMappings.get(event.pad.getId())) {
+          this.setKey(...fk);
+        }
+
+        this.pendingMappings.delete(event.pad.getId());
+        // TODO: Unsubscribe from the Input Events
+      }
+
+      if (this.pendingBindings.has(event.pad.getId())) {
+
+        for (let b of this.pendingBindings.get(event.pad.getId())) {
+          this.bind(...b);
+        }
+
+        this.pendingBindings.delete(event.pad.getId());
+        // TODO: Unsubscribe from the Input Events
+      }
+    }
   }
 
   /**
@@ -442,6 +502,37 @@ class Mapping {
       controller.setCommand(action, button, cmd);
       this.bindings.add([controller, action, button]);
     }
+
+    this.futureBind(action, key, cmd);
+  }
+
+  /**
+   * Bind a command to a key when
+   * the controller is plugged
+   *
+   * @param {Symbol} action | Action
+   * @param {Symbol} key | Key Symbol
+   * @param {function} cmd | Command function
+   *
+   */
+  futureBind(action, key, cmd) {
+
+    // No need to subscribe again. This must have been done already
+
+    // Add the bindings to the queue
+    for (let keyArray of this.pendingMappings.values()) {
+      for (let [mappingKey,, controllerId ] of keyArray) {
+        if (key === mappingKey) {
+
+          if (!this.pendingBindings.has(controllerId)) {
+            this.pendingBindings.set(controllerId, []);
+          }
+
+          // Add the Binding to the queue
+          this.pendingBindings.get(controllerId).push([action, key, cmd]);
+        }
+      }
+    }
   }
 
 
@@ -452,6 +543,9 @@ class Mapping {
     for (let [controller, action, button] of this.bindings.values()) {
       controller.resetCommand(action, button);
     }
+
+    this.bindings.clear();
+    this.pendingBindings.clear();
   }
 
 }
