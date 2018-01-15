@@ -7,6 +7,8 @@
 import {Subject} from '../helpers';
 import {TAP, LIFT, KEYS, KEY_UP, KEY_LEFT, KEY_RIGHT, KEY_DOWN, KEY_ENTER, KEY_BACK, EVENT_PAD_CONNECTED, EVENT_PAD_DISCONNECTED, RAPID_FIRE, INPUT_UPDATE, INPUT_ENTER, INPUT_CANCEL} from '../constants/input';
 
+import log from 'loglevel';
+
 let controllers = new Map();
 let controllerSubject = new Subject();
 
@@ -230,7 +232,7 @@ function Connect(e) {
     pad
   };
 
-  console.log('Pad Connected');
+  log.debug('Pad Connected');
 
   controllerSubject.notify(ev);
 }
@@ -340,6 +342,9 @@ class PadController extends Controller {
   }
 
   handleInput() {
+
+    // Somehow we need to refetch the gamepad object each time
+    this.gamepad = navigator.getGamepads()[this.gamepad.index]
 
     let output = [];
 
