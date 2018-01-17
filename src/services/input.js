@@ -559,14 +559,15 @@ class Mapping {
 function GetDefaultKeyboardMapping() {
   let m = new Mapping();
   let c = GetDefaultKeyboardController();
+  const id = c.getId();
 
-  m.setKey(KEY_UP, 38, c);
-  m.setKey(KEY_DOWN, 40, c);
-  m.setKey(KEY_LEFT, 37, c);
-  m.setKey(KEY_RIGHT, 39, c);
+  m.setKey(KEY_UP, 38, id);
+  m.setKey(KEY_DOWN, 40, id);
+  m.setKey(KEY_LEFT, 37, id);
+  m.setKey(KEY_RIGHT, 39, id);
 
-  m.setKey(KEY_ENTER, 13, c);
-  m.setKey(KEY_BACK, 8, c);
+  m.setKey(KEY_ENTER, 13, id);
+  m.setKey(KEY_BACK, 8, id);
 
   return m;
 }

@@ -203,14 +203,15 @@ function InitPlayers(game)
     let q = CreatePlayer();
     let m = new Input.Mapping();
     let c = Input.GetDefaultKeyboardController();
+    const id = c.getId();
 
-    m.setKey(KEY_UP, 87, c);
-    m.setKey(KEY_DOWN, 83, c);
-    m.setKey(KEY_LEFT, 65, c);
-    m.setKey(KEY_RIGHT, 68, c);
+    m.setKey(KEY_UP, 87, id);
+    m.setKey(KEY_DOWN, 83, id);
+    m.setKey(KEY_LEFT, 65, id);
+    m.setKey(KEY_RIGHT, 68, id);
 
-    m.setKey(KEY_ENTER, 32, c);
-    m.setKey(KEY_BACK, 27, c);
+    m.setKey(KEY_ENTER, 32, id);
+    m.setKey(KEY_BACK, 27, id);
 
     q.setMapping(m);
 
