@@ -23,11 +23,13 @@ export class Menu {
    * @param {Function} graphicComponentFactory Factoru for the menu graphic Component 
    * @param {String} key Key used for sorting and identification (default is name)
    * @param {Boolean} sort Set to true to sort the entries (default is false)
+   * @param {Boolean} keepIndex Keep the index when changing component default is false)
    */
-  constructor(id, entries, width, height, graphicComponentFactory, sort=false, highlighterFactory=null, players=[Player.GamePlayer], key='name') {
+  constructor(id, entries, width, height, graphicComponentFactory, sort=false, highlighterFactory=null, players=[Player.GamePlayer], key='name', keepIndex=false) {
     this.entries = entries;
     this.key = key;
     this.id = id;
+    this.keepIndex = keepIndex;
 
     this.compareFunction = (a, b) => {return a[key] > b[key];};
 
@@ -153,7 +155,18 @@ export class Menu {
    * @param {Number} change Change in the selected entry
    */
   move(change, player=Player.GamePlayer) {
+    let idx = null;
+    let selected = this.getSelected(player);
+
+    if (this.keepIndex === true && selected.getIndexes !== undefined) {
+      idx = selected.getIndexes().get(player.getId());
+    }
+
     this.setSelected((this.entries.length + this.getSelectedIndex(player) + change) % this.entries.length, player);
+    selected = this.getSelected(player);
+    if (idx !== null && selected.setIndex !== undefined) {
+      selected.setIndex(player.getId(), idx);
+    }
   }
 
   /**

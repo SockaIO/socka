@@ -90,7 +90,12 @@ export default class OptionsView extends View {
       }));
     }
 
-    this.menu = new Menu(MENU_OPTION, entries, width, height, Theme.GetTheme().createMenuOptionGC.bind(Theme.GetTheme()), true, MenuItemHighlighter, this.players);
+    let keepIndex = false;
+    if (option.id === 'mapping') {
+      keepIndex = true;
+    }
+
+    this.menu = new Menu(MENU_OPTION, entries, width, height, Theme.GetTheme().createMenuOptionGC.bind(Theme.GetTheme()), true, MenuItemHighlighter, this.players, 'name', keepIndex);
     this.sprite = this.menu.sprite;
 
     this.update();

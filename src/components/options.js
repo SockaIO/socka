@@ -15,9 +15,13 @@ export class MappingMenuItem extends MenuItem{
     super();
 
     this.values = new Map();
+    this.indexes = new Map();
 
     this.name = name;
     this.key = key;
+
+    this.numOptions = 4;
+    this.players = [];
 
     if (defaultValues.size > 0) {
       this.values = defaultValues;
@@ -25,8 +29,19 @@ export class MappingMenuItem extends MenuItem{
     } else {
       for (let player of players) {
         this.values.set(player.getId(), player.optionStore.get(this.key));
+        this.indexes.set(player.getId(), 0);
+        this.players.push(player.getId());
       }
     }
+  }
+
+  getIndexes() {
+    return this.indexes;
+  }
+
+  setIndex(playerId, idx) {
+    this.indexes.set(playerId, idx);
+    this.graphicComponent.onChange(playerId, idx);
   }
 
   createGraphicComponent(width, height) {
@@ -50,11 +65,31 @@ export class MappingMenuItem extends MenuItem{
         }
       }
 
-      this.values.set(player.getId(), {key: e.key, controller: e.controller.getId ()});
+      const index = this.indexes.get(player.getId());
+      let selectedPlayer = this.players[Math.floor(index / 2)];
+      let selectedLayout = index % 2 === 0 ? 'PRIMARY' : 'SECONDARY';
+
+      let currentValue = this.values.get(selectedPlayer);
+
+      currentValue[selectedLayout] = {
+        key: e.key,
+        controller: e.controller.getId()
+      };
 
       this.controller = e.controller;
       Input.RemoveRawListener();
     });
+  }
+
+  move(direction, player) {
+    const index = this.indexes.get(player.getId());
+    const newIndex = index + direction;
+
+
+    if (newIndex < this.numOptions && newIndex >= 0) {
+      this.indexes.set(player.getId(), newIndex);
+      this.graphicComponent.onChange(player.getId(), newIndex);
+    }
   }
 
   onSelected(player) {

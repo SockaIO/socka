@@ -60,17 +60,28 @@ export class MappingMenuItemDefaultGraphicComponent extends interfaces.MenuItemG
     this.sprite.addChild(this.name);
 
     this.offset = 200;
-    this.entryWidth = 350;
+    this.entryWidth = 250;
 
-    this.values = new Map();
+    this.values = [];
     this.highlighters = new Map();
 
     let x = 0;
-    for (let [playerId, value] of menuItem.getValues()) {
-      let v = new PIXI.extras.BitmapText(this.getText(value), {font: this.height + 'px clementeRegular', align: 'center'});
-      this.values.set(playerId, v);
-      v.x = this.offset + x++ * (this.entryWidth);
-      this.sprite.addChild(v);
+    const txtOptions = {font: this.height + 'px clementeRegular', align: 'center'};
+
+    for (let [, value] of menuItem.getValues()) {
+
+      // Primary Key
+      let primary = new PIXI.extras.BitmapText(this.getText(value['PRIMARY']), txtOptions);
+      let secondary = new PIXI.extras.BitmapText(this.getText(value['SECONDARY']), txtOptions);
+
+      this.values.push(primary);
+      this.values.push(secondary);
+
+      primary.x = this.offset + x++ * (this.entryWidth);
+      secondary.x = this.offset + x++ * (this.entryWidth);
+
+      this.sprite.addChild(primary);
+      this.sprite.addChild(secondary);
     }
 
   }
@@ -82,18 +93,30 @@ export class MappingMenuItemDefaultGraphicComponent extends interfaces.MenuItemG
   // TODO: Improve with better pad name (extracted using the Input service?)
   getPrettyPadName(value) {
     if (value.controller === -1) {
-      return 'Keyboard';
+      return 'Kbd';
     } else {
       return `Pad: ${value.controller}`;
     }
   }
 
   getText(value) {
+    if (value === undefined) {
+      return '--';
+    }
+
     return `${value.key} [${this.getPrettyPadName(value)}]`;
   }
 
+  onChange(playerId, newIndex) {
+    let sprite = this.values[newIndex]; // account that the name is sprite 0;
+
+    if (this.highlighters.has(playerId)) {
+      this.highlighters.get(playerId).setHighlighted(sprite);
+    }
+  }
+
   onSelected(playerId) {
-    let sprite = this.values.get(playerId);
+    let sprite = this.values[this.menuItem.getIndexes().get(playerId)];
 
     if (this.highlighters.get(playerId)) {
       this.highlighters.get(playerId).setHighlighted(sprite);
@@ -103,7 +126,7 @@ export class MappingMenuItemDefaultGraphicComponent extends interfaces.MenuItemG
   }
 
   onDeselected(playerId) {
-    let sprite = this.values.get(playerId);
+    let sprite = this.values[this.menuItem.getIndexes().get(playerId)];
     if (this.highlighters.get(playerId)) {
       // Empty
     } else {
@@ -112,8 +135,10 @@ export class MappingMenuItemDefaultGraphicComponent extends interfaces.MenuItemG
   }
 
   update() {
-    for (let [playerId ,v] of this.values) {
-      v.text = this.getText(this.menuItem.getValues().get(playerId));
+    let x = 0;
+    for (let [, value] of this.menuItem.getValues()) {
+      this.values[x++].text = this.getText(value['PRIMARY']);
+      this.values[x++].text = this.getText(value['SECONDARY']);
     }
   }
 }
