@@ -28,6 +28,11 @@ export const KEY_ENTER = Symbol.for('KEY_ENTER');
 export const KEY_BACK = Symbol.for('KEY_BACK');
 
 /** @memberof constants.input */
+export const PRIMARY = Symbol.for('PRIMARY');
+/** @memberof constants.input */
+export const SECONDARY = Symbol.for('SECONDARY');
+
+/** @memberof constants.input */
 export const KEYS = [
   KEY_LEFT,
   KEY_RIGHT,

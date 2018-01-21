@@ -1,6 +1,7 @@
 'use stric';
 
 import {Options} from '../services';
+import log from 'loglevel';
 
 /**
  * @namespace components.OptionStore
@@ -41,6 +42,7 @@ export default class OptionStore {
 
     if (Options.GetOption(id).check(value)) {
       this.options.set (id, value);
+      log.debug(`[OS Set] ${id}: ${JSON.stringify(value)}`);
       return true;
     }
 

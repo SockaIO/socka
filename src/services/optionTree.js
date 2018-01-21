@@ -1,7 +1,7 @@
 'use stric';
 
 import {Options} from './';
-import {KEYS} from '../constants/input';
+import {KEYS, PRIMARY, SECONDARY} from '../constants/input';
 import {RESIZE, NUM_PLAYERS} from '../constants/signaling';
 import {Player} from '../services';
 
@@ -58,12 +58,12 @@ export default function GetOptionTree() {
   /*
    * Mapping
    */
-  let left = new Options.MappingOption('LEFT', 'left', {key: 37, controller: -1});
-  let up = new Options.MappingOption('UP', 'up', {key: 38, controller: -1});
-  let right = new Options.MappingOption('RIGHT', 'right', {key: 39, controller: -1});
-  let down = new Options.MappingOption('DOWN', 'down', {key: 40, controller: -1});
-  let enter = new Options.MappingOption('ENTER', 'enter', {key: 13, controller: -1});
-  let back = new Options.MappingOption('BACK', 'back', {key: 8, controller: -1});
+  let left = new Options.MappingOption('LEFT', 'left', {PRIMARY: {key: 37, controller: -1}});
+  let up = new Options.MappingOption('UP', 'up', {PRIMARY: {key: 38, controller: -1}});
+  let right = new Options.MappingOption('RIGHT', 'right', {PRIMARY: {key: 39, controller: -1}});
+  let down = new Options.MappingOption('DOWN', 'down', {PRIMARY: {key: 40, controller: -1}});
+  let enter = new Options.MappingOption('ENTER', 'enter', {PRIMARY: {key: 13, controller: -1}});
+  let back = new Options.MappingOption('BACK', 'back', {PRIMARY: {key: 8, controller: -1}});
 
   const keyOptions = [left, right, down, up, enter, back];
 
@@ -71,9 +71,13 @@ export default function GetOptionTree() {
 
     let fct = (value, player) => {
       let m = player.mapping;
+
       const k = KEYS[x];
-      m.resetKey(k);
-      m.setKey(k, value.key, value.controller);
+      m.setKey(k, value['PRIMARY'].key, value['PRIMARY'].controller, PRIMARY);
+
+      if (value['SECONDARY'] !== undefined) {
+        m.setKey(k, value['SECONDARY'].key, value['SECONDARY'].controller, SECONDARY);
+      }
     };
 
     keyOptions[x].setUpdateWorld(fct);

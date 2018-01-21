@@ -3,7 +3,7 @@
 import {OptionStore} from '../components';
 import * as Input from './input';
 
-import {KEY_UP, KEY_LEFT, KEY_RIGHT, KEY_DOWN, KEY_ENTER, KEY_BACK, KEYS} from '../constants/input';
+import {KEY_UP, KEY_LEFT, KEY_RIGHT, KEY_DOWN, KEY_ENTER, KEY_BACK} from '../constants/input';
 
 /**
  * @namespace services.Player
@@ -101,16 +101,10 @@ class Player {
       [KEY_BACK]: 'back',
     };
 
-    for (let key of KEYS) {
-      let controller, keyCode;
+    let options = this.mapping.getOptions();
 
-      // Get returns a set of one element so we need to extract the value
-      [controller, keyCode] = [...this.mapping.mapping.get(key)][0];
-
-      this.optionStore.set(`.root.mapping.${keyTexts[key]}`, {
-        key: keyCode,
-        controller: controller.id
-      });
+    for (let [key, option] of options) {
+      this.optionStore.set(`.root.mapping.${keyTexts[key]}`, option);
     }
   }
 

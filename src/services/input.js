@@ -5,7 +5,7 @@
  */
 
 import {Subject} from '../helpers';
-import {TAP, LIFT, KEYS, KEY_UP, KEY_LEFT, KEY_RIGHT, KEY_DOWN, KEY_ENTER, KEY_BACK, EVENT_PAD_CONNECTED, EVENT_PAD_DISCONNECTED, RAPID_FIRE, INPUT_UPDATE, INPUT_ENTER, INPUT_CANCEL} from '../constants/input';
+import {TAP, LIFT, KEYS, KEY_UP, KEY_LEFT, KEY_RIGHT, KEY_DOWN, KEY_ENTER, KEY_BACK, EVENT_PAD_CONNECTED, EVENT_PAD_DISCONNECTED, RAPID_FIRE, INPUT_UPDATE, INPUT_ENTER, INPUT_CANCEL, PRIMARY, SECONDARY} from '../constants/input';
 
 import log from 'loglevel';
 
@@ -389,7 +389,7 @@ class Mapping {
 
     // Initialize all the keys
     for (let k of KEYS) {
-      this.mapping.set(k, new Set());
+      this.mapping.set(k, new Map());
     }
 
     this.bindings = new Set();
@@ -406,13 +406,13 @@ class Mapping {
    * @param {Number} controllerId | Controller ID
    *
    */
-  setKey(key, button, controllerId) {
+  setKey(key, button, controllerId, layout=PRIMARY) {
     let controller = GetController(controllerId);
 
     if (controller !== undefined) {
-      this.mapping.get(key).add([controller, button]);
+      this.mapping.get(key).set(layout, [controller, button]);
     } else {
-      this.setFutureKey(key, button, controllerId);
+      this.setFutureKey(key, button, controllerId, layout);
     }
   }
 
@@ -425,7 +425,7 @@ class Mapping {
    * @param {Number} controllerId | Controller ID
    *
    */
-  setFutureKey(key, button, controllerId) {
+  setFutureKey(key, button, controllerId, layout) {
     // Subscribe for Input Events
     log.debug('Subscribing For Input Event for future Binding');
     Subscribe(this);
@@ -435,7 +435,7 @@ class Mapping {
     }
 
     // Add the Key to the queue
-    this.pendingMappings.get(controllerId).push([key, button, controllerId]);
+    this.pendingMappings.get(controllerId).push([key, button, controllerId, layout]);
   }
 
   /**
@@ -533,6 +533,32 @@ class Mapping {
         }
       }
     }
+  }
+
+  /**
+   * Get the Options
+   */
+  getOptions() {
+    let out = [];
+
+    for (let key of KEYS) {
+      // Get returns a set of one element so we need to extract the value
+      let layouts = [...this.mapping.get(key)];
+
+      let option = {};
+      const layoutTxt = {
+        [PRIMARY]: 'PRIMARY',
+        [SECONDARY]: 'SECONDARY'
+      };
+
+      for (let [layoutType, [controller, button]] of layouts) {
+        option[layoutTxt[layoutType]] =  {key: button, controller: controller.id};
+      }
+
+      out.push([key, option]);
+    }
+
+    return out;
   }
 
 
