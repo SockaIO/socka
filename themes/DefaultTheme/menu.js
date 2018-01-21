@@ -5,7 +5,7 @@ import {TweenLite} from 'gsap';
 
 import {theme as interfaces} from '../../src/interfaces';
 
-import {MENU_MAIN, MENU_OPTION} from '../../src/constants/resources';
+import {MENU_MAIN, MENU_OPTION, MENU_OPTION_MAPPING} from '../../src/constants/resources';
 import {RESIZE} from '../../src/constants/signaling';
 
 export class MenuDefaultGraphicComponent extends interfaces.MenuGraphicComponent {
@@ -293,9 +293,10 @@ export class OptionMenuDefaultGraphicComponent extends interfaces.MenuGraphicCom
     this.initConstants();
     this.theme = theme;
 
+    this.specialize();
+
     this.minView = 0;
     this.maxView = this.numLines;
-
   }
 
   initConstants() {
@@ -325,12 +326,50 @@ export class OptionMenuDefaultGraphicComponent extends interfaces.MenuGraphicCom
     this.background = new PIXI.Container();
     this.foreground = new PIXI.Container();
 
-    if (this.menu.id === MENU_OPTION) {
+    if (this.menu.id === MENU_OPTION || this.menu.id === MENU_OPTION_MAPPING) {
       this.background = new PIXI.Sprite(this.theme.getTexture('bgMain'));
     }
 
     this.sprite.addChild(this.background);
     this.sprite.addChild(this.foreground);
+  }
+
+  specialize() {
+    if (this.menu.id === MENU_OPTION_MAPPING) {
+      this.createMappingSpecialization();
+    }
+  }
+
+  createMappingSpecialization() {
+    // Create the Players Table head
+
+    const txtOption = {font: '50px clementeRegular', align: 'center'};
+    const tint = 0x009900;
+    const offset = 200; // name offset from the menu item
+    let width = Math.max(...this.entries.map((x) => x.width)) - offset; // menu width - offset
+    const numPlayers = this.menu.players.length;
+
+    for (let x=0; x < numPlayers; x++) {
+      let p = new PIXI.extras.BitmapText(`Player ${x+1}`, txtOption);
+      p.x = this.offsetX + offset + x * (width / 2) + (width / (2 * numPlayers)) - (p.width / 2);
+      p.y = this.offsetY - 100;
+      p.tint = tint;
+      this.sprite.addChild(p);
+    }
+
+
+    let txt = ['Primary', 'Secondary'];
+    const txtOption2 = {font: '30px clementeRegular', align: 'center'};
+
+    for (let x = 0; x < numPlayers * 2; x++) {
+      let subtitle = new PIXI.extras.BitmapText(txt[x % 2], txtOption2);
+
+      subtitle.x = this.offsetX + offset + x * (width / (2 * numPlayers)) + (width / (4 * numPlayers)) - (subtitle.width / 2);
+      subtitle.y = this.offsetY - 50;
+      subtitle.tint = tint;
+      this.sprite.addChild(subtitle);
+    }
+
   }
 
   /**

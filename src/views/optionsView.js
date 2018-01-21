@@ -5,7 +5,6 @@ import {Theme, Player} from '../services';
 import {Menu, TextMenuItem, MappingMenuItem, EnumMenuItem, MenuItemHighlighter, InputMenuItem} from '../components';
 
 import {KEY_LEFT, KEY_RIGHT, KEY_UP, KEY_DOWN, TAP, RAPID_FIRE, KEY_BACK, KEY_ENTER} from '../constants/input';
-import {MENU_OPTION} from '../constants/resources';
 import {NUM_PLAYERS} from '../constants/signaling';
 
 
@@ -95,7 +94,7 @@ export default class OptionsView extends View {
       keepIndex = true;
     }
 
-    this.menu = new Menu(MENU_OPTION, entries, width, height, Theme.GetTheme().createMenuOptionGC.bind(Theme.GetTheme()), true, MenuItemHighlighter, this.players, 'name', keepIndex);
+    this.menu = new Menu(option.menuType, entries, width, height, Theme.GetTheme().createMenuOptionGC.bind(Theme.GetTheme()), true, MenuItemHighlighter, this.players, 'name', keepIndex);
     this.sprite = this.menu.sprite;
 
     this.update();

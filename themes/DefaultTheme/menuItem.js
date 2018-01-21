@@ -101,7 +101,7 @@ export class MappingMenuItemDefaultGraphicComponent extends interfaces.MenuItemG
 
   getText(value) {
     if (value === undefined) {
-      return '--';
+      return '      --      ';
     }
 
     return `${value.key} [${this.getPrettyPadName(value)}]`;

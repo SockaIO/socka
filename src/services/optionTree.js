@@ -2,6 +2,7 @@
 
 import {Options} from './';
 import {KEYS, PRIMARY, SECONDARY} from '../constants/input';
+import {MENU_OPTION_MAPPING} from '../constants/resources';
 import {RESIZE, NUM_PLAYERS} from '../constants/signaling';
 import {Player} from '../services';
 
@@ -83,7 +84,7 @@ export default function GetOptionTree() {
     keyOptions[x].setUpdateWorld(fct);
   }
 
-  let mapping = new Options.OptionGroup('Mapping', 'mapping', false, [left, up, right, down, enter, back]);
+  let mapping = new Options.OptionGroup('Mapping', 'mapping', false, [left, up, right, down, enter, back], MENU_OPTION_MAPPING);
 
   /*
    * Root

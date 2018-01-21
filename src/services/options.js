@@ -1,5 +1,7 @@
 'use strict';
 
+import {MENU_OPTION} from '../constants/resources';
+
 /**
  * @namespace services.Options
  */
@@ -59,11 +61,13 @@ export class OptionFolder {
    * @param {String} name Folder name
    * @param {String} id Folder ID
    * @param {(OptionGroup|OptionFolder)|Array} children Children contained in the folder
+   * @param {Symbol} menuType Type of menu (for theming purpose)
    */
-  constructor(name, id,  children) {
+  constructor(name, id,  children, menuType=MENU_OPTION) {
     this.name = name;
     this.id = id;
     this.children = new Map();
+    this.menuType = menuType;
 
     for (let c of children) {
       this.children.set (c.getName (), c);
@@ -114,12 +118,14 @@ export class OptionGroup {
    * @param {String} id Group ID
    * @param {Bool} global Is the Group global parameters
    * @param {Option|Array} options Options contained in the group
+   * @param {Symbol} menuType Type of menu (for theming purpose)
    */
-  constructor (name, id, global, options) {
+  constructor (name, id, global, options, menuType=MENU_OPTION) {
     this.name = name;
     this.id = id;
     this.options = new Map();
     this.global = global;
+    this.menuType = menuType;
 
     for (let o of options) {
       this.options.set (o.getName (), o);

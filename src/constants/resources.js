@@ -19,3 +19,5 @@ export const RSC_SONG = Symbol.for('RSC_SONG');
 export const MENU_MAIN = Symbol.for('MENU_MAIN');
 /** @memberof constants.resources */
 export const MENU_OPTION = Symbol.for('MENU_OPTION');
+/** @memberof constants.resources */
+export const MENU_OPTION_MAPPING = Symbol.for('MENU_OPTION_MAPPING');

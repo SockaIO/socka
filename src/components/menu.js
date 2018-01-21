@@ -37,10 +37,10 @@ export class Menu {
       this.entries.sort(this.compareFunction);
     }
 
-    this.graphicComponent = graphicComponentFactory (width, height, this);
-
     this.selecteds = new Map();
     this.players = players;
+
+    this.graphicComponent = graphicComponentFactory (width, height, this);
 
     this.highlighters = new Map();
     this.highlighterFactory = highlighterFactory;
