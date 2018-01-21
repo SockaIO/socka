@@ -151,6 +151,14 @@ export default class OptionsView extends View {
 
   onFocus() {
 
+    // Update the players for binding refresh when the
+    // number of players changes
+    // TODO: Dedicated hook for command binding that would also include this
+    // more cleanly
+    if (this.players[0] !== Player.GamePlayer) {
+      this.players = Array.from(Player.GetPlayers ());
+    }
+
     let close = (player, fct, obj) => {
       return () => {
         fct.bind(obj)(player);
