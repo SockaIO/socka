@@ -28,10 +28,28 @@ export class MappingMenuItem extends MenuItem{
 
     } else {
       for (let player of players) {
-        this.values.set(player.getId(), player.optionStore.get(this.key));
         this.indexes.set(player.getId(), 0);
-        this.players.push(player.getId());
+        this.players.push(player);
       }
+
+      this.loadValues();
+    }
+  }
+
+  loadValues() {
+
+    this.values = new Map();
+
+    for (let player of this.players) {
+      // Clone the Value
+      const optionValue = player.optionStore.get(this.key);
+      let optionValueClone = {};
+
+      for (let layout in optionValue) {
+        optionValueClone[layout] = Object.assign({}, optionValue[layout]);
+      }
+
+      this.values.set(player.getId(), optionValueClone);
     }
   }
 
@@ -53,6 +71,21 @@ export class MappingMenuItem extends MenuItem{
     return this.values;
   }
 
+  setLayoutValue(playerId, layout, value) {
+    let currentValue = this.values.get(playerId);
+    if (value === undefined) {
+      delete currentValue[layout];
+    } else {
+      currentValue[layout] = value;
+    }
+  }
+
+  setValue(playerId, value) {
+    for (let layout of ['PRIMARY', 'SECONDARY']) {
+      this.setLayoutValue(playerId, layout, value[layout]);
+    }
+  }
+
   enter(player) {
 
     Input.SetRawListener ((e) => {
@@ -69,12 +102,10 @@ export class MappingMenuItem extends MenuItem{
       let selectedPlayer = this.players[Math.floor(index / 2)];
       let selectedLayout = index % 2 === 0 ? 'PRIMARY' : 'SECONDARY';
 
-      let currentValue = this.values.get(selectedPlayer);
-
-      currentValue[selectedLayout] = {
+      this.setLayoutValue(selectedPlayer.getId(), selectedLayout, {
         key: e.key,
         controller: e.controller.getId()
-      };
+      });
 
       this.controller = e.controller;
       Input.RemoveRawListener();

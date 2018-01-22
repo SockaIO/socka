@@ -50,11 +50,20 @@ export function GetRoot() {
   return options;
 }
 
+/**
+ * Options Menu Parent Class
+ */
+class OptionMenu {
+  getConfig() {
+    return {};
+  }
+}
+
 
 /**
 * Option Folder. Contains OptionGroup objects
  */
-export class OptionFolder {
+export class OptionFolder extends OptionMenu{
 
   /**
    * Constructor.
@@ -64,6 +73,7 @@ export class OptionFolder {
    * @param {Symbol} menuType Type of menu (for theming purpose)
    */
   constructor(name, id,  children, menuType=MENU_OPTION) {
+    super();
     this.name = name;
     this.id = id;
     this.children = new Map();
@@ -110,7 +120,7 @@ export class OptionFolder {
 /**
  * Option Group. Contain Options to modify
  */
-export class OptionGroup {
+export class OptionGroup extends OptionMenu {
 
   /**
    * Constructor.
@@ -119,13 +129,16 @@ export class OptionGroup {
    * @param {Bool} global Is the Group global parameters
    * @param {Option|Array} options Options contained in the group
    * @param {Symbol} menuType Type of menu (for theming purpose)
+   * @parem {Object} config config for the optionGroup
    */
-  constructor (name, id, global, options, menuType=MENU_OPTION) {
+  constructor (name, id, global, options, menuType=MENU_OPTION, config={}) {
+    super();
     this.name = name;
     this.id = id;
     this.options = new Map();
     this.global = global;
     this.menuType = menuType;
+    this.config = config;
 
     for (let o of options) {
       this.options.set (o.getName (), o);
@@ -169,6 +182,13 @@ export class OptionGroup {
     }
 
     return new Map(maps);
+  }
+
+  /**
+   * Get the Config
+   */
+  getConfig() {
+    return this.config;
   }
 }
 
@@ -341,5 +361,18 @@ export class MappingOption extends Option {
    */
   check (value) {
     return true;
+  }
+
+  /**
+   * We need to override getDefault to deep copy
+   */
+  getDefault() {
+    let out = {};
+
+    for (let layout in this.default) {
+      out[layout] = Object.assign({}, this.default[layout]);
+    }
+
+    return out;
   }
 }

@@ -84,7 +84,11 @@ export default function GetOptionTree() {
     keyOptions[x].setUpdateWorld(fct);
   }
 
-  let mapping = new Options.OptionGroup('Mapping', 'mapping', false, [left, up, right, down, enter, back], MENU_OPTION_MAPPING);
+  const config = {
+    keepIndex: true,
+    reset: true
+  };
+  let mapping = new Options.OptionGroup('Mapping', 'mapping', false, [left, up, right, down, enter, back], MENU_OPTION_MAPPING, config);
 
   /*
    * Root

@@ -42,6 +42,8 @@ export default class OptionsView extends View {
     let entries = [];
     let optionByKey = new Map();
 
+    const config = option.getConfig();
+
     // We have a folder
     if (option.constructor.name === 'OptionFolder') {
 
@@ -70,10 +72,30 @@ export default class OptionsView extends View {
         optionByKey.set(`${prefix}.${option.id}.${o.id}`, o);
       }
 
+      // Do we add the Reset Entry
+      if (config.reset === true) {
+        entries.push(new TextMenuItem('Reset', () => {
+
+          for (let player of this.players) {
+
+            for (let entry of entries.slice(0, -2)) {
+              const key = entry.key;
+              entry.setValue(player.getId(), optionByKey.get(key).getDefault());
+            }
+          }
+
+        }));
+      }
+
       entries.push(new TextMenuItem('Save', () => {
 
         // Remove the Save Entry
         entries.splice(-1, 1);
+
+        if (config.reset === true) {
+        // Remove the Reset Entry
+        entries.splice(-1, 1);
+        }
 
         // Store the values for all the players
         for (let e of entries) {
@@ -89,10 +111,7 @@ export default class OptionsView extends View {
       }));
     }
 
-    let keepIndex = false;
-    if (option.id === 'mapping') {
-      keepIndex = true;
-    }
+    let keepIndex = config.keepIndex === true ? true : false;
 
     this.menu = new Menu(option.menuType, entries, width, height, Theme.GetTheme().createMenuOptionGC.bind(Theme.GetTheme()), true, MenuItemHighlighter, this.players, 'name', keepIndex);
     this.sprite = this.menu.sprite;
