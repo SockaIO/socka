@@ -173,13 +173,21 @@ function Setup() {
 
   controllers.set(-1, new KeyboardController(-1));
 
-  // We have to hardcode the fullscreen for ease of use
+  // We have to hardcode some bindings for ease of use
   document.addEventListener('keyup', (e) => {
+    // Fullscreen with F9
     if (e.keyCode === 120) {
       let c = document.getElementById('game');
       e.preventDefault();
       let requestFullScreen = c.mozRequestFullScreen || c.webkitRequestFullScreen;
       requestFullScreen.bind(c)();
+
+      // Reset the localstorage with F8
+    } else if (e.keyCode === 119) {
+      if (window.confirm('Are you sure you want to reset all the settings? (You know what you are doing right?)')) {
+        localStorage.clear();
+        window.location.reload();
+      }
     }
   });
 }
