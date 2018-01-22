@@ -352,8 +352,9 @@ export class MappingOption extends Option {
    * @param {String} id Option ID
    * @param {*} def Default Value
    */
-  constructor(name, id, def) {
+  constructor(name, id, def, alternate=undefined) {
     super(name, id, def);
+    this.alternate = alternate;
   }
 
   /**
@@ -366,11 +367,12 @@ export class MappingOption extends Option {
   /**
    * We need to override getDefault to deep copy
    */
-  getDefault() {
+  getDefault(alternate=false) {
     let out = {};
+    const def = alternate === true && this.alternate !== undefined ? this.alternate : this.default;
 
-    for (let layout in this.default) {
-      out[layout] = Object.assign({}, this.default[layout]);
+    for (let layout in def) {
+      out[layout] = Object.assign({}, def[layout]);
     }
 
     return out;

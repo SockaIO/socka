@@ -59,12 +59,18 @@ export default function GetOptionTree() {
   /*
    * Mapping
    */
-  let left = new Options.MappingOption('LEFT', 'left', {PRIMARY: {key: 37, controller: -1}});
-  let up = new Options.MappingOption('UP', 'up', {PRIMARY: {key: 38, controller: -1}});
-  let right = new Options.MappingOption('RIGHT', 'right', {PRIMARY: {key: 39, controller: -1}});
-  let down = new Options.MappingOption('DOWN', 'down', {PRIMARY: {key: 40, controller: -1}});
-  let enter = new Options.MappingOption('ENTER', 'enter', {PRIMARY: {key: 13, controller: -1}});
-  let back = new Options.MappingOption('BACK', 'back', {PRIMARY: {key: 8, controller: -1}});
+  let left = new Options.MappingOption('LEFT', 'left', {PRIMARY: {key: 37, controller: -1}},
+                                                       {PRIMARY: {key: 65, controller: -1}});
+  let up = new Options.MappingOption('UP', 'up', {PRIMARY: {key: 38, controller: -1}},
+                                                 {PRIMARY: {key: 87, controller: -1}});
+  let right = new Options.MappingOption('RIGHT', 'right', {PRIMARY: {key: 39, controller: -1}},
+                                                          {PRIMARY: {key: 68, controller: -1}});
+  let down = new Options.MappingOption('DOWN', 'down', {PRIMARY: {key: 40, controller: -1}},
+                                                       {PRIMARY: {key: 83, controller: -1}});
+  let enter = new Options.MappingOption('ENTER', 'enter', {PRIMARY: {key: 13, controller: -1}},
+                                                          {PRIMARY: {key: 32, controller: -1}});
+  let back = new Options.MappingOption('BACK', 'back', {PRIMARY: {key: 8, controller: -1}},
+                                                       {PRIMARY: {key: 27, controller: -1}});
 
   const keyOptions = [left, right, down, up, enter, back];
 

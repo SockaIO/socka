@@ -76,11 +76,16 @@ export default class OptionsView extends View {
       if (config.reset === true) {
         entries.push(new TextMenuItem('Reset', () => {
 
+          let x = 0;
+          let alternate;
           for (let player of this.players) {
+
+            // Alternate Default for the second player if available
+            alternate = x++ % 2 === 0 ? false: true;
 
             for (let entry of entries.slice(0, -2)) {
               const key = entry.key;
-              entry.setValue(player.getId(), optionByKey.get(key).getDefault());
+              entry.setValue(player.getId(), optionByKey.get(key).getDefault(alternate));
             }
           }
 
