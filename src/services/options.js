@@ -307,7 +307,7 @@ export class TextOption extends Option {
   }
 
   check(value) {
-    return value.length > this.minLen &&
+    return value.length >= this.minLen &&
            value.length < this.maxLen &&
            (this.checkRegex === null ||this.checkRegex.test(value));
   }

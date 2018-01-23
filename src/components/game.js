@@ -1,8 +1,9 @@
 /* jshint esnext: true */
 'use strict';
 
-import {Input, Player, Theme, OptionTree, Options} from '../services';
+import {Input, Player, Theme, OptionTree, Options, Library} from '../services';
 import {RESIZE} from '../constants/signaling';
+import {MenuView, OptionsView} from '../views';
 
 import * as PIXI from 'pixi.js';
 import Stats from 'stats-js';
@@ -47,6 +48,33 @@ class Game {
   }
 
   /**
+   * Start the game
+   */
+  start() {
+
+    let entries = [
+      {
+        name: 'Play',
+        action: () => {
+          Library.GeneratePackMenu(this);
+        }
+      },
+      {
+        name: 'Options',
+        action: () => {
+          let o = new OptionsView(Options.GetRoot(), '', this);
+          this.pushView(o);
+        }
+      }];
+
+    let menu = new MenuView(entries, this, true);
+    this.pushView(menu);
+
+    this.main();
+
+  }
+
+  /**
    * Initialize the services. We don't want promises in the constructor.
    */
   init() {
@@ -62,6 +90,9 @@ class Game {
     //Player.SavePlayers();
     log.debug('Initializing the players');
     Player.InitPlayers(this);
+
+    log.debug('Init the Library');
+    Library.Init();
 
     log.debug('Waiting for all the asynchronous Initialization');
     return Promise.all(promises);

@@ -38,7 +38,7 @@ export function ListPacks() {
 
       return packs;
     }, (err) => {
-      log.error(`Error while getting the packs ${json.stringify(err)}`);
+      log.error(`Error while getting the packs ${JSON.stringify(err)}`);
     });
   }, () => {
 
@@ -65,6 +65,20 @@ export function ListPacks() {
 export function AddEndpoint(endpoint) {
   endpoints.add(Promise.resolve(endpoint));
 }
+
+
+/**
+ * Remove an endpoint
+ *
+ * @param {Endpoint|Promise} endpoint | Endpoint
+ * @return {Boolean} true if the endpoint was found
+ *
+ * @memberof services.FileManager
+ */
+export function RemoveEndpoint(endpoint) {
+  return endpoints.delete(endpoint);
+}
+
 
 /**
  * An endpoint is the reprensetation of a storage

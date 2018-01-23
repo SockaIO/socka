@@ -107,6 +107,15 @@ export default class OptionsView extends View {
           for (let [playerId, value] of e.getValues()) {
             let player = Player.GetPlayer(playerId);
             player.optionStore.set(e.key, value);
+          }
+        }
+
+        // Some Update world require the full option Store
+        // to be up to date to be applied
+        // TODO: mechanism to group the options
+        for (let e of entries) {
+          for (let [playerId, value] of e.getValues()) {
+            let player = Player.GetPlayer(playerId);
             optionByKey.get(e.key).updateWorld(value, player, game);
           }
         }
@@ -117,8 +126,9 @@ export default class OptionsView extends View {
     }
 
     let keepIndex = config.keepIndex === true ? true : false;
+    let sortMenu = config.sort === false ? false : true;
 
-    this.menu = new Menu(option.menuType, entries, width, height, Theme.GetTheme().createMenuOptionGC.bind(Theme.GetTheme()), true, MenuItemHighlighter, this.players, 'name', keepIndex);
+    this.menu = new Menu(option.menuType, entries, width, height, Theme.GetTheme().createMenuOptionGC.bind(Theme.GetTheme()), sortMenu, MenuItemHighlighter, this.players, 'name', keepIndex);
     this.sprite = this.menu.sprite;
 
     this.update();

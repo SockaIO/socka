@@ -9,6 +9,7 @@ import * as Player from './player';
 import * as FileManager from './fileManager';
 import * as SongParser from './songParser';
 import * as Options from './options';
+import * as Library from './library';
 import OptionTree from './optionTree';
 
 export {
@@ -19,5 +20,6 @@ export {
   FileManager,
   SongParser,
   Options,
-  OptionTree
+  OptionTree,
+  Library
 };

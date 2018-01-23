@@ -2,9 +2,12 @@
 
 import {Options} from './';
 import {KEYS, PRIMARY, SECONDARY} from '../constants/input';
-import {MENU_OPTION_MAPPING} from '../constants/resources';
+import {MENU_OPTION, MENU_OPTION_MAPPING} from '../constants/resources';
 import {RESIZE, NUM_PLAYERS} from '../constants/signaling';
-import {Player} from '../services';
+import {Player, Library} from '../services';
+import {HttpEndpoint} from './endpoint';
+
+import log from 'loglevel';
 
 /**
  * @namespace services.OptionTree
@@ -96,10 +99,46 @@ export default function GetOptionTree() {
   };
   let mapping = new Options.OptionGroup('Mapping', 'mapping', false, [left, up, right, down, enter, back], MENU_OPTION_MAPPING, config);
 
+  /**
+   * Endpoint
+   */
+
+
+  let endpointUrl = new Options.TextOption('URL', 'url', 0, 100, '');
+  endpointUrl.setUpdateWorld((value, player) => {
+
+    if (value === '') {
+      Library.RemoveCustomEndpoint();
+      return;
+    }
+
+    let username = player.optionStore.get('.root.endpoint.username');
+    let password = player.optionStore.get('.root.endpoint.password');
+
+    let basicAuth = null;
+    if (username !== '') {
+      basicAuth = {
+        username,
+        password
+      };
+    }
+
+    Library.SetCustomEndpoint(HttpEndpoint.CreateHttpEndpoint(value, basicAuth)
+      .catch((error) => {
+        log.error(`Impossible to Add Custom Endpoint: ${error.message}`);
+        throw error;
+      }));
+  });
+
+  let endpointUsername = new Options.TextOption('Username', 'username', 0, 100, '');
+  let endpointPassword = new Options.TextOption('Password', 'password', 0, 100, '');
+
+  let endpoint = new Options.OptionGroup('Custom Source', 'endpoint', true, [endpointUrl, endpointUsername, endpointPassword], MENU_OPTION, {sort: false});
+
   /*
    * Root
    */
-  let root = new Options.OptionFolder('root', 'root', [display, gameplay, players, mapping]);
+  let root = new Options.OptionFolder('root', 'root', [display, gameplay, players, mapping, endpoint]);
 
   return root;
 }
