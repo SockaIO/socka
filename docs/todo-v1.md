@@ -13,6 +13,7 @@
 + Configure the endpoints (at least the URL for the HTTP endpoint, maybe also password)
 - Faster way to scroll in the song list in a pack (letter?, 10 by 10?)
 - Revise song caching strategy? (option, cache only banner + options?)
+  - use indexDB for caching? (see https://developer.mozilla.org/fr/docs/Web/API/API_IndexedDB)
 + Graphic Options: Aspect Ratio
 - Rename Theme GC (Check that interface for each)
 
@@ -27,11 +28,15 @@
 + Pack Choice Menu
 - Song Choice Menu
 - Loading
-- Pause
++ Pause
 - Engine
 - Result
 - Credit
 
+## Build
+
+- Configure possibility for production build
+- Add Source Map for debug (cheap-eval-source-map probably)
 
 ### Assets Status:
 
