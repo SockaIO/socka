@@ -52,6 +52,7 @@ export class MenuDefaultGraphicComponent extends interfaces.MenuGraphicComponent
 
   createMainSprite() {
     this.sprite = new PIXI.Container();
+    this.background = new PIXI.Container();
 
     if (this.menu.id === MENU_MAIN) {
       this.background = new PIXI.Sprite(this.theme.getTexture('bgMain'));
