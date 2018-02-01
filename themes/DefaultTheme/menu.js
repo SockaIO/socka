@@ -55,6 +55,8 @@ export class MenuDefaultGraphicComponent extends interfaces.MenuGraphicComponent
 
     if (this.menu.id === MENU_MAIN) {
       this.background = new PIXI.Sprite(this.theme.getTexture('bgMain'));
+      this.background.width = this.width;
+      this.background.height = this.height;
     }
     this.foreground = new PIXI.Container();
 
@@ -119,6 +121,9 @@ export class MenuDefaultGraphicComponent extends interfaces.MenuGraphicComponent
     case RESIZE:
       this.width = modification.width;
       this.height = modification.height;
+
+      this.background.width = modification.width;
+      this.background.height = modification.height;
 
       this.initConstants();
     }
@@ -284,7 +289,7 @@ export class OptionMenuDefaultGraphicComponent extends interfaces.MenuGraphicCom
     this.width = width;
     this.menu = menu;
 
-    this.lineHeight = 50;
+    this.lineHeight = this.height * 0.045; // Empirical
     this.margin = 10;
 
     this.createMainSprite();
@@ -328,6 +333,8 @@ export class OptionMenuDefaultGraphicComponent extends interfaces.MenuGraphicCom
 
     if (this.menu.id === MENU_OPTION || this.menu.id === MENU_OPTION_MAPPING) {
       this.background = new PIXI.Sprite(this.theme.getTexture('bgMain'));
+      this.background.width = this.width;
+      this.background.height = this.height;
     }
 
     this.sprite.addChild(this.background);
@@ -414,6 +421,9 @@ export class OptionMenuDefaultGraphicComponent extends interfaces.MenuGraphicCom
     case RESIZE:
       this.width = modification.width;
       this.height = modification.height;
+
+      this.background.width = modification.width;
+      this.background.height = modification.height;
 
       this.initConstants();
     }

@@ -19,7 +19,28 @@ export default function GetOptionTree() {
   /*
    * Display
    */
-  let resolution = new Options.EnumOption('Resolution', 'resolution', ['1280x720', '1920x1080'], '1280x720');
+
+  // Detect the resolution
+  const screenHeight = window.screen.availHeight;
+  const screenWidth = window.screen.availWidth;
+  const ratio = screenWidth / screenHeight;
+  let widths;
+
+  switch (ratio) {
+  case 16/10:
+    widths = [1280, 1440, 1680, 1920];
+    break;
+  case 16/9:
+  default:
+    widths = [1280, 1366, 1660, 1920];
+    break;
+  }
+
+  const resolutions = widths.map((width) => {
+    return `${width}x${Math.floor(width / ratio)}`;
+  });
+
+  let resolution = new Options.EnumOption('Resolution', 'resolution', resolutions, resolutions[0]);
   resolution.setUpdateWorld ((value, player, game) => {
 
     let width, height;

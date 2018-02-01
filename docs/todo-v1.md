@@ -13,7 +13,7 @@
 + Configure the endpoints (at least the URL for the HTTP endpoint, maybe also password)
 - Faster way to scroll in the song list in a pack (letter?, 10 by 10?)
 - Revise song caching strategy? (option, cache only banner + options?)
-- Graphic Options: Aspect Ratio
++ Graphic Options: Aspect Ratio
 - Rename Theme GC (Check that interface for each)
 
 ## Theme
