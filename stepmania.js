@@ -13,10 +13,12 @@ window.addEventListener('load', init, false);
  */
 function init() {
 
-  log.setLevel('debug');
+  log.setLevel(PRODUCTION === true ? 'info' : 'debug');
   log.info('Starting Game Initialization');
 
-  let game = new Game(1280, 720, true);
+  log.info(`Current Environment ${PRODUCTION === true ? 'Production' : 'Dev'}`);
+
+  let game = new Game(1280, 720, PRODUCTION !== true);
 
   game.init().then(() => {
     game.start();

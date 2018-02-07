@@ -14,46 +14,54 @@ const indexOptions = {
   filename: path.resolve(__dirname + '/dist/index.html')
 };
 
-module.exports = {
-  context: __dirname,
-  entry: {
-    app: './stepmania.js',
-  },
-  output: {
-    path: path.resolve(__dirname + '/dist/assets/'),
-    filename: '[name].bundle.js',
-    publicPath: '/assets/',
-  },
-  devServer: {
-    contentBase: path.resolve(__dirname, 'dist'),
-    publicPath: '/assets/',
-  },
-  plugins: [
-    new HtmlWebpackPlugin(indexOptions),
-    new HtmlWebpackHarddiskPlugin(),
-    new CopyWebpackPlugin([
-      {
-        from: 'songs',
-        to: path.resolve(__dirname + '/dist/songs'),
-      }
-    ], {
-      copyUnmodified: true,
-    }),
-  ],
-  module: {
-    rules: [
-      {
-        test: /\.(png|jpg)$/,
-        use: ['file-loader?name=[path][name].[ext]']
-      },
-      {
-        test: /\.(xml|fnt)$/,
-        use: ['file-loader?name=[path][name].[ext]']
-      },
-      {
-        test: /astro\/.*\.(ogg|sm)/,
-        use: ['file-loader?name=[path][name].[ext]']
-      }
-    ]
-  },
-};
+module.exports = env => {
+
+  let conf = {
+    context: __dirname,
+    entry: {
+      app: './stepmania.js',
+    },
+    output: {
+      path: path.resolve(__dirname + '/dist/assets/'),
+      filename: '[name].bundle.js',
+      publicPath: '/assets/',
+    },
+    devServer: {
+      contentBase: path.resolve(__dirname, 'dist'),
+      publicPath: '/assets/',
+    },
+    plugins: [
+      new webpack.DefinePlugin({
+        PRODUCTION: JSON.stringify(env.production)
+      }),
+      new HtmlWebpackPlugin(indexOptions),
+      new HtmlWebpackHarddiskPlugin(),
+      new CopyWebpackPlugin([
+        {
+          from: 'songs',
+          to: path.resolve(__dirname + '/dist/songs'),
+        }
+      ], {
+        copyUnmodified: true,
+      }),
+    ],
+    module: {
+      rules: [
+        {
+          test: /\.(png|jpg)$/,
+          use: ['file-loader?name=[path][name].[ext]']
+        },
+        {
+          test: /\.(xml|fnt)$/,
+          use: ['file-loader?name=[path][name].[ext]']
+        },
+      ]
+    },
+  };
+
+  if (env.production !== true) {
+    conf['devtool'] = 'cheap-eval-source-map';
+  }
+
+  return conf;
+}

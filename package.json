@@ -19,8 +19,8 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "webpack-dev-server --progress --inline --watch",
-    "build": "webpack"
+    "start": "webpack-dev-server --progress --inline --watch --env.production=false",
+    "build": "webpack --env.production"
   },
   "repository": {
     "type": "git",

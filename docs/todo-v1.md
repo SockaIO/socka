@@ -35,8 +35,8 @@
 
 ## Build
 
-- Configure possibility for production build
-- Add Source Map for debug (cheap-eval-source-map probably)
++ Configure possibility for production build
++ Add Source Map for debug (cheap-eval-source-map probably)
 
 ### Assets Status:
 
