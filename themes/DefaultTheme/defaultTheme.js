@@ -25,6 +25,7 @@ import {
 import {
   MenuDefaultGraphicComponent,
   SongMenuDefaultGraphicComponent,
+  SongMenu2DefaultGraphicComponent,
   OptionMenuDefaultGraphicComponent
 } from './menu';
 
@@ -84,6 +85,7 @@ export default class DefaultTheme extends interfaces.Theme {
       clementeRegular: require('./img/clementeRegular.fnt'),
       blank: require('./img/blank.png'),
       bgMain: require('./img/BG1-logo.jpg'),
+      bgBlank: require('./img/BG1.jpg'),
     };
 
 
@@ -297,7 +299,7 @@ export default class DefaultTheme extends interfaces.Theme {
    * Create Song Menu Graphic Component
    */
   createSongMenuGC(...args) {
-    return new SongMenuDefaultGraphicComponent(this, ...args);
+    return new SongMenu2DefaultGraphicComponent(this, ...args);
   }
 
   /**

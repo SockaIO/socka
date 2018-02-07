@@ -23,3 +23,7 @@ export const MENU_OPTION = Symbol.for('MENU_OPTION');
 export const MENU_OPTION_MAPPING = Symbol.for('MENU_OPTION_MAPPING');
 /** @memberof constants.resources */
 export const MENU_PAUSE = Symbol.for('MENU_PAUSE');
+/** @memberof constants.resources */
+export const MENU_SONG = Symbol.for('MENU_SONG');
+/** @memberof constants.resources */
+export const MENU_CHART = Symbol.for('MENU_CHART');

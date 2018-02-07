@@ -19,7 +19,6 @@ class PauseView extends View {
     let width, height;
     [width, height] = game.getScreenSize();
 
-    this.selectedEntry = 0;
     let items = [];
 
     items.push(new TextMenuItem('Resume', () => {

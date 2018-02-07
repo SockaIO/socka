@@ -16,6 +16,7 @@
   - use indexDB for caching? (see https://developer.mozilla.org/fr/docs/Web/API/API_IndexedDB)
 + Graphic Options: Aspect Ratio
 - Rename Theme GC (Check that interface for each)
+- Restart Song
 
 ## Theme
 

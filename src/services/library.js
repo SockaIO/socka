@@ -2,7 +2,7 @@
  * @namespace services.Library
  */
 import {Player, FileManager} from '../services';
-import {MenuView, EngineView, SongMenuView} from '../views';
+import {MenuView, EngineView, SongMenuView2} from '../views';
 import {HttpEndpoint} from './endpoint';
 
 import log from 'loglevel';
@@ -50,7 +50,7 @@ function packMenuEntry(pack, game) {
         entries.push(songMenuEntry(s, game));
       }
 
-      let menu = new SongMenuView(entries, game);
+      let menu = new SongMenuView2(entries, game);
       game.pushView(menu);
 
     });

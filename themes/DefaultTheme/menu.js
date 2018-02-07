@@ -5,7 +5,7 @@ import {TweenLite} from 'gsap';
 
 import {theme as interfaces} from '../../src/interfaces';
 
-import {MENU_MAIN, MENU_OPTION, MENU_OPTION_MAPPING} from '../../src/constants/resources';
+import {MENU_MAIN, MENU_OPTION, MENU_OPTION_MAPPING, MENU_CHART} from '../../src/constants/resources';
 import {RESIZE} from '../../src/constants/signaling';
 
 export class MenuDefaultGraphicComponent extends interfaces.MenuGraphicComponent {
@@ -134,6 +134,34 @@ export class MenuDefaultGraphicComponent extends interfaces.MenuGraphicComponent
 /**
  * Song Menu
  */
+
+export class SongMenu2DefaultGraphicComponent extends interfaces.MenuGraphicComponent {
+
+  constructor (theme, width, height, view) {
+    super(theme);
+
+    this.height = height;
+    this.width = width;
+
+    this.songMenu = view.songMenu;
+    this.chartMenu = view.chartMenu;
+
+    this.sprite = new PIXI.Container();
+
+    this.background = new PIXI.Sprite(this.theme.getTexture('bgBlank'));
+    this.sprite.addChild(this.background);
+
+    this.sprite.addChild(this.songMenu.sprite);
+    this.sprite.addChild(this.chartMenu.sprite);
+    this.chartMenu.sprite.x = width / 2;
+  }
+
+  update() {
+    this.songMenu.update();
+    this.chartMenu.update();
+  }
+
+}
 
 export class SongMenuDefaultGraphicComponent extends interfaces.MenuGraphicComponent {
 
@@ -293,13 +321,15 @@ export class OptionMenuDefaultGraphicComponent extends interfaces.MenuGraphicCom
     this.lineHeight = this.height * 0.045; // Empirical
     this.margin = 10;
 
+    this.specializePre();
+
     this.createMainSprite();
     this.createEntries(menu.getEntries());
 
     this.initConstants();
     this.theme = theme;
 
-    this.specialize();
+    this.specializePost();
 
     this.minView = 0;
     this.maxView = this.numLines;
@@ -342,7 +372,13 @@ export class OptionMenuDefaultGraphicComponent extends interfaces.MenuGraphicCom
     this.sprite.addChild(this.foreground);
   }
 
-  specialize() {
+  specializePre() {
+    if (this.menu.id === MENU_CHART) {
+      this.lineHeight = 40;
+    }
+  }
+
+  specializePost() {
     if (this.menu.id === MENU_OPTION_MAPPING) {
       this.createMappingSpecialization();
     }

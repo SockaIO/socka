@@ -32,6 +32,7 @@ export class Menu {
     this.keepIndex = keepIndex;
 
     this.compareFunction = (a, b) => {return a[key] > b[key];};
+    this.sort = sort;
 
     if (sort === true) {
       this.entries.sort(this.compareFunction);
@@ -122,6 +123,17 @@ export class Menu {
    */
   getEntries() {
     return this.entries;
+  }
+
+  /**
+   * Set the entries
+   */
+  setEntries(entries) {
+    this.entries = entries;
+
+    if (this.sort === true) {
+      this.entries.sort(this.compareFunction);
+    }
   }
 
   /**
