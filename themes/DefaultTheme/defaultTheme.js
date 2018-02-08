@@ -26,11 +26,13 @@ import {
   MenuDefaultGraphicComponent,
   SongMenuDefaultGraphicComponent,
   SongMenu2DefaultGraphicComponent,
+  SongMenu3DefaultGraphicComponent,
   OptionMenuDefaultGraphicComponent
 } from './menu';
 
 import {
   TextMenuItemDefaultGraphicComponent,
+  SongMenuItemDefaultGraphicComponent,
   MappingMenuItemDefaultGraphicComponent,
   InputMenuItemDefaultGraphicComponent,
   EnumMenuItemDefaultGraphicComponent,
@@ -261,6 +263,13 @@ export default class DefaultTheme extends interfaces.Theme {
   }
 
   /**
+   * Create Song Menu Item Graphic Component
+   */
+  createSongMenuItemGC(...args) {
+    return new SongMenuItemDefaultGraphicComponent(this, ...args);
+  }
+
+  /**
    * Create Text Menu Item Graphic Component
    */
   createInputMenuItemGC(...args) {
@@ -300,6 +309,13 @@ export default class DefaultTheme extends interfaces.Theme {
    */
   createSongMenuGC(...args) {
     return new SongMenu2DefaultGraphicComponent(this, ...args);
+  }
+
+  /**
+   * Create Song Menu Graphic Component
+   */
+  createSongMenu3GC(...args) {
+    return new SongMenu3DefaultGraphicComponent(this, ...args);
   }
 
   /**

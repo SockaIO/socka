@@ -467,3 +467,145 @@ export class OptionMenuDefaultGraphicComponent extends interfaces.MenuGraphicCom
   }
 }
 
+// TODO: Factor with the Menu Class
+export class SongMenu3DefaultGraphicComponent extends interfaces.MenuGraphicComponent {
+
+  constructor(theme, width, height, menu) {
+    super(theme);
+
+    // Engine Container
+    this.height = height;
+    this.width = width;
+    this.menu = menu;
+
+    this.createMainSprite();
+
+    this.initConstants();
+
+    // Parameters
+    this.transitionDuration = 0.25;
+    this.amplificationY = (distance) => {
+      if (distance === 0) {
+        return 1.5;
+      }
+      return 1;
+    };
+
+    this.amplificationX = (distance) => {
+      return 1 - Math.abs(distance * 0.05);
+    };
+
+    this.alpha = (distance) => {
+      return 1 - Math.abs(distance) * 0.1;
+    };
+
+    this.createEntries(menu.getEntries());
+    this.theme = theme;
+  }
+
+  initConstants() {
+    // Usefull constants
+    this.lineHeight = 75;
+    this.margin = 0;
+    this.numLines = (this.height / 2) / (this.lineHeight + this.margin) - 1;
+    this.origin = this.height / 2;
+  }
+
+  createEntries(entries) {
+
+    this.entries = [];
+
+    for (let entry of entries) {
+      let gc = entry.createGraphicComponent(this.width, this.lineHeight);
+      gc.sprite.x = this.width/2 - gc.sprite.width / 2;
+      this.foreground.addChild(gc.sprite);
+      this.entries.push(gc);
+    }
+  }
+
+  createMainSprite() {
+    this.sprite = new PIXI.Container();
+    this.background = new PIXI.Container();
+
+    if (this.menu.id === MENU_MAIN) {
+      this.background = new PIXI.Sprite(this.theme.getTexture('bgMain'));
+      this.background.width = this.width;
+      this.background.height = this.height;
+    }
+    this.foreground = new PIXI.Container();
+
+    this.sprite.addChild(this.background);
+    this.sprite.addChild(this.foreground);
+  }
+
+  // Returns the Position + Scale
+  getPosition(distance, sprite) {
+
+    // Center on the origin line
+    let newY = this.origin - sprite.height / 2;
+
+    for (let x = 0; x < Math.abs(distance); x++) {
+      newY += Math.sign(distance) * (this.lineHeight * (this.amplificationY(x) + this.amplificationY(x + 1)) / 2 + this.margin);
+    }
+
+    const newScaleX = this.amplificationX(distance);
+    const newScaleY = this.amplificationY(distance);
+    const newAlpha = this.alpha(distance);
+
+    let newX = this.width/2 - sprite.width / 2;
+
+    return {
+      x: newX,
+      y: newY,
+      scale: {x: newScaleX, y: newScaleY},
+      alpha: newAlpha
+    };
+  }
+
+  /**
+   * Barbarian Update
+   */
+  update() {
+
+    const selectedIndex = this.menu.getSelectedIndex();
+
+    for (let x = 0; x < this.entries.length; x++) {
+
+      let gc = this.entries[x];
+      let sprite = gc.sprite;
+      let distance = x - selectedIndex;
+
+      // Not displayed
+      if (Math.abs(distance) > this.numLines) {
+        sprite.visible = false;
+      } else {
+        sprite.visible = true;
+      }
+
+      if (Math.abs(distance) > this.numLines + 1) {
+        continue;
+      }
+
+      let newPosition = this.getPosition(distance, sprite);
+
+      TweenLite.to(sprite, this.transitionDuration, {y: newPosition.y});
+      gc.setScale(newPosition.scale, this.transitionDuration);
+
+      sprite.x = newPosition.x;
+      sprite.alpha = newPosition.alpha;
+    }
+  }
+
+  handleModification(modification) {
+    switch(modification.type) {
+    case RESIZE:
+      this.width = modification.width;
+      this.height = modification.height;
+
+      this.background.width = modification.width;
+      this.background.height = modification.height;
+
+      this.initConstants();
+    }
+  }
+}

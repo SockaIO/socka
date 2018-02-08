@@ -44,6 +44,94 @@ export class TextMenuItemDefaultGraphicComponent extends interfaces.MenuItemGrap
   }
 }
 
+export class SongMenuItemDefaultGraphicComponent extends interfaces.MenuItemGraphicComponent {
+
+  constructor(theme, width, height, song) {
+    super(theme);
+
+    this.width = width;
+    this.height = height;
+    this.txtHeight = 20;
+    this.shift = 50;
+    this.transitionDuration = 0.25;
+
+    this.song = song;
+
+    this.createSprites();
+
+    this.players = new Set();
+    this.highlighters = new Map();
+  }
+
+  createSprites() {
+    this.sprite = new PIXI.Container();
+
+    this.background = new PIXI.Graphics();
+    this.background.beginFill(0x111111, 0.8);
+    this.background.drawRect(0, 0, this.width, this.height);
+    this.background.endFill();
+    this.sprite.addChild(this.background);
+
+    this.border = new PIXI.Graphics();
+    const thick = 1;
+    this.border.lineStyle(thick, 0xffffff)
+               .moveTo(thick, thick)
+               .lineTo(thick, this.height - thick)
+               .lineTo(this.width - thick, this.height - thick)
+               .lineTo(this.width - thick, thick)
+               .lineTo(thick, thick),
+    this.border.alpha = 0;
+    this.sprite.addChild(this.border);
+
+
+    // Set the Txt
+    this.setTxt({x: 1, y: 1});
+  }
+
+  setTxt (scale) {
+
+
+    if (this.txt == undefined) {
+      const height = this.txtHeight * scale.y;
+      this.txt = new PIXI.extras.BitmapText(this.song.name, {font: height + 'px clementeRegular'});
+
+      // Ugly Hack not to overflow from the container
+      const proportion = 0.6;
+
+      if (this.txt.width > this.width * proportion) {
+        const len = this.song.name.length;
+        let target = Math.floor(proportion * this.width * len / this.txt.width);
+        this.txt = new PIXI.extras.BitmapText(this.song.name.substring(0, target), {font: height + 'px clementeRegular'});
+      }
+      this.sprite.addChild(this.txt);
+    }
+
+    const txtScale = scale.y === 1 ? 1 : 1.3;
+    this.txt.scale = {x: txtScale, y: txtScale};
+
+    this.txt.y = this.height * scale.y / 2 - this.txt.height / 2;
+    this.txt.x = this.shift * scale.x;
+  }
+
+  setHighlighter (h, playerId) {
+    this.highlighters.set(playerId, h);
+  }
+
+  setScale(value, duration) {
+    TweenLite.to(this.background.scale, duration, value);
+    TweenLite.to(this.border.scale, duration, value);
+    this.setTxt (value);
+  }
+
+  onSelected() {
+    TweenLite.to(this.border, this.transitionDuration, {alpha: 1});
+  }
+
+  onDeselected() {
+    TweenLite.to(this.border, this.transitionDuration, {alpha: 0});
+  }
+}
+
 export class MappingMenuItemDefaultGraphicComponent extends interfaces.MenuItemGraphicComponent {
 
   constructor(theme, width, height, menuItem) {

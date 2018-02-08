@@ -316,3 +316,37 @@ export class TextMenuItem extends MenuItem {
     this.action();
   }
 }
+
+/**
+ * Song Menu Item
+ * @extends MenuItem
+ */
+export class SongMenuItem extends MenuItem {
+
+  constructor(song, action) {
+    super();
+    this.song = song;
+    this.action = action;
+  }
+
+  createGraphicComponent (width, height) {
+    this.graphicComponent = Theme.GetTheme().createSongMenuItemGC(width, height, this.song);
+    return this.graphicComponent;
+  }
+
+  onSelected(player=Player.GamePlayer) {
+    if (this.graphicComponent) {
+      this.graphicComponent.onSelected(player.getId());
+    }
+  }
+
+  onDeselected(player=Player.GamePlayer) {
+    if (this.graphicComponent) {
+      this.graphicComponent.onDeselected(player.getId());
+    }
+  }
+
+  enter() {
+    this.action();
+  }
+}
