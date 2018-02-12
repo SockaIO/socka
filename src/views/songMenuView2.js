@@ -26,10 +26,14 @@ export default class SongMenuView extends View {
       this.setBanner(banner);
     };
 
+    const chartSetter = (charts) => {
+      this.setCharts(charts);
+    };
+
     // Song Menu
     let songs = [];
     for (let e of entries) {
-      songs.push(new SongMenuItem(e, bannerSetter));
+      songs.push(new SongMenuItem(e, bannerSetter, chartSetter));
     }
 
     const menuGC = Theme.GetTheme().createSongMenu3GC.bind(Theme.GetTheme());
@@ -42,7 +46,7 @@ export default class SongMenuView extends View {
     const optionMenuGC = Theme.GetTheme().createMenuOptionGC.bind(Theme.GetTheme());
     const chartMenuWidth = width / 4;
     const chartMenuHeight = height / 3;
-    this.chartMenu = new Menu(MENU_CHART, [new TextMenuItem('Beginner'), new TextMenuItem('Easy')], chartMenuWidth, chartMenuHeight, optionMenuGC);
+    this.chartMenu = new Menu(MENU_CHART, [new TextMenuItem('')], chartMenuWidth, chartMenuHeight, optionMenuGC);
 
     this.graphicComponent = Theme.GetTheme().createSongMenuGC(width, height, this);
     this.update();
@@ -50,6 +54,24 @@ export default class SongMenuView extends View {
 
   setBanner(banner) {
     this.graphicComponent.setBanner(banner);
+  }
+
+  setCharts(charts) {
+    // Filter the Charts for single player only
+    // TODO: Handle more game modes
+    const allowedTypes = ['dance-single', 'SINGLE'];
+    let chartsFiltered = charts.filter((c) => {return allowedTypes.includes(c.type);});
+
+    let entries = [];
+    for (let c of chartsFiltered) {
+      entries.push(new TextMenuItem(`${c.difficulty} (${c.meter})`));
+    }
+
+    // Update the Menu
+    this.chartMenu.setEntries(entries);
+
+    // Update the View GC
+    this.graphicComponent.updateChartMenu();
   }
 
   back() {

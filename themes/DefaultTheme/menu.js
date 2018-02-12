@@ -160,7 +160,10 @@ export class SongMenu2DefaultGraphicComponent extends interfaces.MenuGraphicComp
 
     // Position the Elements
     this.chartMenu.sprite.x = width / 2;
-    this.chartMenu.sprite.y = height / 2;
+  }
+
+  updateChartMenu() {
+    this.chartMenu.sprite.y = this.height / 3;
   }
 
   createTitle(text='Select Song') {
@@ -421,6 +424,17 @@ export class OptionMenuDefaultGraphicComponent extends interfaces.MenuGraphicCom
       this.entries.push(sprite);
       sprite.visible = false;
     }
+  }
+
+  updateEntries() {
+
+    // Remove the old entries
+    for (let e of this.entries) {
+      this.foreground.removeChild(e);
+    }
+
+    // Create the new ones
+    this.createEntries(this.menu.getEntries());
   }
 
   createMainSprite() {

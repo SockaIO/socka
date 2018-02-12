@@ -136,6 +136,16 @@ export class Menu {
     if (this.sort === true) {
       this.entries.sort(this.compareFunction);
     }
+
+    // Update the GC
+    this.graphicComponent.updateEntries();
+
+    // Update the selection
+    for (let p of this.players) {
+      let i = this.getSelectedIndex(p);
+      i = Math.min(this.entries.length, i);
+      this.setSelected(i, p);
+    }
   }
 
   /**
@@ -347,6 +357,7 @@ export class SongMenuItem extends MenuItem {
       // TODO: Prevent change if we are not on that song anymore
 
       // Update the Chart Menu
+      this.chartSetter(song.charts);
 
       // Update the Banner
       this.song.song.load(RSC_BANNER).then((banner) => {
