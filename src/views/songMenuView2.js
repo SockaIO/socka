@@ -3,7 +3,7 @@
 import View from './view';
 import {Theme, Player} from '../services';
 
-import {RSC_SONG, RSC_BANNER, MENU_SONG, MENU_CHART} from '../constants/resources';
+import {MENU_SONG, MENU_CHART} from '../constants/resources';
 import {Menu, SongMenuItem, TextMenuItem} from '../components';
 
 import {KEY_UP, KEY_DOWN, TAP, RAPID_FIRE, KEY_BACK, KEY_ENTER, KEY_LEFT, KEY_RIGHT} from '../constants/input';
@@ -22,12 +22,14 @@ export default class SongMenuView extends View {
     [width, height] = game.getScreenSize();
     this.entries = entries;
 
-    console.log(entries);
+    const bannerSetter = (banner) => {
+      this.setBanner(banner);
+    };
 
     // Song Menu
     let songs = [];
     for (let e of entries) {
-      songs.push(new SongMenuItem(e));
+      songs.push(new SongMenuItem(e, bannerSetter));
     }
 
     const menuGC = Theme.GetTheme().createSongMenu3GC.bind(Theme.GetTheme());
@@ -40,10 +42,14 @@ export default class SongMenuView extends View {
     const optionMenuGC = Theme.GetTheme().createMenuOptionGC.bind(Theme.GetTheme());
     const chartMenuWidth = width / 4;
     const chartMenuHeight = height / 3;
-    this.chartMenu = new Menu(MENU_CHART, [new TextMenuItem('Beginner'), new TextMenuItem('Easy')], chartMenuWidth, chartMenuHeight, optionMenuGC)
+    this.chartMenu = new Menu(MENU_CHART, [new TextMenuItem('Beginner'), new TextMenuItem('Easy')], chartMenuWidth, chartMenuHeight, optionMenuGC);
 
     this.graphicComponent = Theme.GetTheme().createSongMenuGC(width, height, this);
     this.update();
+  }
+
+  setBanner(banner) {
+    this.graphicComponent.setBanner(banner);
   }
 
   back() {

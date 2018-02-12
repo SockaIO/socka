@@ -153,7 +153,74 @@ export class SongMenu2DefaultGraphicComponent extends interfaces.MenuGraphicComp
 
     this.sprite.addChild(this.songMenu.sprite);
     this.sprite.addChild(this.chartMenu.sprite);
+
+    this.createBanner();
+    this.createLetterBox();
+    this.createTitle();
+
+    // Position the Elements
     this.chartMenu.sprite.x = width / 2;
+    this.chartMenu.sprite.y = height / 2;
+  }
+
+  createTitle(text='Select Song') {
+    const format = {font: '40px clementeRegular'};
+    this.title = new PIXI.extras.BitmapText(text, format);
+
+    this.topBox.addChild(this.title);
+    this.title.x = 40;
+    this.title.y = this.topBox.height / 2 - this.title.height / 2;
+    this.title.tint = 0xfff893;
+  }
+
+  createLetterBox(height=80) {
+    this.topBox = new PIXI.Graphics();
+    this.topBox.beginFill(0x111111, 0.7);
+    this.topBox.drawRect(0, 0, this.width, height);
+    this.topBox.endFill();
+    this.sprite.addChild(this.topBox);
+
+    this.bottomBox = new PIXI.Graphics();
+    this.bottomBox.beginFill(0x111111, 0.7);
+    this.bottomBox.drawRect(0, 0, this.width, height);
+    this.bottomBox.endFill();
+    this.bottomBox.y = this.height - height;
+    this.sprite.addChild(this.bottomBox);
+  }
+
+  createBanner() {
+    this.bannerContainer = new PIXI.Container();
+    this.sprite.addChild(this.bannerContainer);
+
+    this.banner = new PIXI.Sprite();
+    this.banner.width = this.width / 2 * 0.75;
+    this.bannerContainer.x = this.width / 2 * 1.5 - this.banner.width / 2;
+    this.bannerContainer.y = 100;
+
+    this.bannerContainer.addChild(this.banner);
+  }
+
+  setBanner(banner) {
+    if (this.banner !== undefined && banner !== undefined) {
+      this.banner.texture = banner;
+
+      if (this.bannerBorder !== undefined) {
+        this.bannerContainer.removeChild(this.bannerBorder);
+        this.banenrBorder = undefined;
+      }
+
+      this.bannerBorder = new PIXI.Graphics();
+      const thick = 1;
+      this.bannerBorder.lineStyle(thick, 0xffffff)
+                 .moveTo(thick, thick)
+                 .lineTo(thick, this.banner.height - thick)
+                 .lineTo(this.banner.width - thick, this.banner.height - thick)
+                 .lineTo(this.banner.width - thick, thick)
+                 .lineTo(thick, thick),
+      this.bannerContainer.addChild(this.bannerBorder);
+
+
+    }
   }
 
   update() {
@@ -473,12 +540,17 @@ export class SongMenu3DefaultGraphicComponent extends interfaces.MenuGraphicComp
   constructor(theme, width, height, menu) {
     super(theme);
 
+    const marginX = 50;
+    const marginY = 100;
+
     // Engine Container
-    this.height = height;
-    this.width = width;
+    this.height = height - marginY;
+    this.width = width - marginX;
     this.menu = menu;
 
     this.createMainSprite();
+    this.sprite.x += marginX / 2;
+    this.sprite.y += marginY / 2;
 
     this.initConstants();
 

@@ -23,8 +23,6 @@ class SongMenuView extends View {
     this.selectedEntry = 0;
     this.entries = entries;
 
-    console.log(entries);
-
     this.graphicComponent = Theme.GetTheme().createSongMenuGC(width, height, this);
     this.update();
 
