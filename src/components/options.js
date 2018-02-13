@@ -64,7 +64,7 @@ export class MappingMenuItem extends MenuItem{
 
   createGraphicComponent(width, height) {
     this.graphicComponent = Theme.GetTheme().createMappingMenuItemGC(width, height, this);
-    return this.graphicComponent.sprite;
+    return this.graphicComponent;
   }
 
   getValues () {
@@ -186,7 +186,7 @@ export class EnumMenuItem extends MenuItem{
 
   createGraphicComponent(width, height) {
     this.graphicComponent = Theme.GetTheme().createEnumMenuItemGC(width, height, this);
-    return this.graphicComponent.sprite;
+    return this.graphicComponent;
   }
 
   getEnum () {
@@ -262,7 +262,7 @@ export class InputMenuItem extends MenuItem{
 
   createGraphicComponent(width, height) {
     this.graphicComponent = Theme.GetTheme().createInputMenuItemGC(width, height, this);
-    return this.graphicComponent.sprite;
+    return this.graphicComponent;
   }
 
   getValues () {
