@@ -18,9 +18,9 @@ export class Menu {
    * Constructor of the Menu
    * @param {Symbol} id Menu Identifier for differenciation in the theme
    * @param {Object|Array} entries Menu entries
-   * @param {Number} width Menu Width 
+   * @param {Number} width Menu Width
    * @param {Number} height Menu Height
-   * @param {Function} graphicComponentFactory Factoru for the menu graphic Component 
+   * @param {Function} graphicComponentFactory Factoru for the menu graphic Component
    * @param {String} key Key used for sorting and identification (default is name)
    * @param {Boolean} sort Set to true to sort the entries (default is false)
    * @param {Boolean} keepIndex Keep the index when changing component default is false)
@@ -307,7 +307,7 @@ export class TextMenuItem extends MenuItem {
 
   createGraphicComponent (width, height) {
     this.graphicComponent = Theme.GetTheme().createTextMenuItemGC(width, height, this.text);
-    return this.graphicComponent.sprite;
+    return this.graphicComponent;
   }
 
   onSelected(player=Player.GamePlayer) {
@@ -362,3 +362,33 @@ export class SongMenuItem extends MenuItem {
     this.action();
   }
 }
+
+/**
+ * Chart Menu Item
+ * @extends MenuItem
+ */
+export class ChartMenuItem extends MenuItem {
+
+  constructor(chart) {
+    super();
+    this.chart = chart;
+  }
+
+  createGraphicComponent (width, height) {
+    this.graphicComponent = Theme.GetTheme().createChartMenuItemGC(width, height, this.chart);
+    return this.graphicComponent;
+  }
+
+  onSelected(player=Player.GamePlayer) {
+    if (this.graphicComponent) {
+      this.graphicComponent.onSelected(player.getId());
+    }
+  }
+
+  onDeselected(player=Player.GamePlayer) {
+    if (this.graphicComponent) {
+      this.graphicComponent.onDeselected(player.getId());
+    }
+  }
+}
+

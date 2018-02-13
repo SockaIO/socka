@@ -33,6 +33,7 @@ import {
 import {
   TextMenuItemDefaultGraphicComponent,
   SongMenuItemDefaultGraphicComponent,
+  ChartMenuItemDefaultGraphicComponent,
   MappingMenuItemDefaultGraphicComponent,
   InputMenuItemDefaultGraphicComponent,
   EnumMenuItemDefaultGraphicComponent,
@@ -267,6 +268,13 @@ export default class DefaultTheme extends interfaces.Theme {
    */
   createSongMenuItemGC(...args) {
     return new SongMenuItemDefaultGraphicComponent(this, ...args);
+  }
+
+  /**
+   * Create Chart Menu Item Graphic Component
+   */
+  createChartMenuItemGC(...args) {
+    return new ChartMenuItemDefaultGraphicComponent(this, ...args);
   }
 
   /**

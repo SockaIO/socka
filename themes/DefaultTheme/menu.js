@@ -43,7 +43,7 @@ export class MenuDefaultGraphicComponent extends interfaces.MenuGraphicComponent
     this.entries = [];
 
     for (let entry of entries) {
-      let sprite = entry.createGraphicComponent(this.width, this.lineHeight);
+      let sprite = entry.createGraphicComponent(this.width, this.lineHeight).sprite;
       sprite.x = this.width/2 - sprite.width / 2;
       this.foreground.addChild(sprite);
       this.entries.push(sprite);
@@ -419,7 +419,7 @@ export class OptionMenuDefaultGraphicComponent extends interfaces.MenuGraphicCom
     this.entries = [];
 
     for (let entry of entries) {
-      let sprite = entry.createGraphicComponent(this.width, this.lineHeight);
+      let sprite = entry.createGraphicComponent(this.width, this.lineHeight).sprite;
       this.foreground.addChild(sprite);
       this.entries.push(sprite);
       sprite.visible = false;
@@ -455,7 +455,8 @@ export class OptionMenuDefaultGraphicComponent extends interfaces.MenuGraphicCom
 
   specializePre() {
     if (this.menu.id === MENU_CHART) {
-      this.lineHeight = 40;
+      this.lineHeight = 50;
+      this.margin = 5;
     }
   }
 

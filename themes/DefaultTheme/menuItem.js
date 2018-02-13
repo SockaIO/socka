@@ -44,6 +44,69 @@ export class TextMenuItemDefaultGraphicComponent extends interfaces.MenuItemGrap
   }
 }
 
+export class ChartMenuItemDefaultGraphicComponent extends TextMenuItemDefaultGraphicComponent {
+
+  constructor(theme, width, height, chart) {
+    super(theme, width, height, '');
+
+    this.chart = chart;
+    this.createSprite();
+    this.colorize();
+  }
+
+  createSprite() {
+    this.sprite = new PIXI.Container();
+
+    this.border = new PIXI.Graphics();
+    const thick = 1;
+    this.border.beginFill(0x111111, 0.8)
+               .drawRect(thick, thick, this.width - thick, this.height - thick)
+               .endFill()
+               .lineStyle(thick, 0xffffff)
+               .moveTo(thick, thick)
+               .lineTo(thick, this.height - thick)
+               .lineTo(this.width - thick, this.height - thick)
+               .lineTo(this.width - thick, thick)
+               .lineTo(thick, thick),
+    this.sprite.addChild(this.border);
+
+    const format = {font: `${0.6 * this.height}px clementeRegular`};
+    this.text = new PIXI.extras.BitmapText(`${this.chart.difficulty} (${this.chart.meter})`, format);
+    this.text.x = this.width / 2 - this.text.width / 2;
+    this.text.y = this.height / 2 - this.text.height / 2;
+    this.sprite.addChild(this.text);
+  }
+
+  colorize() {
+    let color;
+    switch(this.chart.difficulty.toLowerCase()) {
+    case 'beginner':
+      color = 0xb43578;
+      break;
+    case 'easy':
+    case 'basic':
+      color = 0x35c379;
+      break;
+    case 'medium':
+    case 'another':
+      color = 0xdbd71c;
+      break;
+    case 'hard':
+    case 'maniac':
+      color = 0x2469aa;
+      break;
+    case 'challenge':
+    case 'smaniac':
+      color = 0xdd4119;
+      break;
+    }
+
+    this.text.tint = color;
+    this.border.tint = color;
+  }
+
+}
+
 export class SongMenuItemDefaultGraphicComponent extends interfaces.MenuItemGraphicComponent {
 
   constructor(theme, width, height, song) {

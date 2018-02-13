@@ -4,7 +4,7 @@ import View from './view';
 import {Theme, Player} from '../services';
 
 import {RSC_SONG, RSC_BANNER, MENU_SONG, MENU_CHART} from '../constants/resources';
-import {Menu, SongMenuItem, TextMenuItem} from '../components';
+import {Menu, SongMenuItem, TextMenuItem, ChartMenuItem} from '../components';
 
 import {KEY_UP, KEY_DOWN, TAP, RAPID_FIRE, KEY_BACK, KEY_ENTER, KEY_LEFT, KEY_RIGHT} from '../constants/input';
 
@@ -73,11 +73,17 @@ export default class SongMenuView extends View {
     // Filter the Charts for single player only
     // TODO: Handle more game modes
     const allowedTypes = ['dance-single', 'SINGLE'];
-    let chartsFiltered = charts.filter((c) => {return allowedTypes.includes(c.type);});
+    const sortFct = (a, b) => {
+      let aa = parseInt(a.meter, 10);
+      let bb = parseInt(b.meter, 10);
+      return aa - bb;
+    };
+
+    let chartsFiltered = charts.filter((c) => {return allowedTypes.includes(c.type);}).sort(sortFct);
 
     let entries = [];
     for (let c of chartsFiltered) {
-      entries.push(new TextMenuItem(`${c.difficulty} (${c.meter})`));
+      entries.push(new ChartMenuItem(c));
     }
 
     // Update the Menu
