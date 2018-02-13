@@ -3,7 +3,7 @@
 import View from './view';
 import {Theme, Player} from '../services';
 
-import {MENU_SONG, MENU_CHART} from '../constants/resources';
+import {RSC_SONG, RSC_BANNER, MENU_SONG, MENU_CHART} from '../constants/resources';
 import {Menu, SongMenuItem, TextMenuItem} from '../components';
 
 import {KEY_UP, KEY_DOWN, TAP, RAPID_FIRE, KEY_BACK, KEY_ENTER, KEY_LEFT, KEY_RIGHT} from '../constants/input';
@@ -22,18 +22,14 @@ export default class SongMenuView extends View {
     [width, height] = game.getScreenSize();
     this.entries = entries;
 
-    const bannerSetter = (banner) => {
-      this.setBanner(banner);
-    };
-
-    const chartSetter = (charts) => {
-      this.setCharts(charts);
+    const songSetter = (song) => {
+      this.setSong(song);
     };
 
     // Song Menu
     let songs = [];
     for (let e of entries) {
-      songs.push(new SongMenuItem(e, bannerSetter, chartSetter));
+      songs.push(new SongMenuItem(e, songSetter));
     }
 
     const menuGC = Theme.GetTheme().createSongMenu3GC.bind(Theme.GetTheme());
@@ -51,6 +47,23 @@ export default class SongMenuView extends View {
     this.graphicComponent = Theme.GetTheme().createSongMenuGC(width, height, this);
     this.update();
   }
+
+  setSong(theSong) {
+    theSong.load(RSC_SONG).then((song) => {
+
+      // TODO: Prevent change if we are not on that song anymore
+
+      // Update the Chart Menu
+      this.setCharts(song.charts);
+
+      // Update the Banner
+      theSong.load(RSC_BANNER).then((banner) => {
+        this.setBanner(banner);
+      });
+
+    });
+  }
+
 
   setBanner(banner) {
     this.graphicComponent.setBanner(banner);

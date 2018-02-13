@@ -3,8 +3,6 @@
 import {Theme, Player} from '../services';
 import {NUM_PLAYERS} from '../constants/signaling';
 
-import {RSC_SONG, RSC_BANNER} from '../constants/resources';
-
 /**
  * Class representing a menu. Each entry has a name attribute that get displayed
  * and can have other attributes used to implement custom logic.
@@ -335,11 +333,10 @@ export class TextMenuItem extends MenuItem {
  */
 export class SongMenuItem extends MenuItem {
 
-  constructor(song, bannerSetter, chartSetter) {
+  constructor(song, songSelecter) {
     super();
     this.song = song;
-    this.bannerSetter = bannerSetter;
-    this.chartSetter = chartSetter;
+    this.songSelecter = songSelecter;
   }
 
   createGraphicComponent (width, height) {
@@ -352,19 +349,7 @@ export class SongMenuItem extends MenuItem {
       this.graphicComponent.onSelected(player.getId());
     }
 
-    this.song.song.load(RSC_SONG).then((song) => {
-
-      // TODO: Prevent change if we are not on that song anymore
-
-      // Update the Chart Menu
-      this.chartSetter(song.charts);
-
-      // Update the Banner
-      this.song.song.load(RSC_BANNER).then((banner) => {
-        this.bannerSetter(banner);
-      });
-
-    });
+    this.songSelecter(this.song.song);
   }
 
   onDeselected(player=Player.GamePlayer) {
