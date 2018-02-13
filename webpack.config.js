@@ -60,7 +60,7 @@ module.exports = env => {
   };
 
   if (env.production !== true) {
-    conf['devtool'] = 'cheap-eval-source-map';
+    conf['devtool'] = 'inline-cheap-source-map';
   }
 
   return conf;
