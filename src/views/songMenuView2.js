@@ -1,6 +1,8 @@
 'use strict';
 
 import View from './view';
+import EngineView from './engineView';
+
 import {Theme, Player} from '../services';
 
 import {RSC_SONG, RSC_BANNER, MENU_SONG, MENU_CHART} from '../constants/resources';
@@ -56,6 +58,7 @@ export default class SongMenuView extends View {
 
       // Update the Chart Menu
       this.setCharts(song.charts);
+      theSong.charts = song.charts;
 
       // Update the Banner
       theSong.load(RSC_BANNER).then((banner) => {
@@ -115,6 +118,18 @@ export default class SongMenuView extends View {
   }
 
   start() {
+    const chart = this.chartMenu.getSelected().chart;
+    const song = this.songMenu.getSelected().song.song;
+
+    // Start loading the Resources
+    song.loadResources();
+
+    // Find the Index of the Chart to play
+    const chartIndex = song.charts.indexOf(chart);
+
+    // Start the Engine View and push it
+    let gView = new EngineView(song, chartIndex, Player.GetPlayers(), this.game);
+    this.game.pushView(gView);
   }
 
   update() {
