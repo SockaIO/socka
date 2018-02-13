@@ -149,7 +149,7 @@ export class Menu {
     // Update the selection
     for (let p of this.players) {
       let i = this.getSelectedIndex(p);
-      i = Math.min(this.entries.length, i);
+      i = Math.min(this.entries.length - 1, i);
       this.setSelected(i, p);
     }
   }
@@ -175,7 +175,9 @@ export class Menu {
    * @param {Number} index Entry index
    */
   setSelected(index, player=Player.GamePlayer) {
-    this.getSelected(player).onDeselected(player);
+    if (this.getSelected(player) !== undefined) {
+      this.getSelected(player).onDeselected(player);
+    }
     this.selecteds.set(player.getId(), index);
     this.getSelected(player).onSelected(player);
   }
