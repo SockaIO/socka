@@ -533,3 +533,59 @@ export class MenuItemHighlighterDefaultGraphicComponent extends interfaces.MenuI
   }
 }
 
+export class ChartMenuItemHighlighterDefaultGraphicComponent extends interfaces.MenuItemHighlighterGraphicComponent {
+
+  /**
+   * constructor
+   */
+  constructor(theme, menuItems, playerId) {
+    super(theme, menuItems, playerId);
+
+    this.sprite = new PIXI.Container();
+
+    this.left = new PIXI.Sprite(this.theme.getTexture('highlighterLeft'));
+    this.left.anchor.y = 0.5;
+    this.right = new PIXI.Sprite(this.theme.getTexture('highlighterRight'));
+    this.right.anchor.y = 0.5;
+
+    this.ratio = this.left.width / this.left.height;
+    this.margin = 5;
+
+    this.sprite.addChild(this.left);
+    this.sprite.addChild(this.right);
+
+    // Parameters
+    this.transitionDuration = 0.2;
+
+    this.object = null;
+  }
+
+  setHighlighted(sprite) {
+
+    this.object = sprite;
+
+    let height = sprite.height * 1.5;
+    let width = height * this.ratio;
+
+    let x = sprite.x - width - this.margin;
+    let x2 = sprite.x + sprite.width + this.margin;
+
+    let y = sprite.y + sprite.height / 2;
+
+    // Do not update if the Sprite is not positionned
+    if (sprite.x !== 0) {
+      TweenLite.to(this.left.position, this.transitionDuration, {x, y});
+      TweenLite.to(this.left, this.transitionDuration, {height, width});
+
+      TweenLite.to(this.right.position, this.transitionDuration, {x: x2, y});
+      TweenLite.to(this.right, this.transitionDuration, {height, width});
+    }
+  }
+
+  update() {
+    if (this.object !== null) {
+      this.setHighlighted(this.object);
+    }
+  }
+}
+

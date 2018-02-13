@@ -138,6 +138,14 @@ export class Menu {
     // Update the GC
     this.graphicComponent.updateEntries();
 
+    // Set the Highlighters
+    for (let e of this.entries) {
+      for (let p of this.players) {
+        const h = this.highlighters.get(p.getId());
+        e.graphicComponent.setHighlighter(h.graphicComponent, p.getId());
+      }
+    }
+
     // Update the selection
     for (let p of this.players) {
       let i = this.getSelectedIndex(p);
@@ -391,4 +399,3 @@ export class ChartMenuItem extends MenuItem {
     }
   }
 }
-

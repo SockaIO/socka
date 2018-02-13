@@ -38,7 +38,8 @@ import {
   InputMenuItemDefaultGraphicComponent,
   EnumMenuItemDefaultGraphicComponent,
   MenuItemSelectorDefaultGraphicComponent,
-  MenuItemHighlighterDefaultGraphicComponent
+  MenuItemHighlighterDefaultGraphicComponent,
+  ChartMenuItemHighlighterDefaultGraphicComponent
 } from './menuItem';
 
 import {PauseDefaultGraphicComponent} from './pause';
@@ -89,6 +90,8 @@ export default class DefaultTheme extends interfaces.Theme {
       blank: require('./img/blank.png'),
       bgMain: require('./img/BG1-logo.jpg'),
       bgBlank: require('./img/BG1.jpg'),
+      highlighterLeft: require('./img/highlighterLeft.png'),
+      highlighterRight: require('./img/highlighterRight.png'),
     };
 
 
@@ -303,6 +306,13 @@ export default class DefaultTheme extends interfaces.Theme {
    */
   createMenuItemHighlighterGC(...args) {
     return new MenuItemHighlighterDefaultGraphicComponent(this, ...args);
+  }
+
+  /**
+   * Create Chart Menu Item Highlighter Graphic Component
+   */
+  createChartMenuItemHighlighterGC(...args) {
+    return new ChartMenuItemHighlighterDefaultGraphicComponent(this, ...args);
   }
 
   /**

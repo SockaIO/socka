@@ -331,3 +331,12 @@ export class MenuItemHighlighter {
     this.graphicComponent.update();
   }
 }
+
+export class ChartMenuItemHighlighter extends MenuItemHighlighter{
+  constructor (menuItems, player) {
+    super(menuItems, player);
+    this.graphicComponent = Theme.GetTheme().createChartMenuItemHighlighterGC(menuItems.map((x) => {
+      return x.graphicComponent;
+    }), player.getId(), player.getColor());
+  }
+}
