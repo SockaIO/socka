@@ -13,7 +13,7 @@ import {MENU_PAUSE} from '../constants/resources';
  * @memberof views
  */
 class PauseView extends View {
-  constructor(game) {
+  constructor(game, reset) {
     super(game);
 
     let width, height;
@@ -25,7 +25,9 @@ class PauseView extends View {
       this.game.popView();
     }));
 
-    // items.push(new TextMenuItem('Restart', () => {})); TODO: Implement Restart
+    items.push(new TextMenuItem('Restart', () => {
+      reset();
+    }));
 
     items.push(new TextMenuItem('Quit', () => {
       this.game.popView();

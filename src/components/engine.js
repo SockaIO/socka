@@ -28,23 +28,10 @@ class Engine {
     // Keypressed
     this.keyPressed = new Set();
 
-    // Window of existing notes
+    // Field of view
     this.fieldView = fieldView;
-    this.firstStepIndex = 0;
-    this.lastStepIndex = -1;
-    this.actionIndex = -1;
-    this.actionNotes = new Map();
-    this.time = 0;
-    this.beat = 0;
 
-    // Scheduling
-    this.scheduledEvents = new Set();
-
-    // Missed steps
-    this.missedStepIndex = 0;
-
-    // Collision step
-    this.collisionStepIndex = 0;
+    this.initState();
 
     // Timing
     this.missTiming = 0.250;
@@ -76,6 +63,45 @@ class Engine {
 
     this.progressionBar = new ProgressionBar(songPlayer);
     this.graphicComponent.placeProgressionBar(this.progressionBar.sprite);
+  }
+
+  /**
+   * Init the state used in-game by the engine;
+   */
+  initState() {
+    // Window of existing notes
+    this.firstStepIndex = 0;
+    this.lastStepIndex = -1;
+    this.actionIndex = -1;
+    this.actionNotes = new Map();
+    this.time = 0;
+    this.beat = 0;
+
+    // Scheduling
+    this.scheduledEvents = new Set();
+
+    // Missed steps
+    this.missedStepIndex = 0;
+
+    // Collision step
+    this.collisionStepIndex = 0;
+  }
+
+  /**
+   * Reset the engine. To restart the song most likely
+   */
+  reset() {
+    // Reset the state to its initial value
+    this.initState();
+
+    // Reset the sub-components
+    this.score.reset();
+    this.combo.reset();
+    this.lifemeter.reset();
+    this.graphicComponent.reset();
+
+    // Reparse the chart
+    this.loadSongInternal();
   }
 
   /**
@@ -506,6 +532,13 @@ class Score {
   }
 
   /**
+   * Reset the score
+   */
+  reset() {
+    this.add(-1 * this.score);
+  }
+
+  /**
    * Get the GC Sprite
    * @returns {PIXI.Container} GC Sprite
    */
@@ -575,11 +608,28 @@ class Combo {
 class Lifemeter {
 
   constructor() {
+
+    this.initState();
+
     this.maximum = 100;
-    this.life = 50;
-    this.totalPoints = 0;
 
     this.graphicComponent = Theme.GetTheme().createLifemeterGC();
+    this.updateLife(0);
+  }
+
+  /**
+   * Init the state
+   */
+  initState() {
+    this.life = 50;
+    this.totalPoints = 0;
+  }
+
+  /**
+   * Reset the lifemeter
+   */
+  reset() {
+    this.initState();
     this.updateLife(0);
   }
 
@@ -667,7 +717,20 @@ class ProgressionBar {
 class StatsTracker {
 
   constructor() {
+    this.initState();
+  }
 
+  /**
+   * Reset the component
+   */
+  reset() {
+    this.initState();
+  }
+
+  /**
+   * Init the State
+   */
+  initState() {
     this.timingTracker = new Map();
 
     // Initialize the Map with the possible timings

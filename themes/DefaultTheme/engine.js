@@ -43,6 +43,11 @@ export class EngineDefaultGraphicComponent {
 
   }
 
+  reset() {
+    this.fieldBackground.removeChild(this.stream);
+    this.judgment.hide();
+  }
+
   createField() {
 
     // Create the container
@@ -186,6 +191,10 @@ export class JudgmentDefaultGraphicComponent {
     this.sprite.alpha = 0;
 
     this.duration = 0.1;
+  }
+
+  hide() {
+    this.sprite.alpha = 0;
   }
 
   show(timing) {

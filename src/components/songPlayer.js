@@ -12,9 +12,8 @@ class SongPlayer {
 
   constructor() {
     this.song = null;
-    this.ctx = new AudioContext();
-    this.source = this.ctx.createBufferSource();
-    this.source.connect(this.ctx.destination);
+
+    this.initAudio();
 
     this.startPauseTime = 0;
 
@@ -25,10 +24,21 @@ class SongPlayer {
   }
 
   /**
+   * Init the Audio API
+   */
+  initAudio() {
+    this.ctx = new AudioContext();
+    this.source = this.ctx.createBufferSource();
+    this.source.connect(this.ctx.destination);
+  }
+
+  /**
    * Load the audio data from a Song
    * @param {SongIndex} song | SongIndex for the song to load
    */
   load(song) {
+    this.song = song;
+
     return song.load(RSC_AUDIO)
       .then((data) => {
         return this.ctx.decodeAudioData(data);
@@ -36,6 +46,14 @@ class SongPlayer {
         this.buf = buf;
         this.source.buffer = buf;
       });
+  }
+
+  /**
+   * Reset the player to the beginning of the song;
+   */
+  reset() {
+    this.initAudio();
+    return this.load(this.song);
   }
 
   /**

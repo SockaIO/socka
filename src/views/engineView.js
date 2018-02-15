@@ -92,6 +92,26 @@ class EngineView extends View {
     this.loading.addPart();
   }
 
+  reset () {
+    log.debug('Reset the Song');
+
+    // Set as not started;
+    this.started = false;
+
+    // Reset the SongPlayer
+    this.songPlayer.reset().then(() => {
+
+      for (let e of this.engines) {
+        e.reset();
+      }
+
+      // Close the Pause Menu and Start the Playback again
+      this.game.popView();
+      this.songPlayer.play();
+      this.started = true;
+    });
+  }
+
   /**
    * Wait for the promises and start the song
    * @listens onPushed
@@ -154,7 +174,12 @@ class EngineView extends View {
    * Pause the game
    */
   pause() {
-    let pause = new PauseView(this.game);
+
+    const reset = () => {
+      this.reset();
+    };
+
+    let pause = new PauseView(this.game, reset);
     this.game.pushView(pause);
   }
 
