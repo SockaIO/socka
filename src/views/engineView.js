@@ -27,7 +27,7 @@ class EngineView extends View {
    * @param {number} width - view width
    * @param {number} height - view height
    * @param {SongIndex} song - SonIndex of the song to load
-   * @param {Number} difficulty - Index of the chart to use
+   * @param {Map[PlayerId]Number} difficulty - Index of the chart to use for each player
    * @param {Player|Iterable} players - Players
    *
    */
@@ -51,6 +51,7 @@ class EngineView extends View {
     const engineWidth = 0.9 * (width / 2);
     const engineHeight = height;
     const offset = width/2  - engineWidth;
+    let difficulties = [];
 
     let i = 0;
     for (let player of players) {
@@ -60,14 +61,16 @@ class EngineView extends View {
 
       this.engines.push(e);
       this.graphicComponent.addEngine(e.sprite);
+      difficulties.push(difficulty.get(player.getId()));
     }
 
     // Feed the song to the different components
     this.promises = [];
 
     // Game Engines
+    let x = 0;
     for (let e of this.engines) {
-      this.promises.push(e.loadSong(song, difficulty).then(() =>{
+      this.promises.push(e.loadSong(song, difficulties[x++]).then(() =>{
         let j = this.engines.indexOf(e);
         log.debug(`Engine ${j} loaded`);
         this.loading.loadPart(`Engine ${j} loaded`);

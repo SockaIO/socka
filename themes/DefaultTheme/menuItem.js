@@ -542,17 +542,20 @@ export class ChartMenuItemHighlighterDefaultGraphicComponent extends interfaces.
     super(theme, menuItems, playerId);
 
     this.sprite = new PIXI.Container();
+    this.playerId = playerId;
 
-    this.left = new PIXI.Sprite(this.theme.getTexture('highlighterLeft'));
-    this.left.anchor.y = 0.5;
-    this.right = new PIXI.Sprite(this.theme.getTexture('highlighterRight'));
-    this.right.anchor.y = 0.5;
+    if (this.playerId === 1) {
+      this.arrow = new PIXI.Sprite(this.theme.getTexture('highlighterLeft'));
+      this.arrow.anchor.y = 0.5;
+    } else {
+      this.arrow = new PIXI.Sprite(this.theme.getTexture('highlighterRight'));
+      this.arrow.anchor.y = 0.5;
+    }
 
-    this.ratio = this.left.width / this.left.height;
+    this.ratio = this.arrow.width / this.arrow.height;
     this.margin = 5;
 
-    this.sprite.addChild(this.left);
-    this.sprite.addChild(this.right);
+    this.sprite.addChild(this.arrow);
 
     // Parameters
     this.transitionDuration = 0.2;
@@ -567,18 +570,21 @@ export class ChartMenuItemHighlighterDefaultGraphicComponent extends interfaces.
     let height = sprite.height * 1.5;
     let width = height * this.ratio;
 
-    let x = sprite.x - width - this.margin;
-    let x2 = sprite.x + sprite.width + this.margin;
+    let x;
+
+    if (this.playerId === 1) {
+      x = sprite.x - width - this.margin;
+    } else {
+      x = sprite.x + sprite.width + this.margin;
+    }
+
 
     let y = sprite.y + sprite.height / 2;
 
     // Do not update if the Sprite is not positionned
     if (sprite.x !== 0) {
-      TweenLite.to(this.left.position, this.transitionDuration, {x, y});
-      TweenLite.to(this.left, this.transitionDuration, {height, width});
-
-      TweenLite.to(this.right.position, this.transitionDuration, {x: x2, y});
-      TweenLite.to(this.right, this.transitionDuration, {height, width});
+      TweenLite.to(this.arrow.position, this.transitionDuration, {x, y});
+      TweenLite.to(this.arrow, this.transitionDuration, {height, width});
     }
   }
 

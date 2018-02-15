@@ -45,7 +45,7 @@ export default class SongMenuView extends View {
     const chartMenuWidth = width / 4;
     const chartMenuHeight = height / 3;
 
-    this.chartMenu = new Menu(MENU_CHART, [new TextMenuItem('')], chartMenuWidth, chartMenuHeight, optionMenuGC, false, ChartMenuItemHighlighter);
+    this.chartMenu = new Menu(MENU_CHART, [new TextMenuItem('')], chartMenuWidth, chartMenuHeight, optionMenuGC, false, ChartMenuItemHighlighter, Array.from(Player.GetPlayers()));
 
     this.graphicComponent = Theme.GetTheme().createSongMenuGC(width, height, this);
     this.update();
@@ -109,26 +109,33 @@ export default class SongMenuView extends View {
     this.songMenu.move(1);
   }
 
-  right() {
-    this.chartMenu.move(1);
+  right(player) {
+    this.chartMenu.move(1, player);
   }
 
-  left() {
-    this.chartMenu.move(-1);
+  left(player) {
+    this.chartMenu.move(-1, player);
   }
 
   start() {
-    const chart = this.chartMenu.getSelected().chart;
+
+    const players = Player.GetPlayers();
+    let chart = new Map();
     const song = this.songMenu.getSelected().song.song;
+
 
     // Start loading the Resources
     song.loadResources();
 
-    // Find the Index of the Chart to play
-    const chartIndex = song.charts.indexOf(chart);
+    for (let p of players) {
+      //Find the chart for the player
+      let c = this.chartMenu.getSelected(p).chart;
+      //Find the Index of the Chart
+      chart.set(p.getId(), song.charts.indexOf(c));
+    }
 
     // Start the Engine View and push it
-    let gView = new EngineView(song, chartIndex, Player.GetPlayers(), this.game);
+    let gView = new EngineView(song, chart, Player.GetPlayers(), this.game);
     this.game.pushView(gView);
   }
 
@@ -140,16 +147,23 @@ export default class SongMenuView extends View {
 
     let factories = new Map();
 
-    factories.set([KEY_UP, RAPID_FIRE], () => {this.up ();});
-    factories.set([KEY_DOWN, RAPID_FIRE], () => {this.down ();});
-
-    factories.set([KEY_LEFT, TAP], () => {this.left ();});
-    factories.set([KEY_RIGHT, TAP], () => {this.right ();});
-
-    factories.set([KEY_BACK, TAP], () => {this.back ();});
-    factories.set([KEY_ENTER, TAP], () => {this.start ();});
+    let close = (player, fct, obj) => {
+      return () => {
+        fct.bind(obj)(player);
+      };
+    };
 
     for (let p of Player.GetPlayers()) {
+
+      factories.set([KEY_UP, RAPID_FIRE], close(p, this.up, this));
+      factories.set([KEY_DOWN, RAPID_FIRE], close(p, this.down, this));
+
+      factories.set([KEY_BACK, TAP], close(p, this.back, this));
+      factories.set([KEY_ENTER, TAP], close(p, this.start, this));
+
+      factories.set([KEY_LEFT, TAP], close(p, this.left, this));
+      factories.set([KEY_RIGHT, TAP], close(p, this.right, this));
+
       p.mapping.setCommands(factories);
     }
 
