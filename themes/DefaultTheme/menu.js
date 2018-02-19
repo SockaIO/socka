@@ -149,6 +149,8 @@ export class SongMenu2DefaultGraphicComponent extends interfaces.MenuGraphicComp
     this.sprite = new PIXI.Container();
 
     this.background = new PIXI.Sprite(this.theme.getTexture('bgBlank'));
+    this.background.width = this.width;
+    this.background.height = this.height;
     this.sprite.addChild(this.background);
 
     this.sprite.addChild(this.songMenu.sprite);
@@ -209,7 +211,7 @@ export class SongMenu2DefaultGraphicComponent extends interfaces.MenuGraphicComp
 
       if (this.bannerBorder !== undefined) {
         this.bannerContainer.removeChild(this.bannerBorder);
-        this.banenrBorder = undefined;
+        this.bannerBorder = undefined;
       }
 
       this.bannerBorder = new PIXI.Graphics();

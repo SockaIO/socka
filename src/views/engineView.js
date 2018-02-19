@@ -46,7 +46,7 @@ class EngineView extends View {
     this.song = song;
 
     // Create the loading View
-    this.loading = new LoadingView(width, height, game);
+    this.loading = new LoadingView(width, height, game, song);
 
     const engineWidth = 0.9 * (width / 2);
     const engineHeight = height;
@@ -124,6 +124,7 @@ class EngineView extends View {
     this.game.pushView(this.loading);
 
     Promise.all(this.promises).then(() => {
+
       this.game.popView();
       this.songPlayer.play();
       this.started = true;

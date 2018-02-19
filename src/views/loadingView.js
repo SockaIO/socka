@@ -2,14 +2,20 @@
 
 import View from './view';
 import {Theme, Player} from '../services';
+import {RSC_BANNER} from '../constants/resources';
 
 class LoadingView extends View {
-  constructor(width, height, game, percentage=0, text='Loading...') {
+  constructor(width, height, game, song, percentage=0, text='Loading...') {
     super(game);
     this.graphicComponent = Theme.GetTheme().createLoadingViewGC(width, height);
     this.parts = 0;
     this.graphicComponent.text = text;
     this.graphicComponent.percentage = percentage;
+    this.graphicComponent.songName = song.name;
+
+    song.load(RSC_BANNER).then((banner) => {
+      this.graphicComponent.banner = banner;
+    });
   }
 
   addPart() {

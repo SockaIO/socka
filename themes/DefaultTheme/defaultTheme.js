@@ -81,7 +81,12 @@ export default class DefaultTheme extends interfaces.Theme {
       lifemeterMiddle: require('./img/lifemeterMiddle.png'),
       lifemeterUnder: require('./img/lifemeterUnder.png'),
       progressBarMiddle: require('./img/progressBarMiddle.png'),
+      progressBarLeft: require('./img/progressBarLeft.png'),
+      progressBarRight: require('./img/progressBarRight.png'),
       progressBarUnder: require('./img/progressBarUnder.png'),
+      progressBarUnderLeft: require('./img/progressBarUnderLeft.png'),
+      progressBarUnderRight: require('./img/progressBarUnderRight.png'),
+      progressBarUnderMiddle: require('./img/progressBarUnderMiddle.png'),
       clementeRegular: require('./img/clementeRegular.png'),
       // We Load the key twice to have the png also imported with webpack (kindof a hack but convenient)
       // If we load it explicitely we get a warning a texture being loaded twice
