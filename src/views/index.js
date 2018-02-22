@@ -9,3 +9,4 @@ export {default as EngineView} from './engineView';
 export {default as LoadingView} from './loadingView';
 export {default as PauseView} from './pauseView';
 export {default as OptionsView} from './optionsView';
+export {default as WaitView} from './waitView';

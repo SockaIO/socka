@@ -153,10 +153,10 @@ class Game {
   /**
    * Push a view on top of the stack
    */
-  pushView(view) {
+  pushView(view, blur=true) {
 
     // The old view looses focus
-    if (this.views.length > 0) {
+    if (this.views.length > 0 && blur === true) {
       this.views[0].onBlur();
     }
 

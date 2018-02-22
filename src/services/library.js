@@ -2,7 +2,7 @@
  * @namespace services.Library
  */
 import {Player, FileManager} from '../services';
-import {MenuView, EngineView, SongMenuView2} from '../views';
+import {PauseView, MenuView, EngineView, SongMenuView2, WaitView} from '../views';
 import {HttpEndpoint} from './endpoint';
 
 import log from 'loglevel';
@@ -43,8 +43,14 @@ function packMenuEntry(pack, game) {
   let name = pack.name;
   let action = () => {
 
+    let waitView = new WaitView(game);
+    game.pushView(waitView, false);
+
     let entries = [];
     pack.getSongs().then((songs) => {
+
+      // Pop The Wait View
+      game.popView();
 
       for (let s of songs) {
         entries.push(songMenuEntry(s, game));
@@ -53,6 +59,12 @@ function packMenuEntry(pack, game) {
       let menu = new SongMenuView2(entries, game);
       game.pushView(menu);
 
+    }, (err) => {
+      // Just make sure to pop the wait view not to get stuck
+      game.popView();
+
+      // Keep the error
+      throw err;
     });
   };
 

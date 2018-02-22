@@ -2,6 +2,7 @@
 
 import {Player, Theme} from '../services';
 import View from './view';
+import WaitView from './waitView';
 import {TAP, KEY_BACK, KEY_ENTER, KEY_UP, KEY_DOWN, RAPID_FIRE} from '../constants/input';
 import {Menu, TextMenuItem} from '../components';
 import {MENU_PAUSE} from '../constants/resources';
@@ -26,6 +27,13 @@ class PauseView extends View {
     }));
 
     items.push(new TextMenuItem('Restart', () => {
+
+      let waitView = new WaitView(game, () => {
+        // Pop the pause also
+        this.game.popView();
+      });
+
+      this.game.pushView(waitView, false);
       reset();
     }));
 

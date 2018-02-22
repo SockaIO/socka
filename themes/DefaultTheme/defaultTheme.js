@@ -45,6 +45,7 @@ import {
 import {PauseDefaultGraphicComponent} from './pause';
 import {EngineViewDefaultGraphicComponent} from './engineView';
 import {LoadingViewDefaultGraphicComponent} from './loadingView';
+import {WaitViewDefaultGraphicComponent} from './waitView';
 import {ResultsDefaultGraphicComponent} from './results';
 
 /*
@@ -395,6 +396,13 @@ export default class DefaultTheme extends interfaces.Theme {
    */
   createLoadingViewGC(...args) {
     return new LoadingViewDefaultGraphicComponent(this, ...args);
+  }
+
+  /**
+   * Create Wait View Graphic Component
+   */
+  createWaitViewGC(...args) {
+    return new WaitViewDefaultGraphicComponent(this, ...args);
   }
 
 }
