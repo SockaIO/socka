@@ -88,6 +88,8 @@ export default class DefaultTheme extends interfaces.Theme {
       progressBarUnderLeft: require('./img/progressBarUnderLeft.png'),
       progressBarUnderRight: require('./img/progressBarUnderRight.png'),
       progressBarUnderMiddle: require('./img/progressBarUnderMiddle.png'),
+      timelineUnder: require('./img/timelineUnder.png'),
+      timelineOver: require('./img/timelineOver.png'),
       clementeRegular: require('./img/clementeRegular.png'),
       // We Load the key twice to have the png also imported with webpack (kindof a hack but convenient)
       // If we load it explicitely we get a warning a texture being loaded twice

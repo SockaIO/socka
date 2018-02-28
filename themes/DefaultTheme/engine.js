@@ -287,22 +287,28 @@ export class ProgressionBarDefaultGraphicComponent {
 
     this.sprite = new PIXI.Container();
 
-    this.receptor = new PIXI.Sprite(theme.getTexture('progressBarUnder'));
-    this.receptor.width = 10;
-    this.receptor.height = 400;
+    // Create the Sprite
 
-    this.bar = new PIXI.Sprite(theme.getTexture('progressBarMiddle'));
-    this.bar.x = this.receptor.x + 1;
-    this.bar.y = this.receptor.y + 1;
-    this.bar.width = this.receptor.width - 2;
-    this.bar.height = 0;
+    this.under = new PIXI.Sprite(this.theme.getTexture('timelineUnder'));
+    this.sprite.addChild(this.under);
 
-    this.sprite.addChild(this.receptor);
-    this.sprite.addChild(this.bar);
+    this.over = new PIXI.Sprite(this.theme.getTexture('timelineOver'));
+    this.sprite.addChild(this.over);
+
+    // Create the mask for the top
+    let mask = new PIXI.Graphics();
+    this.over.addChild(mask);
+
+    mask.beginFill(0x8bc5ff, 0.5)
+        .drawRect(0, 0, this.over.width, this.over.height)
+        .endFill();
+
+    mask.height = 0;
+    this.over.mask = mask;
   }
 
   update(progression) {
-    this.bar.height = (this.receptor.height - 2) * progression;
+    this.over.mask.height = this.over.height * progression;
   }
 }
 
