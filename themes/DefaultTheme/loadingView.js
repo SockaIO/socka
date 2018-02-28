@@ -49,7 +49,7 @@ export class LoadingViewDefaultGraphicComponent extends interfaces.LoadingViewGr
     this.sprite.addChild(this.textSprite);
     this.textSprite.anchor = 0.5;
     this.textSprite.x = width / 2;
-    this.textSprite.y = barY;
+    this.textSprite.y = barY + 1;
 
     const titleHeight = 80;
     this.createSongTitle(titleHeight);
