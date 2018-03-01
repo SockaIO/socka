@@ -43,6 +43,10 @@ class Controller {
     this.rapidFire = {
       id: null,
       speed: 200,
+      startSpeed: 200,
+      minSpeed: 50,
+      acceleration: 10,
+      stop: false,
       action: null
     };
   }
@@ -59,24 +63,39 @@ class Controller {
    */
   rapidFireTap(action) {
 
+    // Reset the rapidFire
+    this.rapidFire.speed = this.rapidFire.startSpeed;
+    this.rapidFire.stop = false;
+    clearTimeout(this.rapidFire.id);
+
     this.rapidFire.action = action;
 
-    this.rapidFireLift ();
+    const doFire = () => {
 
-    // Set the repetition of the command
-    this.rapidFire.id = setInterval(() => {
+      // is the rapid fire released
+      if (this.rapidFire.stop !== false) {
+        return;
+      }
+
       this.rapidFire.action();
-    }, this.rapidFire.speed);
 
-    // Do the action once in any cases
-    action();
+      // Accelerate
+      if (this.rapidFire.speed - this.rapidFire.acceleration >= this.rapidFire.minSpeed) {
+        this.rapidFire.speed -= this.rapidFire.acceleration;
+      }
+
+      this.rapidFire.id = setTimeout(doFire, this.rapidFire.speed);
+    };
+
+    // Do the action at least once
+    doFire();
   }
 
   /**
    * Called when a button with rapid fire is released
    */
   rapidFireLift() {
-    clearTimeout(this.rapidFire.id);
+    this.rapidFire.stop = true;
   }
 
   /**
