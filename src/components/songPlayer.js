@@ -70,6 +70,8 @@ class SongPlayer {
    */
   pause() {
     this.startPauseTime = this.ctx.currentTime - this.audioStart;
+    this.startPauseTime = Math.max(this.startPauseTime, 0);
+
     this.source.onended = () => {};
     this.source.stop();
   }
