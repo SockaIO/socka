@@ -319,27 +319,39 @@ export class LifemeterDefaultGraphicComponent {
     this.theme = theme;
     this.sprite = new PIXI.Container();
 
-    this.sprite.addChild(new PIXI.Sprite(theme.getTexture('lifemeterUnder')));
+    this.under = new PIXI.Sprite(theme.getTexture('lifemeterUnder'));
+    this.sprite.addChild(this.under);
+
     this.bar = new PIXI.Sprite(theme.getTexture('lifemeterMiddle'));
     this.sprite.addChild(this.bar);
-    this.sprite.addChild(new PIXI.Sprite(theme.getTexture('lifemeterOver')));
 
-    this.bar.x = 5;
-    this.bar.y = 5;
-    this.bar.scale.y = 1.7;
+    // Create the mask for the top
+    let mask = new PIXI.Graphics();
+    this.bar.addChild(mask);
+
+    mask.beginFill(0x8bc5ff, 0.5)
+        .drawRect(0, 0, this.bar.width, this.bar.height)
+        .endFill();
+
+    mask.width = 0;
+    this.bar.mask = mask;
+
+    //this.sprite.addChild(new PIXI.Sprite(theme.getTexture('lifemeterOver')));
+
+    this.sprite.scale = {x: 0.5, y: 0.5};
 
     this.changing = false;
     this.target = 0;
     this.current = 0;
-    this.tweenDuration = 0.2;
+    this.tweenDuration = 0.5;
   }
 
   update(fraction) {
     if (this.changing === false) {
-      this.target = fraction;
+      this.target = fraction * this.bar.width;
       this.doUpdate();
     } else {
-      this.target = fraction;
+      this.target = fraction * this.bar.width;
     }
   }
 
@@ -348,7 +360,7 @@ export class LifemeterDefaultGraphicComponent {
     this.current = this.target;
     this.changing = true;
 
-    TweenLite.to(this.bar.scale, this.tweenDuration, {x: this.current, ease: 'bounce', onComplete: () => {
+    TweenLite.to(this.bar.mask, this.tweenDuration, {width: this.current, ease: 'bounce', onComplete: () => {
       if (this.target !== this.current) {
         this.doUpdate();
       } else {
