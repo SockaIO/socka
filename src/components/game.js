@@ -1,7 +1,7 @@
 /* jshint esnext: true */
 'use strict';
 
-import {Input, Player, Theme, OptionTree, Options, Library} from '../services';
+import {Input, Player, Theme, OptionTree, Options, Library, Notification} from '../services';
 import {RESIZE} from '../constants/signaling';
 import {MenuView, OptionsView} from '../views';
 
@@ -34,8 +34,17 @@ class Game {
 
     // Create the PIXI Environment
     let canvas = document.getElementById('game');
+
+    // Global PIXI Container
     this.stage = new PIXI.Container();
     this.renderer = PIXI.autoDetectRenderer(this.width, this.height, {backgroundColor : 0x0e333d, view: canvas}, true);
+
+    // Specialized Containers
+    this.viewStack = new PIXI.Container();
+    this.notification = new PIXI.Container();
+
+    this.stage.addChild(this.viewStack);
+    this.stage.addChild(this.notification);
 
     if (debug === true) {
       this.stats = new Stats();
@@ -85,7 +94,8 @@ class Game {
     Options.SetOptions(OptionTree());
 
     // We need to wait for the theme to load all its resources
-    promises.push(Theme.GetTheme().loaded);
+    let themePromise = Theme.GetTheme().loaded;
+    promises.push(themePromise);
 
     //Player.SavePlayers();
     log.debug('Initializing the players');
@@ -93,6 +103,14 @@ class Game {
 
     log.debug('Init the Library');
     Library.Init();
+
+    log.debug('Init the Notification');
+    let notificationPromise = themePromise.then(() => {
+      Notification.Init(this);
+      this.notification.addChild(Notification.GetSprite());
+    });
+
+    promises.push(notificationPromise);
 
     log.debug('Waiting for all the asynchronous Initialization');
     return Promise.all(promises);
@@ -162,7 +180,7 @@ class Game {
 
     // The new view is added and notified
     this.views.unshift(view);
-    this.stage.addChild(view.getView());
+    this.viewStack.addChild(view.getView());
 
     // We call the callbacks after adding the view
     // because otherwise they do not stack properly 
@@ -187,7 +205,7 @@ class Game {
       this.views[0].onFocus();
     }
 
-    this.stage.removeChildAt(this.stage.children.length - 1);
+    this.viewStack.removeChildAt(this.viewStack.children.length - 1);
   }
 
   /**

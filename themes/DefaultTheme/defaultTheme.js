@@ -47,6 +47,7 @@ import {EngineViewDefaultGraphicComponent} from './engineView';
 import {LoadingViewDefaultGraphicComponent} from './loadingView';
 import {WaitViewDefaultGraphicComponent} from './waitView';
 import {ResultsDefaultGraphicComponent} from './results';
+import {NotificationDefaultGraphicComponent} from './notification';
 
 /*
  * The Theme class is responsible for laoding
@@ -405,6 +406,13 @@ export default class DefaultTheme extends interfaces.Theme {
    */
   createWaitViewGC(...args) {
     return new WaitViewDefaultGraphicComponent(this, ...args);
+  }
+
+  /**
+   * Create Notification Graphic Component
+   */
+  createNotificationGC(...args) {
+    return new NotificationDefaultGraphicComponent(this, ...args);
   }
 
 }

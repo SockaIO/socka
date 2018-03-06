@@ -10,6 +10,7 @@ import * as FileManager from './fileManager';
 import * as SongParser from './songParser';
 import * as Options from './options';
 import * as Library from './library';
+import * as Notification from './notification';
 import OptionTree from './optionTree';
 
 export {
@@ -21,5 +22,6 @@ export {
   SongParser,
   Options,
   OptionTree,
-  Library
+  Library,
+  Notification
 };

@@ -203,6 +203,28 @@ class MenuItemSelectorGraphicComponent extends GraphicComponent {
 
 }
 
+/**
+ *
+ * Notification to the player
+ *
+ * @memberof interfaces
+ */
+class NotificationGraphicComponent extends GraphicComponent {
+
+  /**
+   * Display a notification for a given duration
+   * @param {String} msg Mesage
+   * @param {Number} duration Duration in ms
+   */
+  notify(msg, duration) {}
+
+  /**
+   * Dismiss any displayed notification
+   *
+   */
+  dismiss() {}
+}
+
 export {
   SimpleNoteGraphicComponent,
   LongNoteGraphicComponent,
@@ -214,7 +236,8 @@ export {
   ResultsGraphicComponent,
   Theme,
   MenuItemHighlighterGraphicComponent,
-  MenuItemSelectorGraphicComponent
+  MenuItemSelectorGraphicComponent,
+  NotificationGraphicComponent
 };
 
 
