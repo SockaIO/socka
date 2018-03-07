@@ -3,7 +3,7 @@
 import View from './view';
 import EngineView from './engineView';
 
-import {Theme, Player} from '../services';
+import {Theme, Player, Notification} from '../services';
 
 import {RSC_SONG, RSC_BANNER, MENU_SONG, MENU_CHART} from '../constants/resources';
 import {Menu, SongMenuItem, TextMenuItem, ChartMenuItem, ChartMenuItemHighlighter} from '../components';
@@ -122,6 +122,11 @@ export default class SongMenuView extends View {
     const players = Player.GetPlayers();
     let chart = new Map();
     const song = this.songMenu.getSelected().song.song;
+
+    if (song.charts === undefined) {
+      Notification.Notify('Impossible to load song files');
+      return;
+    }
 
 
     // Start loading the Resources

@@ -4,6 +4,7 @@
  * @namespace services.Input
  */
 
+import {Notify}  from './notification';
 import {Subject} from '../helpers';
 import {TAP, LIFT, KEYS, KEY_UP, KEY_LEFT, KEY_RIGHT, KEY_DOWN, KEY_ENTER, KEY_BACK, EVENT_PAD_CONNECTED, EVENT_PAD_DISCONNECTED, RAPID_FIRE, INPUT_UPDATE, INPUT_ENTER, INPUT_CANCEL, PRIMARY, SECONDARY} from '../constants/input';
 
@@ -260,6 +261,7 @@ function Connect(e) {
   };
 
   log.debug('Pad Connected');
+  Notify('Pad Connected');
 
   controllerSubject.notify(ev);
 }

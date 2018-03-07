@@ -6,6 +6,7 @@
 
 import {Endpoint, Pack, SongIndex} from './fileManager';
 import {RSC_AUDIO, RSC_CHART, RSC_BANNER, RSC_BACKGROUND, RSC_SONG} from '../constants/resources';
+import {Notification} from '../services';
 
 
 /**
@@ -49,6 +50,7 @@ export class HttpEndpoint extends Endpoint {
       return new HttpEndpoint(url, opts);
     })
     .catch((error) => {
+      Notification.Notify(`Impossible to create Endpoint ${url} (${error.message})`);
       throw error;
     });
   }
@@ -249,7 +251,7 @@ class HttpPack extends Pack{
 /**
  * HttpSongIndex in an HTTP SongIndex
  * @memberof services.Endpoint
- * @extends SongIndex 
+ * @extends SongIndex
  */
 class HttpSongIndex extends SongIndex{
 

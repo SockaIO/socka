@@ -107,6 +107,7 @@ export class NotificationDefaultGraphicComponent extends interfaces.Notification
   }
 
   notify(msg, duration) {
+    this.dismiss();
     this.createNotification(msg);
     this.display(duration);
   }

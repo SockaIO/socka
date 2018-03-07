@@ -7,8 +7,6 @@ import {RESIZE, NUM_PLAYERS} from '../constants/signaling';
 import {Player, Library} from '../services';
 import {HttpEndpoint} from './endpoint';
 
-import log from 'loglevel';
-
 /**
  * @namespace services.OptionTree
  * @returns {OptionFolder} Root of the option tree
@@ -144,11 +142,7 @@ export default function GetOptionTree() {
       };
     }
 
-    Library.SetCustomEndpoint(HttpEndpoint.CreateHttpEndpoint(value, basicAuth)
-      .catch((error) => {
-        log.error(`Impossible to Add Custom Endpoint: ${error.message}`);
-        throw error;
-      }));
+    Library.SetCustomEndpoint(HttpEndpoint.CreateHttpEndpoint(value, basicAuth));
   });
 
   let endpointUsername = new Options.TextOption('Username', 'username', 0, 100, '');
