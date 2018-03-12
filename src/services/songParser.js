@@ -243,9 +243,6 @@ function createTimingPartition(song) {
     sections.push(section);
   }
 
-  song.stops.sort((a, b) => a.beat - b.beat);
-
-
   //
   // 2. Add the stop sections
   // We look for the section containing the stop, split it in 2
@@ -259,7 +256,13 @@ function createTimingPartition(song) {
   addPauses(sections, song.delays, TIMING_DELAY);
 
   //
-  // 3. Compute the timing
+  // 3. Add the Warps
+  // We set to 0 the duration of the timing segments in the warp
+  //
+  addWarps(sections, song.warps);
+
+  //
+  // 4. Compute the timing
   // Fill the following TimingSegments info
   // - duration
   // - startTime
@@ -290,7 +293,6 @@ function createTimingPartition(song) {
   }
 
   song.timingPartition = sections;
-
 }
 
 /**
@@ -302,6 +304,8 @@ function createTimingPartition(song) {
 function addPauses(sections, pauses, type) {
 
   let sectionIndex = 0;
+
+  pauses.sort((a, b) => a.beat - b.beat);
 
   for (let pause of pauses) {
     // Search the segment directly after the pause
@@ -322,6 +326,56 @@ function addPauses(sections, pauses, type) {
     const del = sections[sectionIndex].startBeat === pause.beat ? 1 : 0;
     sections.splice(sectionIndex + (1 - del), del, sectionEnd);
   }
+}
+
+/**
+ * Add the warps
+ * @param {TimingSection|Array} sections Timing Sections of the song
+ * @param {object|Array} warps Array of warps (beat + duration)
+ */
+function addWarps(sections, warps) {
+
+  warps.sort((a, b) => a.beat - b.beat);
+  let sectionIndex = 0;
+
+  for (let warp of warps) {
+    // Search the segment directly after the warp
+    while (sections.length > sectionIndex + 1 && sections[sectionIndex + 1].startBeat <= warp.beat) {
+      sectionIndex++;
+    }
+
+    // Split it in two
+    let sectionEnd = Object.assign({}, sections[sectionIndex]);
+    sectionEnd.startBeat = warp.beat;
+
+    // Avoid to add section with 0 duration
+    // Would happen if a pause was starting at the same time as a bpm section
+    let del = sections[sectionIndex].startBeat === warp.beat ? 1 : 0;
+    sections.splice(sectionIndex + (1 - del), del, sectionEnd);
+
+    // We go to the first warped segment
+    sectionIndex = sectionIndex + (1 - del);
+    const warpEnd = warp.beat + warp.value;
+
+    // Search the segment directly after the warp
+    while (sections.length > sectionIndex + 1 && sections[sectionIndex + 1].startBeat <= warpEnd) {
+      sections[sectionIndex].duration = 0;
+      sectionIndex++;
+    }
+
+    // Split it in two
+    let sectionEnd2 = Object.assign({}, sections[sectionIndex]);
+    sectionEnd2.startBeat = warpEnd;
+
+    // Set duration of the first segment to 0
+    sections[sectionIndex].duration = 0;
+
+    // Avoid to add section with 0 duration
+    // Would happen if a pause was starting at the same time as a bpm section
+    del = sections[sectionIndex].startBeat === warpEnd ? 1 : 0;
+    sections.splice(sectionIndex + (1 - del), del, sectionEnd2);
+  }
+
 }
 
 /**
