@@ -42,3 +42,9 @@ export const EVENT_NOTE_MISS = Symbol.for('EVENT_NOTE_MISS');
 export const EVENT_STEP_HIT = Symbol.for('EVENT_STEP_HIT');
 /** @memberof constants.chart  */
 export const EVENT_NOTE_DODGE = Symbol.for('EVENT_NOTE_DODGE');
+
+// Timing
+/** @memberof constants.chart  */
+export const TIMING_STOP = Symbol.for('TIMING_STOP');
+/** @memberof constants.chart  */
+export const TIMING_DELAY = Symbol.for('TIMING_DELAY');

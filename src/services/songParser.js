@@ -4,7 +4,7 @@
  * @namespace services.SongParser
  */
 
-import { TAP_NOTE, HOLD_NOTE, ROLL_NOTE, MINE_NOTE, LIFT_NOTE, FAKE_NOTE} from '../constants/chart';
+import { TAP_NOTE, HOLD_NOTE, ROLL_NOTE, MINE_NOTE, LIFT_NOTE, FAKE_NOTE, TIMING_STOP, TIMING_DELAY} from '../constants/chart';
 
 /*
  * Song (with multiple charts)
@@ -82,7 +82,13 @@ class Song {
     }
 
     let timing = this.timingPartition[index];
-    let beat = timing.startBeat + timing.bps * (time - timing.startTime);
+    let localTime = time - timing.startTime;
+
+    if (timing.offset > 0) {
+      localTime = Math.max(0, localTime - timing.offset);
+    }
+
+    let beat = timing.startBeat + timing.bps * localTime;
 
     return [beat, index];
 
@@ -104,7 +110,11 @@ class Song {
     }
 
     let timing = this.timingPartition[index];
-    let time = timing.startTime + (beat - timing.startBeat) / timing.bps;
+    let time = timing.startTime + timing.offset + (beat - timing.startBeat) / timing.bps;
+
+    if (timing.offsetType === TIMING_STOP && beat === timing.startBeat) {
+      time -= timing.offset;
+    }
 
     return [time, index];
 
@@ -176,12 +186,13 @@ class Step {
  */
 class TimingSection {
 
-  constructor(startBeat, bpm, startTime=0, duration=null, offset=0) {
+  constructor(startBeat, bpm, startTime=0, duration=null, offset=0, offsetType=null) {
     this.startTime = startTime;
     this.duration = duration;
     this.startBeat = startBeat;
     this.bps = bpm / 60;
     this.offset = offset;
+    this.offsetType = offsetType;
   }
 }
 
@@ -218,41 +229,40 @@ getTypeSymbol.map = {
  */
 function createTimingPartition(song) {
 
-  // First process the bpms data;
-
   let sections = [];
+
+  //
+  // 1. Create a list of timing sections populating startbeat and BPM
+  // We just take each bpm entry and create a section for it
+  //
 
   song.bpms.sort((a, b) => a.beat -b.beat);
 
   for (let change of song.bpms) {
-
     let section = new TimingSection(change.beat, change.value);
     sections.push(section);
   }
 
   song.stops.sort((a, b) => a.beat - b.beat);
-  let sectionIndex = 0;
 
-  // Add the stop sections
-
-  for (let stop of song.stops) {
-    while (sections.length > sectionIndex + 1 && sections[sectionIndex + 1].startBeat <= stop.beat) {
-      sectionIndex++;
-    }
-
-    // Split it in two
-    let sectionEnd = Object.assign({}, sections[sectionIndex]);
-    sectionEnd.startBeat = stop.beat;
-
-    let stopSection = new TimingSection(stop.beat, 0, 0, stop.value);
-
-    // Avoid to add section with 0 duration
-    const del = sections[sectionIndex].startBeat === stop.beat ? 1 : 0;
-    sections.splice(sectionIndex + (1 - del), del, stopSection, sectionEnd);
-  }
 
   //
-  // Compute the timing
+  // 2. Add the stop sections
+  // We look for the section containing the stop, split it in 2
+  // and add a delay to the second section
+  //
+
+  // Stops
+  addPauses(sections, song.stops, TIMING_STOP);
+
+  // Delays
+  addPauses(sections, song.delays, TIMING_DELAY);
+
+  //
+  // 3. Compute the timing
+  // Fill the following TimingSegments info
+  // - duration
+  // - startTime
   //
 
   for (let i = 0; i < sections.length; i++) {
@@ -268,6 +278,11 @@ function createTimingPartition(song) {
 
     if (prevSection.duration === null) {
       prevSection.duration = (section.startBeat - prevSection.startBeat) / prevSection.bps;
+
+      // Add the offset if there is a pause
+      if (prevSection.offset > 0) {
+        prevSection.duration += prevSection.offset;
+      }
     }
 
     section.startTime = prevSection.startTime + prevSection.duration;
@@ -276,6 +291,37 @@ function createTimingPartition(song) {
 
   song.timingPartition = sections;
 
+}
+
+/**
+ * Add a pause (either STOP or DELAY)
+ * @param {TimingSection|Array} sections Timing Sections of the song
+ * @param {object|Array} pauses Array of pauses (beat + duration)
+ * @param {enum} type Type of Pause
+ */
+function addPauses(sections, pauses, type) {
+
+  let sectionIndex = 0;
+
+  for (let pause of pauses) {
+    // Search the segment directly after the pause
+    while (sections.length > sectionIndex + 1 && sections[sectionIndex + 1].startBeat <= pause.beat) {
+      sectionIndex++;
+    }
+
+    // Split it in two
+    let sectionEnd = Object.assign({}, sections[sectionIndex]);
+    sectionEnd.startBeat = pause.beat;
+
+    // Set the offset for the end section
+    sectionEnd.offset = pause.value;
+    sectionEnd.offsetType = type;
+
+    // Avoid to add section with 0 duration
+    // Would happen if a pause was starting at the same time as a bpm section
+    const del = sections[sectionIndex].startBeat === pause.beat ? 1 : 0;
+    sections.splice(sectionIndex + (1 - del), del, sectionEnd);
+  }
 }
 
 /**
@@ -388,7 +434,7 @@ function trim(string, character=' ') {
  */
 function getList(data) {
 
-  if (!data.includes('=')) {
+  if (data === undefined || !data.includes('=')) {
     return [];
   }
 
@@ -485,7 +531,7 @@ function * iterDWISteps(data) {
       yield {'step': step, 'beat': beat, 'subbeat': subbeat};
     }
 
-    let tempo = tempoStack.slice(-1)[0]
+    let tempo = tempoStack.slice(-1)[0];
     beat += tempo;
     subbeat += tempo*48;
     step = '';
@@ -881,6 +927,19 @@ function loadFromSMFile (data) {
   song.offset = fieldMap.get('OFFSET');
   song.bpms = getList(fieldMap.get('BPMS'));
   song.stops = getList(fieldMap.get('STOPS'));
+  song.delays = getList(fieldMap.get('DELAYS'));
+  song.warps = getList(fieldMap.get('WARPS'));
+
+  // Fake segments
+  song.fakes = getList(fieldMap.get('FAKES'));
+
+  // Not handled SCC Attributes
+  // TIMESIGNATURES
+  // TICKCOUNTS
+  // COMBOS
+  // SPEEDS
+  // SCROLLS
+  // LABELS
 
   createTimingPartition(song);
 
