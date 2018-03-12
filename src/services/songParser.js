@@ -6,6 +6,9 @@
 
 import { TAP_NOTE, HOLD_NOTE, ROLL_NOTE, MINE_NOTE, LIFT_NOTE, FAKE_NOTE, TIMING_STOP, TIMING_DELAY} from '../constants/chart';
 
+const SM_TYPE = Symbol.for('SM_TYPE');
+const SSC_TYPE = Symbol.for('SSC_TYPE');
+
 /*
  * Song (with multiple charts)
  * @memberof services.SongParser
@@ -38,6 +41,9 @@ class Song {
     this.offset = 0;
     this.bpms = [];
 
+    this.delays = [];
+    this.warps = [];
+    this.stops = [];
 
     this.timingPartition = [];
   }
@@ -123,6 +129,7 @@ class Song {
 
 Song.ext_map = {
   'sm': Song.loadFromSMFile,
+  'ssc': Song.loadFromSSCFile,
   'dwi': Song.loadFromDWIFile
 };
 
@@ -525,6 +532,22 @@ function getCharts(data) {
 
   return charts;
 }
+/**
+ * Get the charts from the SSC data
+ * @param {Object|Array} data | Text data to get the info from
+ * @returns {Chart|Array} Charts contained in the data
+ * @memberof services.SongParser
+ */
+function getSscCharts(data) {
+
+  let charts = [];
+
+  for (let c of data) {
+    charts.push(getSscChart(c));
+  }
+
+  return charts;
+}
 
 /**
  * Iterate of the steps of DWI type data
@@ -713,46 +736,15 @@ function computeDWISteps(data) {
 }
 
 /**
- * Get the steps and notes info from the data
- * @param {String} data | Text Data
- * @return {Chart} Chart extracted from the data
- * @memberof services.SongParser
+ * Parse the Notes Data
+ * @param {String} notes Notes Data
+ * @return {Step|Array} Song Steps
  */
-function getChart(data) {
-
-  // Parse the metadata
-
-  let value = '';
-  let metadata = [];
-  let count = 0;
-  let position = 0;
-
-  for (let c of data) {
-    position++;
-    if (c === ' ' || c === '\n' || c ==='\r') {
-      continue;
-    }
-
-    if (c === ':') {
-      metadata.push(value);
-      value = '';
-      if (++count === 5) {
-        break;
-      }
-      continue;
-    }
-
-    value += c;
-  }
-
-  metadata[4] = metadata[4].split(',');
-
-  // Remove the parsed data
-  data = data.slice(position);
+function parseNotes(data) {
 
   // Parsing the Steps
   let measures = [];
-  value = '';
+  let value = '';
   let steps = [];
 
 
@@ -781,8 +773,6 @@ function getChart(data) {
     value += c;
   }
 
-  // Create the Chart object
-  const chart = new Chart(...metadata);
 
   let beat = 0;
   let stepData = [];
@@ -838,17 +828,85 @@ function getChart(data) {
         startStep[d] = s;
       }
 
-      if (s.data[d] == '3') {
+      if (s.data[d] == '3' && startStep[d] !== undefined) {
         startStep[d].arrows[d].duration = s.beat - startStep[d].beat;
       }
     }
   }
 
-  chart.steps = stepData;
+  return stepData;
+}
+
+/**
+ * Get the steps and notes info from the data
+ * @param {String} data | Text Data
+ * @return {Chart} Chart extracted from the data
+ * @memberof services.SongParser
+ */
+function getChart(data) {
+
+  // Parse the metadata
+
+  let value = '';
+  let metadata = [];
+  let count = 0;
+  let position = 0;
+
+  for (let c of data) {
+    position++;
+    if (c === ' ' || c === '\n' || c ==='\r') {
+      continue;
+    }
+
+    if (c === ':') {
+      metadata.push(value);
+      value = '';
+      if (++count === 5) {
+        break;
+      }
+      continue;
+    }
+
+    value += c;
+  }
+
+  metadata[4] = metadata[4].split(',');
+
+  // Remove the parsed data
+  data = data.slice(position);
+
+  // Create the Chart object
+  const chart = new Chart(...metadata);
+
+  chart.steps = parseNotes(data);
 
   return chart;
 
 }
+
+/**
+ * Get the steps and notes info from the SSC data
+ * @param {Object} chartData | Raw Data
+ * @return {Chart} Chart extracted from the data
+ * @memberof services.SongParser
+ */
+function getSscChart(chartData) {
+
+  let data = chartData.notes;
+
+  // Create the Chart object
+  const chart = new Chart(chartData.type,
+                          chartData.description,
+                          chartData.difficulty,
+                          chartData.meter,
+                          chartData.grooveRadar);
+
+  chart.steps = parseNotes(data);
+
+  return chart;
+
+}
+
 
 /**
  * Load song from DWI type data
@@ -895,7 +953,7 @@ function loadFromDWIFile(data) {
   song.offset = -fieldMap.get('GAP')/1000;
 
   song.bpms = getList('0.000=' + fieldMap.get('BPM')).concat(getList(fieldMap.get('CHANGEBPMS') || ''));
-  song.stops = getList(fieldMap.get('FREEZE') || '');
+  song.stops = getList(fieldMap.get('FREEZE') || []);
 
   createTimingPartition(song);
 
@@ -934,14 +992,23 @@ function loadFromDWIFile(data) {
   return song;
 }
 
+function loadFromSMFile(data) {
+  return loadFromStepmaniaFile(data, SM_TYPE);
+}
+
+function loadFromSSCFile(data) {
+  return loadFromStepmaniaFile(data, SSC_TYPE);
+}
+
 /**
- * Load song from SM type data
+ * Load song from Stepmania type data (SM or SCC)
  *
  * @param {string} data | Song data in SM format
+ * @param {enum} type Song Format
  * @returns {Song} | Parsed Song
  * @memberof services.SongParser
  */
-function loadFromSMFile (data) {
+function loadFromStepmaniaFile (data, type) {
   const fields = getFields(data);
   const fieldMap = new Map();
 
@@ -979,10 +1046,21 @@ function loadFromSMFile (data) {
 
   // Timing Data
   song.offset = fieldMap.get('OFFSET');
-  song.bpms = getList(fieldMap.get('BPMS'));
+  song.bpms = fieldMap.get('BPMS');
   song.stops = getList(fieldMap.get('STOPS'));
   song.delays = getList(fieldMap.get('DELAYS'));
   song.warps = getList(fieldMap.get('WARPS'));
+
+  // Sanitize & Process the BPMS Field
+  if (Array.isArray(song.bpms)) {
+    // TODO Handle correctly?
+    // This is a nightmare:
+    // Sometimes defined globally, sometimes for each Chart...
+    // Now I don't have a parser that is chart aware for the BPMS
+    song.bpms = getList(song.bpms[0]);
+  } else {
+    song.bpms = getList(song.bpms);
+  }
 
   // Fake segments
   song.fakes = getList(fieldMap.get('FAKES'));
@@ -995,13 +1073,43 @@ function loadFromSMFile (data) {
   // SCROLLS
   // LABELS
 
+
   createTimingPartition(song);
 
   // Process the notes
 
-  let charts = fieldMap.get('NOTES');
-  charts = Array.isArray(charts) ? charts : [charts];
-  song.charts = getCharts(charts);
+  if (type === SM_TYPE) {
+
+    let charts = fieldMap.get('NOTES');
+    charts = Array.isArray(charts) ? charts : [charts];
+    song.charts = getCharts(charts);
+
+  } else if (type === SSC_TYPE) {
+
+    let sscCharts = [];
+
+    let notes = fieldMap.get('NOTES');
+    let type = fieldMap.get('STEPSTYPE');
+    let description = fieldMap.get('DESCRIPTION');
+    let difficulty = fieldMap.get('DIFFICULTY');
+    let meter = fieldMap.get('METER');
+    let radar = fieldMap.get('RADARVALUES');
+
+    for (let x = 0; x < notes.length; x++) {
+      let chart = {
+        type: type[x],
+        description: description[x],
+        difficulty: difficulty[x],
+        meter: meter[x],
+        grooveRadar: radar[x],
+        notes: notes[x]
+      };
+
+      sscCharts.push(chart);
+    }
+
+    song.charts = getSscCharts(sscCharts);
+  }
 
   // Remove the used elements and store the metadata
   for (let f of ['BANNER', 'BACKGROUND', 'CDTITLE', 'MUSIC',
@@ -1047,6 +1155,8 @@ export function ParseSong(data, type) {
     return loadFromDWIFile(data);
   case 'sm':
     return loadFromSMFile(data);
+  case 'ssc':
+    return loadFromSSCFile(data);
   }
 
   return;

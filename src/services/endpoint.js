@@ -289,7 +289,7 @@ class HttpSongIndex extends SongIndex{
 
         const IMG_EXTS = ['jpg', 'png'];
         const AUDIO_EXTS = ['mp3', 'ogg'];
-        const CHART_EXTS = ['dwi', 'sm'];
+        const CHART_EXTS = ['dwi', 'sm', 'ssc'];
 
         if (IMG_EXTS.includes(ext) && nameCanon.includes('bg')) {
           rsc.set(RSC_BACKGROUND, link.href);
