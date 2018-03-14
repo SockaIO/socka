@@ -6,7 +6,7 @@
 
 import {RSC_AUDIO, RSC_BANNER, RSC_BACKGROUND, RSC_SONG, RSC_CHART} from '../constants/resources';
 import * as PIXI from 'pixi.js';
-import {ParseSong} from './songParser';
+import {SongInterface} from './songParser';
 
 import log from 'loglevel';
 
@@ -220,7 +220,7 @@ export class SongIndex {
         });
       } else if (type === RSC_SONG) {
         return this.load(RSC_CHART).then ((data) => {
-          let song = ParseSong(data, this.chartExt);
+          let song = SongInterface.CreateSong(data, this.chartExt);
           this.rscMap.set(type, song);
           return song;
         });

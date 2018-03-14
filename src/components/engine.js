@@ -112,7 +112,7 @@ class Engine {
   loadSong(songIndex, chartIndex) {
 
     return songIndex.load(RSC_SONG).then((song) => {
-      this.chart = song.charts[chartIndex];
+      this.chart = song.getChart(chartIndex);
       this.song = song;
 
       this.loadSongInternal();
@@ -168,7 +168,7 @@ class Engine {
     this.time = this.songPlayer.getTime();
 
     //TODO: index?
-    let [beat, ] = this.song.getBeat(this.time);
+    let [beat, ] = this.chart.getBeat(this.time);
     this.beat = beat;
 
 
