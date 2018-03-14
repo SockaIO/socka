@@ -6,17 +6,15 @@
 
 import { TAP_NOTE, HOLD_NOTE, ROLL_NOTE, MINE_NOTE, LIFT_NOTE, FAKE_NOTE, TIMING_STOP, TIMING_DELAY} from '../constants/chart';
 
-const SM_TYPE = Symbol.for('SM_TYPE');
-const SSC_TYPE = Symbol.for('SSC_TYPE');
-
 /*
  * Song Interface
  * @memberof services.SongParser
  *
  */
-export class SongInterface {
+export class Song {
   /**
    * Get one chart
+   * @param {Number} chartId ID of the chart to retrieve
    */
   getChart(chartId) {
     let chart = this.charts[chartId];
@@ -35,9 +33,9 @@ export class SongInterface {
  * @param {String} data Song Data
  * @param {String} extension Song Extension (to detect format)
  */
-SongInterface.CreateSong = function (data, extension) {
+Song.CreateSong = function (data, extension) {
 
-  let constructor = SongInterface.extMap[extension];
+  let constructor = Song.extMap[extension];
 
   if (constructor === undefined) {
     throw new Error(`Format not supported: ${extension}`);
@@ -52,7 +50,7 @@ SongInterface.CreateSong = function (data, extension) {
  *
  */
 
-class SongSM extends SongInterface {
+class SongSM extends Song {
 
   constructor(data) {
     super();
@@ -95,7 +93,7 @@ class SongSM extends SongInterface {
     this.bpms = getList(fieldMap.get('BPMS'));
     this.stops = getList(fieldMap.get('STOPS'));
 
-    this.timingPartition = createTimingPartition2(parseFloat(this.offset), this.bpms, this.delays, this.warps);
+    this.timingPartition = createTimingPartition2(parseFloat(this.offset), this.bpms, this.stops, this.delays, this.warps);
 
     // Read the chart metadata
 
@@ -171,7 +169,7 @@ class SongSM extends SongInterface {
  *
  */
 
-class SongSSC extends SongInterface {
+class SongSSC extends Song {
 
   constructor(data) {
     super();
@@ -363,7 +361,7 @@ class SongSSC extends SongInterface {
  *
  */
 
-class SongDWI extends SongInterface {
+class SongDWI extends Song {
 
   constructor(data) {
     super();
@@ -405,7 +403,7 @@ class SongDWI extends SongInterface {
     this.bpms = getList('0.000=' + fieldMap.get('BPM')).concat(getList(fieldMap.get('CHANGEBPMS') || ''));
     this.stops = getList(fieldMap.get('FREEZE') || []);
 
-    this.timingPartition = createTimingPartition2(parseFloat(this.offset), this.bpms, this.delays, this.warps);
+    this.timingPartition = createTimingPartition2(parseFloat(this.offset), this.bpms, this.stops, this.delays, this.warps);
 
     //TODO: Process the notes
     this.charts = [];
@@ -440,135 +438,10 @@ class SongDWI extends SongInterface {
 
 }
 
-SongInterface.extMap = {
+Song.extMap = {
   'sm': SongSM,
   'ssc': SongSSC,
   'dwi': SongDWI
-};
-
-
-/*
- * Song (with multiple charts)
- * @memberof services.SongParser
- */
-class Song {
-  constructor() {
-
-    // Textual informations
-    this.metadata = new Map();
-
-    // Required to locate the resources
-    this.path = '';
-
-    // External resources
-    this.banner = '';
-    this.background = '';
-    this.cdTitle = '';
-    this.music = '';
-
-    // Sample
-    this.sampleStart = 0;
-    this.sampleLength = 0;
-
-    // TODO: BgChange
-
-    // Charts
-    this.charts = [];
-
-    // Timing
-    this.offset = 0;
-    this.bpms = [];
-
-    this.delays = [];
-    this.warps = [];
-    this.stops = [];
-
-    this.timingPartition = [];
-  }
-
-  /**
-   * Populate the Times for the steps of the charts
-   */
-  populateStepTimes () {
-
-    for (let c of this.charts) {
-      let timeIndex = 0;
-      for (let s of c.steps) {
-        [s.time, timeIndex] = this.getTime(s.beat, timeIndex);
-
-        // We need to get the duration in seconds as well
-        for (let direction in s.arrows) {
-          let a = s.arrows[direction];
-          if (a.duration > 0) {
-            let [endTime, ] = this.getTime(s.beat + a.duration, timeIndex);
-            s.arrows[direction].durationS = endTime - s.time;
-          }
-
-        }
-      }
-    }
-  }
-
-
-  /**
-   * Get the beat corresponding to a given time
-   * @param {Number} time | time to covnert to beat
-   * @param {Number} startIndex | index to start looking from
-   * @returns {Number} Beat
-   * @returns {Number} index of the timing partition
-   */
-  getBeat(time, startIndex=0) {
-
-    let index = startIndex;
-
-    while (index + 1 < this.timingPartition.length && this.timingPartition[index + 1].startTime <= time) {
-      index++;
-    }
-
-    let timing = this.timingPartition[index];
-    let localTime = time - timing.startTime;
-
-    if (timing.offset > 0) {
-      localTime = Math.max(0, localTime - timing.offset);
-    }
-
-    let beat = timing.startBeat + timing.bps * localTime;
-
-    return [beat, index];
-
-  }
-
-  /**
-   * Get the time corresponding to a given beat
-   * @param {Number} beat | beat to covnert to time
-   * @param {Number} startIndex | index to start looking from
-   * @returns {Number} Time
-   * @returns {Number} index of the timing partition
-   */
-  getTime(beat, startIndex=0) {
-
-    let index = startIndex;
-
-    while (index + 1 < this.timingPartition.length && this.timingPartition[index + 1].startBeat <= beat) {
-      index++;
-    }
-
-    let timing = this.timingPartition[index];
-    let time = timing.startTime + timing.offset + (beat - timing.startBeat) / timing.bps;
-
-    if (timing.offsetType === TIMING_STOP && beat === timing.startBeat) {
-      time -= timing.offset;
-    }
-
-    return [time, index];
-
-  }
-}
-
-Song.ext_map = {
-  'sm': Song.loadFromSMFile,
-  'ssc': Song.loadFromSSCFile,
-  'dwi': Song.loadFromDWIFile
 };
 
 /**
@@ -841,78 +714,6 @@ function createTimingPartition2(startOffset=0, bpms=[], stops=[], delays=[], war
 
   return sections;
 }
-/**
- * Get the informations about the bps, duration and start time of the different sections
- * @param {Song} song | Song to extract the info for
- * @memberof services.SongParser
- */
-function createTimingPartition(song) {
-
-  let sections = [];
-
-  //
-  // 1. Create a list of timing sections populating startbeat and BPM
-  // We just take each bpm entry and create a section for it
-  //
-
-  song.bpms.sort((a, b) => a.beat -b.beat);
-
-  for (let change of song.bpms) {
-    let section = new TimingSection(change.beat, change.value);
-    sections.push(section);
-  }
-
-  //
-  // 2. Add the stop sections
-  // We look for the section containing the stop, split it in 2
-  // and add a delay to the second section
-  //
-
-  // Stops
-  addPauses(sections, song.stops, TIMING_STOP);
-
-  // Delays
-  addPauses(sections, song.delays, TIMING_DELAY);
-
-  //
-  // 3. Add the Warps
-  // We set to 0 the duration of the timing segments in the warp
-  //
-  addWarps(sections, song.warps);
-
-  //
-  // 4. Compute the timing
-  // Fill the following TimingSegments info
-  // - duration
-  // - startTime
-  //
-
-  for (let i = 0; i < sections.length; i++) {
-
-    let section = sections[i];
-
-    if (i === 0) {
-      section.startTime = -1 * parseFloat(song.offset);
-      continue;
-    }
-
-    let prevSection = sections[i - 1];
-
-    if (prevSection.duration === null) {
-      prevSection.duration = (section.startBeat - prevSection.startBeat) / prevSection.bps;
-
-      // Add the offset if there is a pause
-      if (prevSection.offset > 0) {
-        prevSection.duration += prevSection.offset;
-      }
-    }
-
-    section.startTime = prevSection.startTime + prevSection.duration;
-
-  }
-
-  song.timingPartition = sections;
-}
 
 /**
  * Add a pause (either STOP or DELAY)
@@ -1125,40 +926,6 @@ function getList(data) {
   }
 
   return values;
-}
-
-
-/**
- * Get the charts from the data
- * @param {String} data | Text data to get the info from
- * @returns {Chart|Array} Charts contained in the data
- * @memberof services.SongParser
- */
-function getCharts(data) {
-
-  let charts = [];
-
-  for (let c of data) {
-    charts.push(getChart(c));
-  }
-
-  return charts;
-}
-/**
- * Get the charts from the SSC data
- * @param {Object|Array} data | Text data to get the info from
- * @returns {Chart|Array} Charts contained in the data
- * @memberof services.SongParser
- */
-function getSscCharts(data) {
-
-  let charts = [];
-
-  for (let c of data) {
-    charts.push(getSscChart(c));
-  }
-
-  return charts;
 }
 
 /**
@@ -1449,294 +1216,6 @@ function parseNotes(data) {
   return stepData;
 }
 
-/**
- * Get the steps and notes info from the data
- * @param {String} data | Text Data
- * @return {Chart} Chart extracted from the data
- * @memberof services.SongParser
- */
-function getChart(data) {
-
-  // Parse the metadata
-
-  let value = '';
-  let metadata = [];
-  let count = 0;
-  let position = 0;
-
-  for (let c of data) {
-    position++;
-    if (c === ' ' || c === '\n' || c ==='\r') {
-      continue;
-    }
-
-    if (c === ':') {
-      metadata.push(value);
-      value = '';
-      if (++count === 5) {
-        break;
-      }
-      continue;
-    }
-
-    value += c;
-  }
-
-  metadata[4] = metadata[4].split(',');
-
-  // Remove the parsed data
-  data = data.slice(position);
-
-  // Create the Chart object
-  const chart = new Chart(...metadata);
-
-  chart.steps = parseNotes(data);
-
-  return chart;
-
-}
-
-/**
- * Get the steps and notes info from the SSC data
- * @param {Object} chartData | Raw Data
- * @return {Chart} Chart extracted from the data
- * @memberof services.SongParser
- */
-function getSscChart(chartData) {
-
-  let data = chartData.notes;
-
-  // Create the Chart object
-  const chart = new Chart(chartData.type,
-                          chartData.description,
-                          chartData.difficulty,
-                          chartData.meter,
-                          chartData.grooveRadar);
-
-  chart.steps = parseNotes(data);
-
-  return chart;
-
-}
-
-
-/**
- * Load song from DWI type data
- *
- * @param {string} data | Song data in DWI
- * @returns {Song} | Parsed Song
- * @memberof services.SongParser
- */
-function loadFromDWIFile(data) {
-  const fields = getFields(data);
-  const fieldMap = new Map();
-
-  for (;;) {
-    let v = fields.next().value;
-
-    if (v === undefined) {
-      break;
-    }
-
-    if (!fieldMap.has(v.tag)) {
-      fieldMap.set(v.tag, v.value);
-    } else {
-      let actual = fieldMap.get(v.tag);
-      let tmp = Array.isArray(actual) ? actual : [actual];
-      tmp.push(v.value);
-      fieldMap.set(v.tag, tmp);
-    }
-  }
-
-  // We process the fields that are mandatory
-  // The rest will just be passed as metadata
-
-  const song = new Song();
-
-  // Resources related attributes
-
-  song.cdTitle = fieldMap.get('CDTITLE');
-  song.music = fieldMap.get('FILE');
-
-  song.sampleStart = fieldMap.get('SAMPLESTART');
-  song.sampleLength = fieldMap.get('SAMPLELENGTH');
-
-  // Timing Data
-  song.offset = -fieldMap.get('GAP')/1000;
-
-  song.bpms = getList('0.000=' + fieldMap.get('BPM')).concat(getList(fieldMap.get('CHANGEBPMS') || ''));
-  song.stops = getList(fieldMap.get('FREEZE') || []);
-
-  createTimingPartition(song);
-
-  //TODO: Process the notes
-  song.charts = [];
-
-  for (let chartType of ['SINGLE', 'DOUBLE', 'COUPLE', 'SOLO']) {
-    let rawCharts = fieldMap.get(chartType);
-    if (!rawCharts) {
-      continue;
-    }
-
-    rawCharts = Array.isArray(rawCharts) ? rawCharts : [rawCharts];
-
-    for (let rawChart of rawCharts) {
-      let difficulty, meter, steps;
-      [difficulty, meter, steps] = rawChart.split(':');
-
-      let chart = new Chart(chartType, undefined, difficulty, meter);
-      chart.steps = computeDWISteps(steps);
-      song.charts.push(chart);
-    }
-  }
-
-  // Remove the used elements and store the metadata
-  for (let f of ['CDTITLE', 'FILE', 'SAMPLESTART', 'SAMPLELENGTH',
-    'GAP', 'BPM', 'CHANGEBPMS', 'FREEZE',
-    'SINGLE', 'DOUBLE', 'COUPLE', 'SOLO']) {
-
-    fieldMap.delete(f);
-  }
-  song.metadata = fieldMap;
-
-  song.populateStepTimes();
-
-  return song;
-}
-
-function loadFromSMFile(data) {
-  return loadFromStepmaniaFile(data, SM_TYPE);
-}
-
-function loadFromSSCFile(data) {
-  return loadFromStepmaniaFile(data, SSC_TYPE);
-}
-
-/**
- * Load song from Stepmania type data (SM or SCC)
- *
- * @param {string} data | Song data in SM format
- * @param {enum} type Song Format
- * @returns {Song} | Parsed Song
- * @memberof services.SongParser
- */
-function loadFromStepmaniaFile (data, type) {
-  const fields = getFields(data);
-  const fieldMap = new Map();
-
-  for (;;) {
-    let v = fields.next().value;
-
-    if (v === undefined) {
-      break;
-    }
-
-    if (!fieldMap.has(v.tag)) {
-      fieldMap.set(v.tag, v.value);
-    } else {
-      let actual = fieldMap.get(v.tag);
-      let tmp = Array.isArray(actual) ? actual : [actual];
-      tmp.push(v.value);
-      fieldMap.set(v.tag, tmp);
-    }
-  }
-
-  // We process the fields that are mandatory
-  // The rest will just be passed as metadata
-
-  const song = new Song();
-
-  // Resources related attributes
-
-  song.banner = fieldMap.get('BANNER');
-  song.background = fieldMap.get('BACKGROUND');
-  song.cdTitle = fieldMap.get('CDTITLE');
-  song.music = fieldMap.get('MUSIC');
-
-  song.sampleStart = fieldMap.get('SAMPLESTART');
-  song.sampleLength = fieldMap.get('SAMPLELENGTH');
-
-  // Timing Data
-  song.offset = fieldMap.get('OFFSET');
-  song.bpms = fieldMap.get('BPMS');
-  song.stops = getList(fieldMap.get('STOPS'));
-  song.delays = getList(fieldMap.get('DELAYS'));
-  song.warps = getList(fieldMap.get('WARPS'));
-
-  // Sanitize & Process the BPMS Field
-  if (Array.isArray(song.bpms)) {
-    // TODO Handle correctly?
-    // This is a nightmare:
-    // Sometimes defined globally, sometimes for each Chart...
-    // Now I don't have a parser that is chart aware for the BPMS
-    song.bpms = getList(song.bpms[0]);
-  } else {
-    song.bpms = getList(song.bpms);
-  }
-
-  // Fake segments
-  song.fakes = getList(fieldMap.get('FAKES'));
-
-  // Not handled SCC Attributes
-  // TIMESIGNATURES
-  // TICKCOUNTS
-  // COMBOS
-  // SPEEDS
-  // SCROLLS
-  // LABELS
-
-
-  createTimingPartition(song);
-
-  // Process the notes
-
-  if (type === SM_TYPE) {
-
-    let charts = fieldMap.get('NOTES');
-    charts = Array.isArray(charts) ? charts : [charts];
-    song.charts = getCharts(charts);
-
-  } else if (type === SSC_TYPE) {
-
-    let sscCharts = [];
-
-    let notes = fieldMap.get('NOTES');
-    let type = fieldMap.get('STEPSTYPE');
-    let description = fieldMap.get('DESCRIPTION');
-    let difficulty = fieldMap.get('DIFFICULTY');
-    let meter = fieldMap.get('METER');
-    let radar = fieldMap.get('RADARVALUES');
-
-    for (let x = 0; x < notes.length; x++) {
-      let chart = {
-        type: type[x],
-        description: description[x],
-        difficulty: difficulty[x],
-        meter: meter[x],
-        grooveRadar: radar[x],
-        notes: notes[x]
-      };
-
-      sscCharts.push(chart);
-    }
-
-    song.charts = getSscCharts(sscCharts);
-  }
-
-  // Remove the used elements and store the metadata
-  for (let f of ['BANNER', 'BACKGROUND', 'CDTITLE', 'MUSIC',
-    'SAMPLESTART', 'SAMPLELENGTH', 'OFFSET',
-    'BPMS', 'STOPS', 'NOTES']) {
-
-    fieldMap.delete(f);
-  }
-
-  song.metadata = fieldMap;
-  song.populateStepTimes();
-
-  return song;
-}
-
 const divs = [(192 / 4), (192 / 8), (192 / 12), (192 / 16), (192 / 24), (192 / 32), (192 / 48)];
 
 function getDivision (subBeat) {
@@ -1750,26 +1229,4 @@ function getDivision (subBeat) {
   }
 
   return x;
-}
-
-/**
- * Parse the Song data
- *
- * @param {string} data | Song data
- * @param {string} type | FileType
- * @TODO Autodetection or symbol for file type
- * @memberof services.SongParser
- */
-export function ParseSong(data, type) {
-
-  switch(type) {
-  case 'dwi':
-    return loadFromDWIFile(data);
-  case 'sm':
-    return loadFromSMFile(data);
-  case 'ssc':
-    return loadFromSSCFile(data);
-  }
-
-  return;
 }
