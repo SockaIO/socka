@@ -18,8 +18,14 @@ export class SongInterface {
   /**
    * Get one chart
    */
-  // eslint-disable-next-line no-unused-vars
-  getChart(chart) {}
+  getChart(chartId) {
+    let chart = this.charts[chartId];
+
+    chart.parseSteps();
+    chart.populateStepTimes();
+
+    return chart;
+  }
 }
 
 
@@ -157,15 +163,6 @@ class SongSM extends SongInterface {
 
     return chart;
   }
-
-  getChart(chartId) {
-    let chart = this.charts[chartId];
-
-    chart.parseSteps();
-    chart.populateStepTimes();
-
-    return chart;
-  }
 }
 
 /*
@@ -175,6 +172,189 @@ class SongSM extends SongInterface {
  */
 
 class SongSSC extends SongInterface {
+
+  constructor(data) {
+    super();
+
+    const fields = getFields(data);
+
+    // Map for global fiels
+    const fieldMap = new Map();
+
+    // Stack of chart attributes
+    const chartData = [];
+
+    const ChartAttributes = [
+      'NOTEDATA',
+      'CHARTNAME',
+      'STEPSTYPE',
+      'CHARTSTYLE',
+      'DIFFICULTY',
+      'METER',
+      'RADARVALUES',
+      'NOTES'
+    ];
+
+    let GLOBAL = Symbol.for('GLOBAL');
+    let CHART = Symbol.for('CHART');
+
+    let mode = GLOBAL;
+
+    for (;;) {
+      let v = fields.next().value;
+
+      if (v === undefined) {
+        break;
+      }
+
+      if (mode === GLOBAL && ChartAttributes.includes(v.tag)) {
+        mode = CHART;
+      }
+
+      if (mode === GLOBAL) {
+        if (!fieldMap.has(v.tag)) {
+          fieldMap.set(v.tag, v.value);
+        } else {
+          let actual = fieldMap.get(v.tag);
+          let tmp = Array.isArray(actual) ? actual : [actual];
+          tmp.push(v.value);
+          fieldMap.set(v.tag, tmp);
+        }
+      } else if (mode === CHART) {
+        chartData.push(v);
+      }
+    }
+
+    // We process the fields that are mandatory
+    // The rest will just be passed as metadata
+
+    // Resources related attributes
+
+    this.banner = fieldMap.get('BANNER');
+    this.background = fieldMap.get('BACKGROUND');
+    this.cdTitle = fieldMap.get('CDTITLE');
+    this.music = fieldMap.get('MUSIC');
+
+    this.sampleStart = fieldMap.get('SAMPLESTART');
+    this.sampleLength = fieldMap.get('SAMPLELENGTH');
+
+    // Timing Data
+    this.offset = fieldMap.get('OFFSET');
+    this.bpms = getList(fieldMap.get('BPMS'));
+    this.stops = getList(fieldMap.get('STOPS'));
+    this.delays = getList(fieldMap.get('DELAYS'));
+    this.warps = getList(fieldMap.get('WARPS'));
+
+    // Fake segments
+    this.fakes = getList(fieldMap.get('FAKES'));
+
+    // Not handled SCC Attributes
+    // TIMESIGNATURES
+    // TICKCOUNTS
+    // COMBOS
+    // SPEEDS
+    // SCROLLS
+    // LABELS
+
+    // Process the charts
+    this.chartData = chartData;
+    this.loadCharts(false);
+
+    // Remove the used elements and store the metadata
+    for (let f of ['BANNER', 'BACKGROUND', 'CDTITLE', 'MUSIC',
+      'SAMPLESTART', 'SAMPLELENGTH', 'OFFSET',
+      'BPMS', 'STOPS', 'NOTES']) {
+
+      fieldMap.delete(f);
+    }
+
+    this.metadata = fieldMap;
+  }
+
+  loadCharts(parseSteps=false) {
+
+    this.charts = [];
+
+    let timingInfo = {
+      offset: this.offset,
+      bpms: this.bpms,
+      stops: this.stops,
+      delays: this.delays,
+      warps: this.warps
+    };
+
+    let chartInfo = {};
+
+    for (let {tag, value} of this.chartData) {
+      switch(tag) {
+      case 'STEPSTYPE':
+        chartInfo.type = value;
+        break;
+      case 'DESCRIPTION':
+        chartInfo.description = value;
+        break;
+      case 'DIFFICULTY':
+        chartInfo.difficulty = value;
+        break;
+      case 'RADARVALUES':
+        chartInfo.radar = value;
+        break;
+      case 'METER':
+        chartInfo.meter = value;
+        break;
+      case 'OFFSET':
+        timingInfo.offset = value;
+        break;
+      case 'BPMS':
+        timingInfo.bpms = getList(value);
+        break;
+      case 'STOPS':
+        timingInfo.stops = getList(value);
+        break;
+      case 'DELAYS':
+        timingInfo.delays = getList(value);
+        break;
+      case 'WARPS':
+        timingInfo.warps = getList(value);
+        break;
+      case 'NOTES': {
+        chartInfo.stepData = value;
+
+        // This is the last field
+        // Create the chart
+
+        const chart = new ChartSSC(
+          chartInfo.type,
+          chartInfo.description,
+          chartInfo.difficulty,
+          chartInfo.meter,
+          chartInfo.radar,
+          parseNotes,
+          chartInfo.stepData,
+          timingInfo);
+
+        if (parseSteps === true) {
+          chart.parseSteps();
+        }
+
+        this.charts.push(chart);
+
+        // Reset the state for next chart
+        timingInfo = {
+          offset: this.offset,
+          bpms: this.bpms,
+          stops: this.stops,
+          delays: this.delays,
+          warps: this.warps
+        };
+
+        chartInfo = {};
+
+        break;
+      }
+      }
+    }
+  }
 }
 
 /*
@@ -258,14 +438,6 @@ class SongDWI extends SongInterface {
     this.metadata = fieldMap;
   }
 
-  getChart(chartId) {
-    let chart = this.charts[chartId];
-
-    chart.parseSteps();
-    chart.populateStepTimes();
-
-    return chart;
-  }
 }
 
 SongInterface.extMap = {
@@ -503,6 +675,21 @@ class Chart {
 
     return [time, index];
 
+  }
+}
+
+class ChartSSC extends Chart {
+
+  constructor(type, description, difficulty, meter, grooveRadar, stepParser, stepData='', timingInfo) {
+    // Normal Chart Data
+    super(type, description, difficulty, meter, grooveRadar, stepParser, stepData);
+
+    // Create the Timing Partition for this Chart
+    this.timingPartition = createTimingPartition2(parseFloat(timingInfo.offset),
+                                                  timingInfo.bpms,
+                                                  timingInfo.stops,
+                                                  timingInfo.delays,
+                                                  timingInfo.warps);
   }
 }
 
