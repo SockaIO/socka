@@ -299,7 +299,12 @@ Note.subject = new Subject();
 class SimpleNote extends Note {
   constructor(type, direction, graphicComponent, step) {
     super(type, direction, graphicComponent, step);
-    this.setState(new SimpleNoteFreshState(this));
+
+    if (type === FAKE_NOTE) {
+      this.setState(new FakeNoteFreshState(this));
+    } else {
+      this.setState(new SimpleNoteFreshState(this));
+    }
   }
 }
 
@@ -374,6 +379,19 @@ class SimpleNoteState {
   }
 }
 
+
+/**
+ * Fake Note State when just created
+ * @extends SimpleNoteState
+ * @memberof components
+ */
+class FakeNoteFreshState extends SimpleNoteState {
+  enter() {
+    this.note.graphicComponent.create();
+  }
+
+  // Nothing else
+}
 
 /**
  * Simple Note State when just created

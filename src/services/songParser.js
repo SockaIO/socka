@@ -281,6 +281,8 @@ class SongSSC extends Song {
       warps: this.warps
     };
 
+    let fakes = this.fakes;
+
     let chartInfo = {};
 
     for (let {tag, value} of this.chartData) {
@@ -315,6 +317,9 @@ class SongSSC extends Song {
       case 'WARPS':
         timingInfo.warps = getList(value);
         break;
+      case 'FAKES':
+        fakes = getList(value);
+        break;
       case 'NOTES': {
         chartInfo.stepData = value;
 
@@ -329,7 +334,9 @@ class SongSSC extends Song {
           chartInfo.radar,
           parseNotes,
           chartInfo.stepData,
-          timingInfo);
+          timingInfo,
+          fakes
+        );
 
         if (parseSteps === true) {
           chart.parseSteps();
@@ -553,7 +560,7 @@ class Chart {
 
 class ChartSSC extends Chart {
 
-  constructor(type, description, difficulty, meter, grooveRadar, stepParser, stepData='', timingInfo) {
+  constructor(type, description, difficulty, meter, grooveRadar, stepParser, stepData='', timingInfo, fakes=[]) {
     // Normal Chart Data
     super(type, description, difficulty, meter, grooveRadar, stepParser, stepData);
 
@@ -563,6 +570,47 @@ class ChartSSC extends Chart {
                                                   timingInfo.stops,
                                                   timingInfo.delays,
                                                   timingInfo.warps);
+
+    // Create the fake segments
+    this.fakes = [];
+
+    for (let f of fakes) {
+      this.fakes.push({
+        startBeat: f.beat,
+        stopBeat: f.beat + f.value
+      });
+    }
+  }
+
+
+  parseSteps(data=null) {
+    super.parseSteps(data);
+
+    if (this.fakes.length === 0) {
+      return;
+    }
+
+    let fakeIndex = 0;
+    let fake = this.fakes[fakeIndex];
+
+    for (let s of this.steps) {
+      if (s.beat >= fake.startBeat) {
+
+        if (s.beat >= fake.stopBeat) {
+          // This was the last Fake Segment
+          if (fakeIndex === this.fakes.length - 1) {
+            break;
+          }
+
+          fake = this.fakes[++fakeIndex];
+        } else {
+
+          for (let d in s.arrows) {
+            s.arrows[d].type = FAKE_NOTE;
+          }
+        }
+      }
+    }
   }
 }
 
