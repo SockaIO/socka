@@ -46,6 +46,16 @@ export class HttpEndpoint extends Endpoint {
         throw {message: response.statusText, status: response.status, url, opts, type: 'HTTP Endpoint'};
       }
 
+      const contentType = response.headers.get('content-type');
+
+      if (contentType.includes('json')) {
+
+        const regex = /[^\/]+\.json$/g;
+        url = url.replace(regex, '');
+
+        return new RestEndpoint(url, opts);
+      }
+
       // The URL is reachable, create the endpoint
       return new HttpEndpoint(url, opts);
     })
@@ -385,3 +395,212 @@ class HttpSongIndex extends SongIndex{
 }
 
 
+/**
+ * RestEndpoint
+ *
+ * Endpoint to get Songs over REST
+ * @memberof services.Endpoint
+ * @extends Endpoint
+ */
+export class RestEndpoint extends Endpoint {
+
+  /**
+   * Create a HTTP Endpoint
+   * @param {String} url Base URL of the endpoint
+   * @param {Object} opts Options for fetch
+   */
+  constructor(url, opts) {
+    super();
+    this.url = url;
+    this.opts = opts;
+  }
+
+  /**
+   * Get the top level links and consider the folder as packs
+   */
+  doGetPacks() {
+
+    return getJson(`${this.url}/packs.json`, this.opts).then((packList) => {
+
+      let packs = new Set();
+
+      for (let pack of packList) {
+        packs.add(new RestPack(pack.name, this.url, this.opts));
+      }
+
+      return packs;
+
+    });
+  }
+
+  /**
+   * Return the unique ID of the endpoint
+   * @returns {String} ID
+   */
+  getId() {
+    return this.url;
+  }
+}
+
+function getJson(url, opts) {
+  return fetch(url, opts).then((resp) => {
+
+    if (!resp.ok) {
+      throw {message: resp.statusText, status: resp.status};
+    }
+
+    return resp.json().catch((err) => {
+      throw err;
+    });
+  });
+}
+
+/**
+ * Pack in an Rest Endpoint
+ * @memberof services.Endpoint
+ * @extends Pack
+ */
+class RestPack extends Pack{
+
+  constructor(name, url, opts) {
+    super();
+    this.name = name;
+    this.url = url;
+    this.opts = opts;
+  }
+
+  doGetSongs() {
+    return getJson(`${this.url}/packs/${encodeURIComponent(this.name)}.json`, this.opts).then((songList) => {
+
+      let songs = new Set();
+
+      for (let s of songList) {
+        songs.add(new RestSongIndex(s.name, s, this.url, this.opts));
+      }
+
+      return songs;
+    });
+  }
+}
+
+/**
+ * RestSongIndex in an Rest SongIndex
+ * @memberof services.Endpoint
+ * @extends SongIndex
+ */
+class RestSongIndex extends SongIndex{
+
+  constructor(name, resourcePath, url, opts) {
+    super();
+    this.name = name;
+    this.url = url;
+    this.opts = opts;
+    this.loading = false;
+    this.resourcePath = resourcePath;
+
+    this.fallbackRscs = new Map();
+
+    this.rsc = new Promise((resolve, reject) => {
+      this.resolveRsc = resolve;
+      this.rejectRsc = reject;
+    });
+  }
+
+  /**
+   * Liste the resources available for that song
+   * TODO: Update this with the parsing of the SM file which should contain the bg name
+   * @returns {Symbol|Set} Set of Resource symbols
+   */
+  loadResources() {
+
+    this.loading = true;
+
+    let rsc = new Map();
+
+    for (let key in this.resourcePath) {
+      switch(key) {
+      case 'audio':
+        rsc.set(RSC_AUDIO, `${this.url}${this.resourcePath[key]}`);
+        break;
+      case 'banner':
+        rsc.set(RSC_BANNER, `${this.url}${this.resourcePath[key]}`);
+        break;
+      case 'background':
+        rsc.set(RSC_BACKGROUND, `${this.url}${this.resourcePath[key]}`);
+        break;
+      case 'chart':{
+        let path = this.resourcePath[key];
+        let ext = path.split('.').slice(-1)[0];
+        rsc.set(RSC_CHART, `${this.url}${path}`);
+        this.chartExt = ext;
+        break;
+      }
+      }
+    }
+
+    this.resolveRsc(rsc);
+  }
+
+  /**
+   * Load the resource
+   *
+   * @param {Constant|Array} type | Resources to load
+   * @return {Object} resource | The requested resource
+   */
+  doLoad(type) {
+
+    if (!this.loading) {
+      this.loadResources();
+    }
+
+    return this.rsc.then((rscs) => {
+
+      let fallback = this.fallbackRscs.get(type);
+
+      // If the resc was not found and the fallback was not checked
+      // Or the resc was not found and the fallback failed
+      if ((!rscs.has(type) && fallback === undefined) || (!rscs.has(type) && fallback !== undefined && fallback === this.url + '/')) {
+
+        // Theses resources can be located thanks to the SM file
+        if ([RSC_BANNER, RSC_BACKGROUND].includes(type) && !this.fallbackRscs.has(type)) {
+          return this.load(RSC_SONG).then((song) => {
+            this.fallbackRscs.set(RSC_BANNER, this.url + '/' + song.banner);
+            this.fallbackRscs.set(RSC_BACKGROUND, this.url + '/' + song.background);
+            return this.doLoad(type);
+          });
+        }
+
+        return new Promise((resolve, reject) => reject(new Error('Resoure not found')));
+      }
+
+      let rsc = rscs.get(type);
+      if (!rscs.has(type) && this.fallbackRscs.get(type) !== undefined) {
+        rsc = this.fallbackRscs.get(type);
+      }
+
+      return fetch(rsc, this.opts).then((resp) => {
+        if (!resp.ok) {
+          throw {message: resp.statusText, status: resp.status};
+        }
+
+        switch(type){
+        case RSC_AUDIO:
+          return resp.arrayBuffer();
+        case RSC_CHART:
+          return resp.text();
+        case RSC_BACKGROUND:
+        case RSC_BANNER:
+          return resp.blob();
+        }
+      });
+    });
+  }
+
+  /**
+   * Return the unique ID of the endpoint
+   * @returns {String} ID
+   */
+  getId() {
+    return this.url;
+  }
+}

@@ -9,7 +9,7 @@
 ## Features
 
 + In-game engine Notification (to display errors, info in a friendly way a.k.a. not in the console)
-- Static site generator for the file listing
++ Static site generator for the file listing
 + Configure the endpoints (at least the URL for the HTTP endpoint, maybe also password)
 + Faster way to scroll in the song list in a pack (letter?, 10 by 10?) --> Rapid Fire acceleration
 - Revise song caching strategy? (option, cache only banner + options?)

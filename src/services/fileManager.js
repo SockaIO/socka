@@ -38,14 +38,14 @@ export function ListPacks() {
 
       return packs;
     }, (err) => {
-      log.error(`Error while getting the packs ${JSON.stringify(err)}`);
+      log.error(`Error while getting the packs ${JSON.stringify(err.message)}`);
     });
   }, () => {
 
     // Remove the Failing endpoints from the list
     for (let p of endpoints) {
       p.catch((err) => {
-        log.error(`Endpoint creation failed with error ${JSON.stringify(err)}.`);
+        log.error(`Endpoint creation failed with error ${JSON.stringify(err.message)}.`);
         endpoints.delete(p);
       });
     }
