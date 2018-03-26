@@ -24,7 +24,7 @@ class Game {
   /**
    * Create a Game object
    * @param {number} width - Game window width
-   * @param {number} height - Game window height 
+   * @param {number} height - Game window height
    * @param {Bool} debug -  Show Debug Stats
    * @param {object} configuration - Configuration of the Game
    */
@@ -52,8 +52,6 @@ class Game {
     }
 
     this.views = [];
-
-    this.createWindow();
   }
 
   /**
@@ -162,13 +160,6 @@ class Game {
   }
 
   /**
-   * Create the Game window
-   */
-  createWindow() {
-    document.body.appendChild(this.renderer.view);
-  }
-
-  /**
    * Push a view on top of the stack
    */
   pushView(view, blur=true) {
@@ -183,7 +174,7 @@ class Game {
     this.viewStack.addChild(view.getView());
 
     // We call the callbacks after adding the view
-    // because otherwise they do not stack properly 
+    // because otherwise they do not stack properly
     // if a view is inserted during the callback
     view.onFocus();
     view.onPushed();
