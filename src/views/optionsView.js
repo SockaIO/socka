@@ -6,6 +6,7 @@ import {Menu, TextMenuItem, MappingMenuItem, EnumMenuItem, MenuItemHighlighter, 
 
 import {KEY_LEFT, KEY_RIGHT, KEY_UP, KEY_DOWN, TAP, RAPID_FIRE, KEY_BACK, KEY_ENTER} from '../constants/input';
 import {NUM_PLAYERS} from '../constants/signaling';
+import {OPTION_FOLDER, OPTION_GROUP, OPTION_ENUM, OPTION_TEXT, OPTION_MAPPING} from '../constants/options';
 
 
 
@@ -45,27 +46,26 @@ export default class OptionsView extends View {
     const config = option.getConfig();
 
     // We have a folder
-    if (option.constructor.name === 'OptionFolder') {
-
+    if (option.getType() === OPTION_FOLDER) {
       for (let c of option.getChildren()) {
         entries.push(createEntry(c,`${prefix}.${option.id}`, game));
       }
     }
     // We have an option Group
-    else if (option.constructor.name === 'OptionGroup')
+    else if (option.getType() === OPTION_GROUP)
     {
 
       for (let o of option.getOptions()) {
 
         this.players = option.isGlobal() ? [Player.GamePlayer] : this.players;
 
-        if (o.constructor.name === 'MappingOption') {
+        if (o.getType() === OPTION_MAPPING) {
           entries.push(new MappingMenuItem(o.name, `${prefix}.${option.id}.${o.id}`, this.players));
 
-        } else if (o.constructor.name === 'EnumOption') {
+        } else if (o.getType() === OPTION_ENUM) {
           entries.push(new EnumMenuItem(o.name, `${prefix}.${option.id}.${o.id}`, o.acceptedValues, this.players));
 
-        } else if (o.constructor.name === 'TextOption') {
+        } else if (o.getType() === OPTION_TEXT) {
           entries.push(new InputMenuItem(o.name, `${prefix}.${option.id}.${o.id}`, this.players));
         }
 
@@ -98,8 +98,8 @@ export default class OptionsView extends View {
         entries.splice(-1, 1);
 
         if (config.reset === true) {
-        // Remove the Reset Entry
-        entries.splice(-1, 1);
+          // Remove the Reset Entry
+          entries.splice(-1, 1);
         }
 
         // Store the values for all the players

@@ -179,7 +179,10 @@ export class Menu {
       this.getSelected(player).onDeselected(player);
     }
     this.selecteds.set(player.getId(), index);
-    this.getSelected(player).onSelected(player);
+    const selected = this.getSelected(player);
+    if (selected !== undefined) {
+      this.getSelected(player).onSelected(player);
+    }
   }
 
   /**

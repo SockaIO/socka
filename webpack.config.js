@@ -5,6 +5,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const HtmlWebpackHarddiskPlugin = require('html-webpack-harddisk-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const path = require('path');
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 
 const indexOptions = {
   title: 'Socka',
@@ -43,13 +44,21 @@ module.exports = env => {
         }
       ], {
         copyUnmodified: true,
-      }),
+      })
     ],
     module: {
       rules: [
         {
           test: /\.(png|jpg)$/,
-          use: ['file-loader?name=[path][name].[ext]']
+          use: [
+            'file-loader?name=[path][name].[ext]',
+            {
+              loader: 'image-webpack-loader',
+              options: {
+                bypassOnDebug: true
+              }
+            }
+          ]
         },
         {
           test: /\.(xml|fnt)$/,
@@ -61,6 +70,9 @@ module.exports = env => {
 
   if (env.production !== true) {
     conf['devtool'] = 'inline-cheap-source-map';
+  } else {
+    conf['devtool'] = 'nosources-source-map';
+    conf['plugins'].push(new UglifyJsPlugin());
   }
 
   return conf;

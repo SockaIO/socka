@@ -1,6 +1,7 @@
 'use strict';
 
 import {MENU_OPTION} from '../constants/resources';
+import {OPTION_MENU, OPTION_FOLDER, OPTION_GROUP, OPTION_NUMERIC, OPTION_TEXT, OPTION_ENUM, OPTION_MAPPING, OPTION_MOTHER} from '../constants/options';
 
 /**
  * @namespace services.Options
@@ -57,6 +58,10 @@ class OptionMenu {
   getConfig() {
     return {};
   }
+
+  getType() {
+    return OPTION_MENU;
+  }
 }
 
 
@@ -82,6 +87,14 @@ export class OptionFolder extends OptionMenu{
     for (let c of children) {
       this.children.set (c.getName (), c);
     }
+  }
+
+  /**
+   * Get the Object Type
+   * @returns {Enum} The type enum
+   */
+  getType() {
+    return OPTION_FOLDER;
   }
 
   /**
@@ -147,6 +160,15 @@ export class OptionGroup extends OptionMenu {
   }
 
   /**
+   * Get the Object Type
+   * @returns {Enum} The type enum
+   */
+  getType() {
+    return OPTION_GROUP;
+  }
+
+
+  /**
    * Is the group global
    */
   isGlobal() {
@@ -204,6 +226,15 @@ class Option {
     this.default = def;
     this.updateWorldCallback = () => {};
   }
+
+  /**
+   * Get the Object Type
+   * @returns {Enum} The type enum
+   */
+  getType() {
+    return OPTION_MOTHER;
+  }
+
 
   /**
    * Get the name
@@ -278,6 +309,15 @@ export class NumericOption extends Option {
     this.max = max;
   }
 
+  /**
+   * Get the Object Type
+   * @returns {Enum} The type enum
+   */
+  getType() {
+    return OPTION_NUMERIC;
+  }
+
+
   check(value) {
     return (value > this.min && value < this.max);
   }
@@ -305,6 +345,15 @@ export class TextOption extends Option {
     this.maxLen = maxLen;
     this.checkRegex = checkRegex;
   }
+
+  /**
+   * Get the Object Type
+   * @returns {Enum} The type enum
+   */
+  getType() {
+    return OPTION_TEXT;
+  }
+
 
   check(value) {
     return value.length >= this.minLen &&
@@ -335,6 +384,15 @@ export class EnumOption extends Option {
     this.default = def;
   }
 
+  /**
+   * Get the Object Type
+   * @returns {Enum} The type enum
+   */
+  getType() {
+    return OPTION_ENUM;
+  }
+
+
   check(value) {
     return this.acceptedValues.includes(value);
   }
@@ -356,6 +414,15 @@ export class MappingOption extends Option {
     super(name, id, def);
     this.alternate = alternate;
   }
+
+  /**
+   * Get the Object Type
+   * @returns {Enum} The type enum
+   */
+  getType() {
+    return OPTION_MAPPING;
+  }
+
 
   /**
    * We do not check for now
