@@ -392,6 +392,7 @@ class PadController extends Controller {
 
         if (this.rawListener !== null) {
           this.rawListener({controller: this, key: i});
+          continue;
         }
 
         let cmd = this.getCommand(action, i);
