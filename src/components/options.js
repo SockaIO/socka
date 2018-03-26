@@ -20,7 +20,7 @@ export class MappingMenuItem extends MenuItem{
     this.name = name;
     this.key = key;
 
-    this.numOptions = 4;
+    this.numOptions = 0;
     this.players = [];
 
     if (defaultValues.size > 0) {
@@ -30,6 +30,7 @@ export class MappingMenuItem extends MenuItem{
       for (let player of players) {
         this.indexes.set(player.getId(), 0);
         this.players.push(player);
+        this.numOptions += 2;
       }
 
       this.loadValues();
@@ -115,7 +116,6 @@ export class MappingMenuItem extends MenuItem{
   move(direction, player) {
     const index = this.indexes.get(player.getId());
     const newIndex = index + direction;
-
 
     if (newIndex < this.numOptions && newIndex >= 0) {
       this.indexes.set(player.getId(), newIndex);
