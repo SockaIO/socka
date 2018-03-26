@@ -204,8 +204,8 @@ function InitPlayers(game)
     m.setKey(KEY_LEFT, 65, id);
     m.setKey(KEY_RIGHT, 68, id);
 
-    m.setKey(KEY_ENTER, 32, id);
-    m.setKey(KEY_BACK, 27, id);
+    m.setKey(KEY_ENTER, 69, id);
+    m.setKey(KEY_BACK, 81, id);
 
     q.setMapping(m);
 

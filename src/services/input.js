@@ -570,21 +570,45 @@ class Mapping {
   getOptions() {
     let out = [];
 
+    let options = new Map();
+    const layoutTxt = {
+      [PRIMARY]: 'PRIMARY',
+      [SECONDARY]: 'SECONDARY'
+    };
+
+    // Pending mapping
+    for (let controller of this.pendingMappings.values()) {
+
+      for (let [key, button, controllerId, layout] of controller) {
+        let option = {};
+        if (options.has(key)) {
+          option = options.get(key);
+        }
+
+        option[layoutTxt[layout]] =  {key: button, controller: controllerId};
+        options.set(key, option);
+      }
+    }
+
+    // Active mappings
     for (let key of KEYS) {
       // Get returns a set of one element so we need to extract the value
       let layouts = [...this.mapping.get(key)];
 
       let option = {};
-      const layoutTxt = {
-        [PRIMARY]: 'PRIMARY',
-        [SECONDARY]: 'SECONDARY'
-      };
+      if (options.has(key)) {
+        option = options.get(key);
+      }
 
       for (let [layoutType, [controller, button]] of layouts) {
         option[layoutTxt[layoutType]] =  {key: button, controller: controller.id};
       }
 
-      out.push([key, option]);
+      options.set(key, option);
+    }
+
+    for (let [key, value] of options.entries()) {
+      out.push([key, value]);
     }
 
     return out;
@@ -616,6 +640,8 @@ function GetDefaultKeyboardMapping() {
   let c = GetDefaultKeyboardController();
   const id = c.getId();
 
+  // PRIMARY Keyboard Keys
+
   m.setKey(KEY_UP, 38, id);
   m.setKey(KEY_DOWN, 40, id);
   m.setKey(KEY_LEFT, 37, id);
@@ -623,6 +649,17 @@ function GetDefaultKeyboardMapping() {
 
   m.setKey(KEY_ENTER, 13, id);
   m.setKey(KEY_BACK, 8, id);
+
+  const padId = 0;
+
+  // SECONDARY Pad Keys
+  m.setKey(KEY_UP, 2, padId, SECONDARY);
+  m.setKey(KEY_DOWN, 0, padId, SECONDARY);
+  m.setKey(KEY_LEFT, 1, padId, SECONDARY);
+  m.setKey(KEY_RIGHT, 3, padId, SECONDARY);
+
+  m.setKey(KEY_ENTER, 9, padId, SECONDARY);
+  m.setKey(KEY_BACK, 8, padId, SECONDARY);
 
   return m;
 }
