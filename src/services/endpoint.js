@@ -564,8 +564,8 @@ class RestSongIndex extends SongIndex{
         // Theses resources can be located thanks to the SM file
         if ([RSC_BANNER, RSC_BACKGROUND].includes(type) && !this.fallbackRscs.has(type)) {
           return this.load(RSC_SONG).then((song) => {
-            this.fallbackRscs.set(RSC_BANNER, this.url + '/' + song.banner);
-            this.fallbackRscs.set(RSC_BACKGROUND, this.url + '/' + song.background);
+            this.fallbackRscs.set(RSC_BANNER, this.path + '/' + song.banner);
+            this.fallbackRscs.set(RSC_BACKGROUND, this.path + '/' + song.background);
             return this.doLoad(type);
           });
         }

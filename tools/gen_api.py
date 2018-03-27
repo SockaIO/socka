@@ -42,12 +42,15 @@ class ApiGen(object):
             self.packSongs[pack] = {}
 
         song = {
-                "name": song_name
+                "name": song_name,
+                "path": self.build_uri(path, "")
         }
 
         IMG_EXTS = ['.jpg', '.png']
         AUDIO_EXTS = ['.mp3', '.ogg']
         CHART_EXTS = ['.dwi', '.sm', '.ssc']
+
+        extra_img = None
 
         for f in files:
             filename, extension = os.path.splitext(f)
@@ -58,17 +61,22 @@ class ApiGen(object):
             if extension in IMG_EXTS and 'bn' in filename:
                 song["banner"] = self.build_uri(path, f)
 
-            if (extension in IMG_EXTS and
-                   not ('bn' in filename or 'bg' in filename) and
-                   not "banner" in song):
-
-                song["banner"] = self.build_uri(path, f)
+            if (extension in IMG_EXTS and not ('bn' in filename or 'bg' in filename)):
+                extra_img = self.build_uri(path, f)
 
             if extension in AUDIO_EXTS:
                 song["audio"] = self.build_uri(path, f)
 
             if extension in CHART_EXTS:
                 song["chart"] = self.build_uri(path, f)
+
+        if extra_img is not None:
+            if not "banner" in song:
+                song["banner"] = extra_img;
+            elif not "background" in song:
+                song["background"] = extra_img
+
+
 
         if not "chart" in song or not "audio" in song:
             return
