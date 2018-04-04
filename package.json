@@ -1,8 +1,7 @@
 {
-  "name": "stepmania-js",
+  "name": "socka",
   "version": "0.0.1",
-  "description": "",
-  "main": "stepmania.js",
+  "description": "Socka is a JavaScript dance and rythm game.",
   "dependencies": {
     "gsap": "^1.20.3",
     "loglevel": "^1.6.0",
@@ -26,8 +25,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@gogs.th3osmith.ovh:airremi/stepmania-js2.git"
+    "url": "github:SockaIO/socka"
   },
-  "author": "",
-  "license": "ISC"
+  "author": "Remi Robert",
+  "license": "MIT"
 }

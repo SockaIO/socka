@@ -20,7 +20,7 @@ module.exports = env => {
   let conf = {
     context: __dirname,
     entry: {
-      app: './stepmania.js',
+      app: './socka.js',
     },
     output: {
       path: path.resolve(__dirname + '/dist/assets/'),
