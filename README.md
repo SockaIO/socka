@@ -40,7 +40,7 @@ The following web servers have been tested:
 
 #### JSON Indexes
 
-If you do not want to enable directory listing on your web server, you can instead serve JSON indexes containing the information required by Socka to fetch your songs.
+If you do not want to enable directory listing on your web server, you can instead serve JSON indexes containing the information required by Socka to fetch your songs. This method is slightly more optimized that the previous one and can give a small performance improvement when loading the song assets.
 
 The gen_api.py script is provided (in the tools folder) to generate such JSON files. To use it just run
 
@@ -48,13 +48,13 @@ The gen_api.py script is provided (in the tools folder) to generate such JSON fi
 
 Where *FOLDER* is the folder containing your songs. The song folders need to be organized as instructed in the previous section.
 
-The script will generate a *packs.json* file as well as a *packs* directory containing one json file per pack. You can serve this folder, now containing both the JSON files and the song files, with any web server.
+The script will generate a *packs.json* file as well as a *packs* folder containing one json file per pack. You can serve your song folder, now containing both the JSON files and the song files, with any web server.
 
 In the game, the source URL needs to be configured to point to the *packs.json* file.
 
 ## Build
 
-To install the dependency, run
+To install the dependencies, run
 
     npm install
 
