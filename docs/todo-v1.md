@@ -62,18 +62,18 @@
 ## Misc
 
 - Contact Stepmania people
-- Preset for dancepad ?
++ Preset for dancepad ?
    * Compare the mapping between the two kinds of pad we have
    * Add as secondary for player 1
-- Readme File for the repo
++ Readme File for the repo
 - Migrate to Github (remove wrong email from commit)
-- Font License
++ Font License
 
 ## Packaging
 
-- Test easy installation with 3 free songs
-- public demo
-- Installation documentation
++ Test easy installation with 3 free songs
++ public demo
++ Installation documentation
 
 
 ## Post V1
