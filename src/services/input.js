@@ -328,6 +328,7 @@ class KeyboardController extends Controller{
 
     // Debouncing if kedown only
     if (e.type == 'keydown' && this.pushed.has(key)) {
+      e.preventDefault();
       return;
     }
 
