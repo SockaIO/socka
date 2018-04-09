@@ -1,8 +1,9 @@
 'use strict';
 
-import {Player, Theme} from '../services';
+import {Player, Theme, Options} from '../services';
 import View from './view';
 import WaitView from './waitView';
+import OptionsView from './optionsView';
 import {TAP, KEY_BACK, KEY_ENTER, KEY_UP, KEY_DOWN, RAPID_FIRE} from '../constants/input';
 import {Menu, TextMenuItem} from '../components';
 import {MENU_PAUSE} from '../constants/resources';
@@ -35,6 +36,21 @@ class PauseView extends View {
 
       this.game.pushView(waitView, false);
       reset();
+    }));
+
+    // TODO: Improve lookup
+    let soundOption;
+    for (let o of Options.GetRoot().getChildren()) {
+      if (o.id === 'sound') {
+        soundOption = o;
+        break;
+      }
+    }
+
+    items.push(new TextMenuItem('Sound', () => {
+      // TODO: More resilient non-dependency on the Sound Option position in the Option tree
+      let o = new OptionsView(soundOption, '.root', game, false);
+      game.pushView(o);
     }));
 
     items.push(new TextMenuItem('Quit', () => {

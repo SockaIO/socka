@@ -3,7 +3,7 @@
 import {Options} from './';
 import {KEYS, PRIMARY, SECONDARY} from '../constants/input';
 import {MENU_OPTION, MENU_OPTION_MAPPING} from '../constants/resources';
-import {RESIZE, NUM_PLAYERS} from '../constants/signaling';
+import {RESIZE, NUM_PLAYERS, VOLUME} from '../constants/signaling';
 import {Player, Library} from '../services';
 import {HttpEndpoint} from './endpoint';
 
@@ -50,10 +50,22 @@ export default function GetOptionTree() {
   let display = new Options.OptionGroup('Display', 'display', true, [resolution]);
 
   /*
+   * Sound
+   */
+
+  let volume = new Options.EnumOption('Music Volume', 'musicVolume', ['25', '50', '75', '100'], '100');
+  volume.setUpdateWorld((value, player, game) => {
+    let newVolume = parseInt(value, 10);
+    game.upgrade({type: VOLUME, volume: newVolume});
+  });
+
+  let sound = new Options.OptionGroup('Sound', 'sound', true, [volume]);
+
+  /*
    * Gameplay
    */
 
-  let field = new Options.EnumOption('Field of view', 'fieldOfView', ['4', '5', '6', '7', '8'], '6');
+  let field = new Options.EnumOption('Field of view', 'fieldOfView', ['4', '5', '6', '7', '8', '9', '12'], '6');
 
   let gameplay = new Options.OptionGroup('Gameplay', 'gameplay', false, [field]);
 
@@ -160,7 +172,7 @@ export default function GetOptionTree() {
   /*
    * Root
    */
-  let root = new Options.OptionFolder('root', 'root', [display, gameplay, players, mapping, endpoint]);
+  let root = new Options.OptionFolder('root', 'root', [display, sound, gameplay, players, mapping, endpoint]);
 
   return root;
 }

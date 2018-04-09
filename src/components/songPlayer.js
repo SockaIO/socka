@@ -10,8 +10,9 @@ import {RSC_AUDIO} from '../constants/resources';
  */
 class SongPlayer {
 
-  constructor() {
+  constructor(volume=100) {
     this.song = null;
+    this.volume = volume / 100;
 
     this.initAudio();
 
@@ -28,8 +29,26 @@ class SongPlayer {
    */
   initAudio() {
     this.ctx = new AudioContext();
+    this.gain = this.ctx.createGain();
     this.source = this.ctx.createBufferSource();
-    this.source.connect(this.ctx.destination);
+
+    this.gain.gain.setValueAtTime(this.volume, this.ctx.currentTime);
+
+    this.source.connect(this.gain);
+    this.gain.connect(this.ctx.destination);
+  }
+
+  /**
+   * Set the Volume
+   * @param {Number} volume New Volume (int between 0 and 100)
+   */
+  setVolume(volume) {
+    if (this.gain === undefined) {
+      return;
+    }
+
+    this.volume = volume / 100;
+    this.gain.gain.setValueAtTime(this.volume, this.ctx.currentTime);
   }
 
   /**
@@ -81,11 +100,12 @@ class SongPlayer {
    */
   resume() {
     this.source = this.ctx.createBufferSource();
-    this.source.connect(this.ctx.destination);
+    this.source.connect(this.gain);
     this.source.buffer = this.buf;
 
     const startDelay = 0;
     this.audioStart = this.ctx.currentTime - this.startPauseTime + startDelay;
+
     this.source.start(this.ctx.currentTime + startDelay, this.startPauseTime);
     this.source.onended = () => this.endPlayback();
   }

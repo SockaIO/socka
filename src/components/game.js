@@ -130,6 +130,22 @@ class Game {
   }
 
   /**
+   * Get the music volume
+   * @return {Number} The music Volume
+   */
+  getVolume() {
+    let gp = Player.GamePlayer;
+    let volume = gp.optionStore.get('.root.sound.musicVolume');
+
+    if (volume === undefined) {
+      log.error('Impossible to retrieve Volume value. Using value = 50');
+      volume = 50;
+    }
+
+    return volume;
+  }
+
+  /**
    * Handle an upgrade
    * @param {object|array} modifications - Modifications to apply
    */

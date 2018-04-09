@@ -7,6 +7,8 @@ import LoadingView from './loadingView';
 import PauseView from './pauseView';
 import ResultsView from './resultsView';
 
+import {VOLUME} from '../constants/signaling';
+
 import {KEY_UP, KEY_LEFT, KEY_DOWN, KEY_RIGHT, TAP, LIFT, KEY_BACK} from '../constants/input';
 
 import {RSC_BACKGROUND} from '../constants/resources';
@@ -37,7 +39,9 @@ class EngineView extends View {
     let width, height;
     [width, height] = game.getScreenSize();
 
-    this.songPlayer = new SongPlayer();
+    let volume = game.getVolume();
+
+    this.songPlayer = new SongPlayer(volume);
     this.graphicComponent = Theme.GetTheme().createEngineViewGC(width, height);
 
     this.engines = [];
@@ -224,6 +228,24 @@ class EngineView extends View {
   onPoped() {
     if (this.started) {
       this.songPlayer.close();
+    }
+  }
+
+  upgrade(modifications) {
+    if (!Array.isArray(modifications)) {
+      modifications = [modifications];
+    }
+
+    for (let m of modifications) {
+      this.handleModification(m);
+    }
+  }
+
+  handleModification(modification) {
+    switch(modification.type) {
+    case VOLUME:
+      this.songPlayer.setVolume(modification.volume);
+      break;
     }
   }
 

@@ -446,9 +446,17 @@ export class OptionMenuDefaultGraphicComponent extends interfaces.MenuGraphicCom
     this.foreground = new PIXI.Container();
 
     if (this.menu.id === MENU_OPTION || this.menu.id === MENU_OPTION_MAPPING) {
-      this.background = new PIXI.Sprite(this.theme.getTexture('bgMain'));
-      this.background.width = this.width;
-      this.background.height = this.height;
+
+      if (this.menu.useBackground === true) {
+        this.background = new PIXI.Sprite(this.theme.getTexture('bgMain'));
+        this.background.width = this.width;
+        this.background.height = this.height;
+      } else {
+        this.background = new PIXI.Graphics();
+        this.background.beginFill(0x111111, 0.8);
+        this.background.drawRect(0, 0, this.width, this.height);
+        this.background.endFill();
+      }
     }
 
     this.sprite.addChild(this.background);

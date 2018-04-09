@@ -24,12 +24,14 @@ export class Menu {
    * @param {String} key Key used for sorting and identification (default is name)
    * @param {Boolean} sort Set to true to sort the entries (default is false)
    * @param {Boolean} keepIndex Keep the index when changing component default is false)
+   * @param {Boolean} useBackground Use the image background
    */
-  constructor(id, entries, width, height, graphicComponentFactory, sort=false, highlighterFactory=null, players=[Player.GamePlayer], key='name', keepIndex=false) {
+  constructor(id, entries, width, height, graphicComponentFactory, sort=false, highlighterFactory=null, players=[Player.GamePlayer], key='name', keepIndex=false, useBackground=true) {
     this.entries = entries;
     this.key = key;
     this.id = id;
     this.keepIndex = keepIndex;
+    this.useBackground = useBackground;
 
     this.compareFunction = (a, b) => {return a[key] > b[key];};
     this.sort = sort;

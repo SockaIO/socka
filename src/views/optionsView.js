@@ -31,11 +31,13 @@ function createEntry(option, prefix, game) {
  */
 export default class OptionsView extends View {
 
-  constructor(option, prefix, game) {
+  constructor(option, prefix, game, useBackground=true) {
     super(game);
 
     let width, height;
     [width, height] = game.getScreenSize();
+
+    this.useBackground = useBackground;
 
     this.option = option;
     this.players = Array.from(Player.GetPlayers ());
@@ -128,7 +130,7 @@ export default class OptionsView extends View {
     let keepIndex = config.keepIndex === true ? true : false;
     let sortMenu = config.sort === false ? false : true;
 
-    this.menu = new Menu(option.menuType, entries, width, height, Theme.GetTheme().createMenuOptionGC.bind(Theme.GetTheme()), sortMenu, MenuItemHighlighter, this.players, 'name', keepIndex);
+    this.menu = new Menu(option.menuType, entries, width, height, Theme.GetTheme().createMenuOptionGC.bind(Theme.GetTheme()), sortMenu, MenuItemHighlighter, this.players, 'name', keepIndex, this.useBackground);
     this.sprite = this.menu.sprite;
 
     this.update();
