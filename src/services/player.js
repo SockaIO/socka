@@ -257,8 +257,9 @@ function InitGamePlayer(game) {
     let data = localStorage.getItem('GamePlayer');
     GamePlayer = Player.CreateFromJson(data);
     GamePlayer.id = 0;
-    GamePlayer.optionStore.updateWorld(GamePlayer, game);
   }
+
+  GamePlayer.optionStore.updateWorld(GamePlayer, game);
 
   // Give the Game player the same mapping as the 1st player
   for (let p of players.values())
