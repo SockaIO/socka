@@ -18,6 +18,12 @@ class SongPlayer {
 
     this.startPauseTime = 0;
 
+    // Start on the audio in the Audio Context
+    this.audioStart = 0;
+
+    // Start of the audio in the Global Context
+    this.audioStartExternal = 0;
+
     this.endPromise = new Promise((resolve, reject) => {
       this.endPlayback = resolve;
       this.cancelPlayback = reject;
@@ -81,6 +87,10 @@ class SongPlayer {
   play() {
     this.audioStart = this.ctx.currentTime + 1;
     this.source.start(this.audioStart);
+
+    // Setup the External Audio Start
+    this.audioStartExternal = (performance.now() / 1000) + 1;
+
     this.source.onended = () => this.endPlayback();
   }
 
@@ -105,6 +115,7 @@ class SongPlayer {
 
     const startDelay = 0;
     this.audioStart = this.ctx.currentTime - this.startPauseTime + startDelay;
+    this.audioStartExternal = performance.now() / 1000 - this.startPauseTime + startDelay;
 
     this.source.start(this.ctx.currentTime + startDelay, this.startPauseTime);
     this.source.onended = () => this.endPlayback();
@@ -130,8 +141,12 @@ class SongPlayer {
    * Returns the current timestamp within the song
    * @return {Number} Timwstamp within the song
    */
-  getTime() {
-    return this.ctx.currentTime - this.audioStart;
+  getTime(ts=0) {
+    // Because of an issue with ctx.currentTime not being accurate enough
+    // on Linux (it is not updated frequently enough) we have to use the global
+    // timestamp.
+    // That issue was present both on Chrome and Firefox
+    return ts / 1000 - this.audioStartExternal;
   }
 
 }

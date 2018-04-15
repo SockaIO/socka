@@ -218,14 +218,14 @@ class Game {
   /**
    * Main loop of the game
    */
-  main() {
+  main(ts) {
 
     if (this.stats) {
       this.stats.begin();
     }
 
-    window.requestAnimationFrame(() => {this.main();});
-    this.update();
+    window.requestAnimationFrame((ts) => {this.main(ts);});
+    this.update(ts);
     this.renderer.render(this.stage);
 
     if (this.stats) {
@@ -237,9 +237,9 @@ class Game {
   /**
    * Update the window content
    */
-  update() {
+  update(ts) {
     if (this.views.length > 0) {
-      this.views[0].update();
+      this.views[0].update(ts);
 
       for (let c of Input.GetControllers()) {
         let cmds = c.handleInput();

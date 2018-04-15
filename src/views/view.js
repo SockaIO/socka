@@ -17,8 +17,9 @@ class View {
 
   /**
    * Main loop to update the view content
+   * @param {DOMHighResTimeStamp} ts High Precision Timestamp
    */
-  update() {}
+  update(ts) {}
 
   /**
    * Called when the view is pushed on the stack

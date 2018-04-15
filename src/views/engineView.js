@@ -211,14 +211,14 @@ class EngineView extends View {
   /**
    * Update
    */
-  update() {
+  update(ts) {
 
     if (!this.started) {
       return;
     }
 
     for (let e of this.engines) {
-      e.update();
+      e.update(ts);
     }
   }
 

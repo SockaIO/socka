@@ -162,10 +162,10 @@ class Engine {
   /**
    * Update the engine for next tick
    */
-  update() {
+  update(ts) {
 
     // Get the time information
-    this.time = this.songPlayer.getTime();
+    this.time = this.songPlayer.getTime(ts);
 
     //TODO: index?
     let [beat, ] = this.chart.getBeat(this.time);
@@ -177,7 +177,7 @@ class Engine {
     this.updateAction();
     this.graphicComponent.update(beat);
 
-    this.progressionBar.update();
+    this.progressionBar.update(ts);
 
     // update the missed notes
     this.updateEvents();
@@ -204,7 +204,7 @@ class Engine {
 
 
     // TODO: More accuracy for the time ?
-    let time = this.songPlayer.getTime();
+    let time = this.songPlayer.getTime(performance.now());
 
     // Visual Effect
     if (action === TAP) {
@@ -681,7 +681,7 @@ class ProgressionBar {
   /**
    * Update the current progression
    */
-  update() {
+  update(ts) {
     if (!this.songDuration) {
       if (this.songPlayer.source.buffer) {
         this.songDuration = this.songPlayer.source.buffer.duration;
@@ -690,7 +690,7 @@ class ProgressionBar {
       }
     }
 
-    let time = this.songPlayer.getTime();
+    let time = this.songPlayer.getTime(ts);
 
     if (time < 0 || time > this.songDuration) {
       return;
