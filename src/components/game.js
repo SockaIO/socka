@@ -39,6 +39,11 @@ class Game {
     this.stage = new PIXI.Container();
     this.renderer = PIXI.autoDetectRenderer(this.width, this.height, {backgroundColor : 0x0e333d, view: canvas}, true);
 
+    // Handle PIXI timer manually
+    this.ticker = PIXI.ticker.shared;
+    this.ticker.autoStart = false;
+    this.ticker.stop();
+
     // Specialized Containers
     this.viewStack = new PIXI.Container();
     this.notification = new PIXI.Container();
@@ -224,7 +229,8 @@ class Game {
       this.stats.begin();
     }
 
-    window.requestAnimationFrame((ts) => {this.main(ts);});
+    this.ticker.update(ts);
+
     this.update(ts);
     this.renderer.render(this.stage);
 
@@ -232,6 +238,7 @@ class Game {
       this.stats.end();
     }
 
+    window.requestAnimationFrame((ts) => {this.main(ts);});
   }
 
   /**
